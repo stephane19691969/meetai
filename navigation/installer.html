@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f2a5c">
+<title>Installer Mael</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef2f7;--card:#fff;--ink:#0f1d3a;--mut:#5d6b82;--line:#e3e8f0;--acc:#1d5fd1;--ok:#15803d;--okbg:#e4f5ea}
+@media (prefers-color-scheme:dark){:root{--bg:#0b111c;--card:#141c2b;--ink:#e9eef7;--mut:#97a3b8;--line:#243047;--acc:#7aa7ff;--ok:#5fd18e;--okbg:#122c1d}}
+*{box-sizing:border-box}
+body{margin:0;font-family:Manrope,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;padding:0 0 calc(30px + env(safe-area-inset-bottom))}
+.hero{background:linear-gradient(135deg,#0f2a5c,#13467e 55%,#0e7c86);color:#fff;padding:calc(36px + env(safe-area-inset-top)) 20px 60px;text-align:center;border-radius:0 0 32px 32px}
+.hero img{width:92px;height:92px;border-radius:22px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.hero h1{margin:14px 0 2px;font-size:28px;font-weight:800;letter-spacing:-.02em}.hero p{margin:0;opacity:.85}
+main{max-width:520px;margin:-36px auto 0;padding:0 16px}
+.card{background:var(--card);border-radius:20px;padding:18px;box-shadow:0 4px 18px rgba(15,29,58,.08);margin-bottom:14px}
+.big{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:0;border-radius:16px;padding:16px;font:inherit;font-size:17px;font-weight:800;color:#fff;background:linear-gradient(135deg,#1d5fd1,#3b82f6);box-shadow:0 6px 18px rgba(29,95,209,.3);text-decoration:none;cursor:pointer}
+.big.alt{background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:none;font-size:15px}
+ol{padding-left:0;list-style:none;counter-reset:s;margin:14px 0 0}
+ol li{counter-increment:s;display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)}ol li:first-child{border-top:0}
+ol li::before{content:counter(s);flex:none;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#0f2a5c,#0e7c86);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.muted{color:var(--mut);font-size:14px}
+.ok{background:var(--okbg);color:var(--ok);border-radius:14px;padding:12px 14px;font-weight:700}
+.seg{display:flex;background:var(--line);border-radius:12px;padding:3px;margin-bottom:14px}.seg button{flex:1;border:0;background:transparent;font:inherit;font-weight:700;padding:8px;border-radius:10px;color:var(--mut)}.seg button.on{background:var(--card);color:var(--ink)}
+.ico{display:inline-flex;vertical-align:-4px;width:20px;height:20px}
+#qr{display:flex;justify-content:center;margin:12px 0}
+h2{font-size:17px;margin:0 0 4px;font-weight:800}
+</style>
+</head>
+<body>
+<div class="hero"><img src="icon-512.png" alt=""><h1>Mael</h1><p>Navigation et carnet d'entretien</p></div>
+<main>
+<div class="card" id="done" style="display:none"><div class="ok">L'appli est déjà installée sur cet appareil.</div><p class="muted">Ouvre-la depuis l'icône Mael de ton écran d'accueil.</p><a class="big" href="./">Ouvrir Mael</a></div>
+
+<div class="seg" id="seg"><button data-p="ios">iPhone / iPad</button><button data-p="android">Android</button><button data-p="pc">Ordinateur</button></div>
+
+<section data-s="ios">
+ <div class="card"><h2>Installation automatique</h2><p class="muted">Un petit profil ajoute l'icône Mael sur ton écran d'accueil.</p>
+  <a class="big" href="mael.mobileconfig" id="iosBtn">Installer l'icône Mael</a>
+  <ol><li><span>Touche le bouton ci-dessus, puis <b>Autoriser</b> pour télécharger le profil.</span></li>
+  <li><span>Ouvre <b>Réglages</b> : en haut, touche <b>Profil téléchargé</b>.</span></li>
+  <li><span>Touche <b>Installer</b> en haut à droite, saisis ton code, puis <b>Installer</b> encore. iOS indique « non signé » : c'est normal pour un profil personnel.</span></li>
+  <li><span>L'icône <b>Mael</b> apparaît sur l'écran d'accueil. Pour la retirer plus tard : Réglages › Général › VPN et gestion de l'appareil.</span></li></ol>
+  <p class="muted" id="iosWarn" style="display:none">Ouvre cette page dans <b>Safari</b> : le profil ne s'installe pas depuis un autre navigateur ou depuis l'appli Claude.</p></div>
+ <div class="card"><h2>Ou à la main</h2><ol><li><span>Dans <b>Safari</b>, touche <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11v9h12v-9"/></svg> Partager.</span></li><li><span>Fais défiler et choisis <b>Sur l'écran d'accueil</b>.</span></li><li><span>Touche <b>Ajouter</b>.</span></li></ol></div>
+</section>
+
+<section data-s="android">
+ <div class="card"><h2>Installation en un toucher</h2><p class="muted" id="andMsg">Préparation…</p>
+  <button class="big" id="andBtn" style="display:none">Installer Mael</button>
+  <ol><li><span>Si le bouton n'apparaît pas, ouvre cette page dans <b>Chrome</b>.</span></li><li><span>Menu <b>⋮</b> en haut à droite, puis <b>Installer l'application</b> (ou « Ajouter à l'écran d'accueil »).</span></li><li><span>Confirme : l'icône <b>Mael</b> apparaît avec tes applis.</span></li></ol></div>
+</section>
+
+<section data-s="pc">
+ <div class="card"><h2>Installer sur ton téléphone</h2><p class="muted">Scanne ce code avec l'appareil photo du téléphone ou de la tablette, puis suis les étapes affichées.</p><div id="qr"></div>
+  <p class="muted" style="text-align:center;word-break:break-all" id="url"></p>
+  <button class="big alt" id="pcBtn" style="display:none">Installer aussi sur cet ordinateur</button></div>
+</section>
+
+<a class="big alt" href="./">Ouvrir l'appli sans l'installer</a>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const $=s=>document.querySelector(s);const ua=navigator.userAgent;
+const isIOS=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const isAnd=/Android/.test(ua);const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+const isSafari=isIOS&&!/CriOS|FxiOS|EdgiOS|GSA|Instagram|FBAN|Claude/i.test(ua);
+const appURL=new URL('./',location.href).href;
+function show(p){document.querySelectorAll('[data-s]').forEach(s=>s.style.display=s.dataset.s===p?'':'none');document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.p===p));}
+$('#seg').onclick=e=>{if(e.target.dataset.p)show(e.target.dataset.p);};
+show(isIOS?'ios':isAnd?'android':'pc');
+if(standalone)$('#done').style.display='';
+if(isIOS&&!isSafari)$('#iosWarn').style.display='';
+$('#url').textContent=location.href;
+try{new QRCode($('#qr'),{text:location.href,width:200,height:200,colorDark:'#0f2a5c',colorLight:'#ffffff'});}catch(e){$('#qr').textContent='';}
+let deferred=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('#andBtn').style.display='';$('#andMsg').textContent='Touche le bouton pour installer Mael comme une appli.';$('#pcBtn').style.display='';});
+window.addEventListener('appinstalled',()=>{$('#andMsg').textContent='Mael est installée. Tu la trouveras avec tes applis.';$('#andBtn').style.display='none';$('#done').style.display='';});
+async function install(){if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;}
+$('#andBtn').onclick=install;$('#pcBtn').onclick=install;
+setTimeout(()=>{if(!deferred&&isAnd)$('#andMsg').textContent='Ton navigateur ne propose pas l\'installation automatique ici : suis les étapes ci-dessous.';},3500);
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
