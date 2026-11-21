@@ -117,7 +117,7 @@ input,select,textarea{border-radius:12px;background:var(--card)}
 <body>
 <div id="map"></div>
 <div id="hud"><div><b id="hSpd">–</b><small>nœuds</small></div><div><b id="hCog">–</b><small>cap °</small></div><div id="hNext" style="display:none"><b id="hDtw">–</b><small id="hBrg">mille</small></div></div>
-<div class="fab" id="fabL"><button id="bFollow" class="on" title="Suivre ma position"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button><button id="bOrient" title="Orientation">N↑</button><a id="bCarnet" href="https://claude.ai/artifact/QJeKWftzcRZkBUT8FMRkCV" target="_blank" rel="noopener" title="Carnet d'entretien" aria-label="Carnet d'entretien"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-7"/><path d="M20 4v14h-7"/></svg></a><button id="bZin" style="font-size:22px">+</button><button id="bZout" style="font-size:22px">−</button></div>
+<div class="fab" id="fabL"><button id="bFollow" title="Suivre ma position"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button><button id="bOrient" title="Orientation">N↑</button><a id="bCarnet" href="https://claude.ai/artifact/QJeKWftzcRZkBUT8FMRkCV" target="_blank" rel="noopener" title="Carnet d'entretien" aria-label="Carnet d'entretien"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-7"/><path d="M20 4v14h-7"/></svg></a><button id="bZin" style="font-size:22px">+</button><button id="bZout" style="font-size:22px">−</button></div>
 <div class="fab" id="fabR"><button id="mob">MOB</button><button id="bMark" title="Marque ou photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg></button><button id="bRec" title="Enregistrer la trace">●</button></div>
 <div id="scaleTxt"></div>
 <div id="sheet"><div id="grab"><i></i></div>
@@ -243,7 +243,7 @@ $('#bZin').onclick=()=>map.zoomIn();$('#bZout').onclick=()=>map.zoomOut();
 
 /* ===== bateau / GPS ===== */
 const boatIcon=()=>L.divIcon({className:'',iconSize:[34,34],iconAnchor:[17,17],html:`<svg class="boat-ico" viewBox="0 0 34 34"><g id="bArrow" transform="rotate(${G.cog||0} 17 17)"><path d="M17 3 L26 28 L17 23 L8 28 Z" fill="#c0261a" stroke="#fff" stroke-width="2"/></g></svg>`});
-const G={pos:null,spd:0,cog:null,acc:null,t:0,last:null,watch:null,follow:true,hist:[]};
+const G={pos:null,spd:0,cog:null,acc:null,t:0,last:null,watch:null,follow:false,hist:[]};
 let boatM=null,accC=null;
 function onFix(p){const ll=[p.coords.latitude,p.coords.longitude],t=p.timestamp||Date.now();
  G.hist.push({ll,t});G.hist=G.hist.filter(h=>t-h.t<12000);
@@ -270,7 +270,7 @@ applyOrient();
 let wake=null;async function keepAwake(on){try{if(on&&'wakeLock' in navigator){wake=await navigator.wakeLock.request('screen');}else if(!on&&wake){await wake.release();wake=null;}}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&REC.on)keepAwake(true);});
 const REC={on:false,cur:null,line:null,
- start(){this.cur={id:'t'+Date.now(),nom:'Sortie du '+new Date().toLocaleDateString('fr-FR'),debut:Date.now(),pts:[],fuel:0,dist:0,vmax:0};this.on=true;this.line=L.polyline([],{color:'#c0261a',weight:4}).addTo(lyr.track);keepAwake(true);$('#bRec').classList.add('on');$('#bRec').textContent='■';LS.set('nav_rec',this.cur);toast('Enregistrement démarré. Garde l\'écran allumé.');},
+ start(){G.follow=true;$('#bFollow').classList.add('on');if(G.pos)map.panTo(G.pos);this.cur={id:'t'+Date.now(),nom:'Sortie du '+new Date().toLocaleDateString('fr-FR'),debut:Date.now(),pts:[],fuel:0,dist:0,vmax:0};this.on=true;this.line=L.polyline([],{color:'#c0261a',weight:4}).addTo(lyr.track);keepAwake(true);$('#bRec').classList.add('on');$('#bRec').textContent='■';LS.set('nav_rec',this.cur);toast('Enregistrement démarré. Garde l\'écran allumé.');},
  onFix(ll,t,spd){if(!this.on)return;const P=this.cur.pts,l=P[P.length-1];
   if(l){const d=dist([l[0],l[1]],ll),dth=(t-l[2])/3600000;if(d<0.004&&dth<15/3600)return;if(d/Math.max(dth,1e-6)>60)return;this.cur.dist+=d;this.cur.fuel+=lph((spd+l[3])/2)*dth;}
   P.push([+ll[0].toFixed(6),+ll[1].toFixed(6),t,+spd.toFixed(1)]);this.cur.vmax=Math.max(this.cur.vmax,spd);this.line.addLatLng(ll);
@@ -349,7 +349,9 @@ const MK_T={peche:'🎣 Spot de pêche',mouillage:'⚓ Mouillage',danger:'⚠️
 let MARKS=LS.get('nav_marks',[]);
 const portL=L.layerGroup().addTo(map);
 function drawPort(){portL.clearLayers();if(!ST.port||!ST.port.ll)return;const z=ST.easy?40:32;
- L.marker(ST.port.ll,{zIndexOffset:500,icon:L.divIcon({className:'',iconSize:[z,z],iconAnchor:[z/2,z/2],html:`<svg width="${z}" height="${z}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#fff" stroke="#0f2a5c" stroke-width="3"/><g stroke="#0f2a5c" stroke-width="2.4" fill="none" stroke-linecap="round"><circle cx="16" cy="9" r="2.2"/><path d="M16 11.5 V24 M11 15 H21 M9 20 Q10 25 16 25 Q22 25 23 20"/></g></svg>`})}).addTo(portL).bindTooltip(`Port d'attache : ${esc(ST.port.nom)}`,{direction:'top',offset:[0,-z/2]});}
+ L.marker(ST.port.ll,{zIndexOffset:500,icon:L.divIcon({className:'',iconSize:[z,z],iconAnchor:[z/2,z/2],html:`<svg width="${z}" height="${z}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#fff" stroke="#0f2a5c" stroke-width="3"/><g stroke="#0f2a5c" stroke-width="2.4" fill="none" stroke-linecap="round"><circle cx="16" cy="9" r="2.2"/><path d="M16 11.5 V24 M11 15 H21 M9 20 Q10 25 16 25 Q22 25 23 20"/></g></svg>`})}).addTo(portL).bindPopup(()=>{const d=document.createElement('div');d.innerHTML=`<b>⚓ ${esc(ST.port.nom)}</b><br><small>Port d'attache · ${pos2(ST.port.ll)}</small><br><button class="sm" style="margin-top:6px">Changer le port d'attache</button>`;d.querySelector('button').onclick=()=>{map.closePopup();setTab('regl');};return d;});}
+let PLACEPORT=false;
+function setPort(ll,nom){ST.port={nom:nom||(ST.port&&ST.port.nom)||'Port',ll:[+(+ll[0]).toFixed(5),+(+ll[1]).toFixed(5)]};PLACEPORT=false;saveST();drawPort();map.setView(ST.port.ll,14);toast('Port d\'attache : '+ST.port.nom);if(TAB==='regl')renderRegl();}
 function goPort(){if(!ST.port)return;FOLLOW={pts:[ST.port.ll],i:0,port:true};hud();setTab('nav');toast('Cap sur '+ST.port.nom+'.');}
 function drawMarks(){lyr.marks.clearLayers();MARKS.forEach(m=>{L.marker(m.ll,{icon:L.divIcon({className:'mk-ico',iconSize:ST.easy?[40,40]:[30,30],html:MK_T[m.type].split(' ')[0]})}).addTo(lyr.marks).on('click',()=>showMark(m.id));});}
 function renderMkList(){const el=$('#mkList');if(!el)return;el.innerHTML=MARKS.length?MARKS.slice().reverse().map(m=>`<div class="row" data-mk="${m.id}" style="cursor:pointer"><span style="font-size:20px">${MK_T[m.type].split(' ')[0]}</span><div class="t"><b>${esc(m.nom)}</b><small>${new Date(m.t).toLocaleDateString('fr-FR')} · ${pos2(m.ll)}${m.prof?' · '+m.prof+' m':''}</small></div></div>`).join(''):'<div class="muted">Aucune marque. Utilise le bouton 📍.</div>';
@@ -383,7 +385,7 @@ function drawRoute(){lyr.route.clearLayers();if(!ROUTE.pts.length)return;L.polyl
   m.on('dragend',e=>{const q=e.target.getLatLng();ROUTE.pts[i]=[q.lat,q.lng];saveRoute();SHAL=null;lyr.shallow.clearLayers();drawRoute();if(TAB==='route')renderRoute();});
   m.on('click',()=>{if(EDIT&&confirm0('Supprimer le point '+(i+1)+' ?')){ROUTE.pts.splice(i,1);saveRoute();drawRoute();renderRoute();}});});}
 function confirm0(){return true;}
-map.on('click',e=>{if(TAB==='route'&&EDIT){ROUTE.pts.push([e.latlng.lat,e.latlng.lng]);saveRoute();SHAL=null;lyr.shallow.clearLayers();drawRoute();renderRoute();}});
+map.on('click',e=>{if(PLACEPORT){setPort([e.latlng.lat,e.latlng.lng],($('#pNom')&&$('#pNom').value.trim())||'Mon port');return;}if(TAB==='route'&&EDIT){ROUTE.pts.push([e.latlng.lat,e.latlng.lng]);saveRoute();SHAL=null;lyr.shallow.clearLayers();drawRoute();renderRoute();}});
 function renderRoute(){const s=routeStats();const dep=ROUTE.depart?new Date(ROUTE.depart):new Date();const saved=LS.get('nav_routes',[]);
  const reste=ST.carbu-s.fuel;
  $('#panel').innerHTML=`<div class="bar"><button class="${EDIT?'pri':''}" id="rEdit" style="flex:1">${EDIT?'Terminer le tracé':'Tracer / modifier'}</button><button id="rClr">Effacer</button></div>
@@ -497,8 +499,13 @@ async function downloadGPX(txt,fn){const blob=new Blob([txt],{type:'application/
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);}
 
 /* ===== réglages ===== */
-function renderRegl(){$('#panel').innerHTML=`<h3>Port d'attache</h3><div class="card"><div class="two"><div><label class="f">Nom du port</label><input id="pNom" value="${esc(ST.port?ST.port.nom:'')}"></div><div><label class="f">Position</label><div style="padding:9px 0;font-size:13px;font-weight:600">${ST.port?pos2(ST.port.ll):'–'}</div></div></div>
- <div class="bar" style="margin-bottom:0"><button id="pGps" class="sm">Ma position GPS</button><button id="pCtr" class="sm">Centre de la carte</button><button id="pSee" class="sm">Voir sur la carte</button></div></div>
+function renderRegl(){$('#panel').innerHTML=`<h3>Port d'attache</h3><div class="card">
+ <div style="display:flex;align-items:center;gap:12px"><span style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--navy),var(--sea));color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none">⚓</span><div style="flex:1"><b style="font-size:17px">${esc(ST.port?ST.port.nom:'Aucun')}</b><div class="muted">${ST.port?pos2(ST.port.ll):''}</div></div><button class="sm" id="pSee">Voir</button></div>
+ <div class="muted" style="margin:10px 0 4px">La carte s'ouvre toujours sur le port d'attache.</div>
+ <label class="f">Changer de port : rechercher</label><div style="display:flex;gap:8px"><input id="pQ" placeholder="Saint-Quay-Portrieux, Le Légué, Erquy…" style="flex:1"><button class="pri" id="pGo">Chercher</button></div>
+ <div id="pRes"></div>
+ <div class="bar" style="margin-bottom:0"><button id="pTap" class="sm">${PLACEPORT?'Annuler':'Toucher la carte pour placer'}</button><button id="pGps" class="sm">Ma position GPS</button></div>
+ <label class="f">Nom affiché</label><input id="pNom" value="${esc(ST.port?ST.port.nom:'')}"></div>
  <h3>Bateau</h3><div class="card"><div class="two">
  <div><label class="f">Nom</label><input data-s="nom" value="${esc(ST.nom)}"></div><div><label class="f">Tirant d'eau moteur baissé (m)</label><input data-s="tirant" type="number" step="0.05" inputmode="decimal" value="${ST.tirant}"></div>
  <div><label class="f">Marge de sécurité sous la coque (m)</label><input data-s="marge" type="number" step="0.1" inputmode="decimal" value="${ST.marge}"></div><div><label class="f">Hauteur d'eau au-dessus du zéro des cartes (m)</label><input data-s="hauteurEau" type="number" step="0.1" inputmode="decimal" value="${ST.hauteurEau}"></div>
@@ -509,8 +516,17 @@ function renderRegl(){$('#panel').innerHTML=`<h3>Port d'attache</h3><div class="
  <div class="muted" style="margin-top:6px">Après un plein, ajuste le coefficient de correction : litres réellement remis ÷ litres estimés par l'appli.</div></div>
  <h3>Installer l'icône</h3><div class="card"><div class="muted" style="margin-bottom:8px">Ajoute l'icône Mael sur ce téléphone, une tablette ou un ordinateur.</div><a href="installer.html"><button class="pri" style="width:100%">Ouvrir l'installateur</button></a></div>
  <h3>Sauvegarde</h3><div class="card"><div class="bar"><button id="bkE">Exporter tout</button><label style="border:1px solid var(--line);border-radius:10px;padding:8px 12px">Importer<input type="file" id="bkI" accept=".json" style="display:none"></label></div><div class="muted">Les données restent sur ce téléphone (traces, marques, itinéraires). Exporte-les régulièrement.</div></div>`;
- const setPort=ll=>{ST.port={nom:$('#pNom').value.trim()||'Port',ll};saveST();drawPort();renderRegl();toast('Port d\'attache enregistré.');};
- $('#pNom').onchange=()=>{ST.port.nom=$('#pNom').value.trim()||ST.port.nom;saveST();drawPort();};$('#pGps').onclick=()=>G.pos?setPort(G.pos.slice()):toast('Pas encore de position GPS.');$('#pCtr').onclick=()=>{const c=map.getCenter();setPort([c.lat,c.lng]);};$('#pSee').onclick=()=>{map.setView(ST.port.ll,15);G.follow=false;$('#bFollow').classList.remove('on');};
+ $('#pNom').onchange=()=>{if(!ST.port)return;ST.port.nom=$('#pNom').value.trim()||ST.port.nom;saveST();drawPort();renderRegl();};
+ $('#pGps').onclick=()=>G.pos?setPort(G.pos.slice(),$('#pNom').value.trim()||'Mon port'):toast('Pas encore de position GPS.');
+ $('#pSee').onclick=()=>{if(!ST.port)return;map.setView(ST.port.ll,15);G.follow=false;$('#bFollow').classList.remove('on');};
+ $('#pTap').onclick=()=>{PLACEPORT=!PLACEPORT;renderRegl();if(PLACEPORT)toast('Touche la carte à l\'emplacement du port.');};
+ const search=async()=>{const q=$('#pQ').value.trim();if(!q)return;$('#pRes').innerHTML='<div class="muted" style="padding:8px 0">Recherche…</div>';
+  try{const r=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=fr&q=${encodeURIComponent(q+' port')}`).then(r=>r.json());
+   const r2=r.length?r:await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=fr&q=${encodeURIComponent(q)}`).then(r=>r.json());
+   $('#pRes').innerHTML=r2.length?r2.map((x,i)=>`<div class="row" data-pr="${i}" style="cursor:pointer"><div class="t"><b>${esc(x.name||x.display_name.split(',')[0])}</b><small>${esc(x.display_name.split(',').slice(1,4).join(','))}</small></div><button class="sm">Choisir</button></div>`).join(''):'<div class="muted" style="padding:8px 0">Aucun résultat. Essaie « Toucher la carte pour placer ».</div>';
+   $('#pRes').onclick=e=>{const row=e.target.closest('[data-pr]');if(!row)return;const x=r2[+row.dataset.pr];setPort([+x.lat,+x.lon],(x.name||x.display_name.split(',')[0]).replace(/^Port (de |du |d')/i,''));};}
+  catch(e){$('#pRes').innerHTML='<div class="muted" style="padding:8px 0">Recherche indisponible (réseau).</div>';}};
+ $('#pGo').onclick=search;$('#pQ').onkeydown=e=>{if(e.key==='Enter')search();};
  $('#panel').querySelectorAll('[data-s]').forEach(i=>i.onchange=()=>{const k=i.dataset.s;ST[k]=k==='nom'?i.value:Number(i.value);saveST();document.title='Navigation – '+ST.nom;});
  $('#panel').querySelectorAll('[data-cv]').forEach(i=>i.onchange=()=>{const [a,b]=i.dataset.cv.split(':').map(Number);ST.courbe[a][b]=Number(i.value);ST.courbe.sort((x,y)=>x[0]-y[0]);saveST();});
  $('#bkE').onclick=async()=>{const data={st:ST,marks:MARKS,routes:LS.get('nav_routes',[]),tracks:await IDB.all('tracks')};const blob=new Blob([JSON.stringify(data)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='navigation-sauvegarde.json';a.click();};
@@ -523,7 +539,7 @@ function renderRegl(){$('#panel').innerHTML=`<h3>Port d'attache</h3><div class="
 /* ===== démarrage ===== */
 (async()=>{try{await IDB.open();}catch(e){toast('Stockage local indisponible.');}
  const pend=LS.get('nav_rec',null);if(pend&&pend.pts&&pend.pts.length>1&&IDB.db){pend.fin=pend.pts[pend.pts.length-1][2];await IDB.put('tracks',pend);localStorage.removeItem('nav_rec');toast('Trace interrompue récupérée.');}
- document.title='Navigation – '+ST.nom;drawPort();drawMarks();drawRoute();setTab('nav');startGPS();smUpdate();
+ document.title='Navigation – '+ST.nom;if(ST.port&&ST.port.ll)map.setView(ST.port.ll,14,{animate:false});drawPort();drawMarks();drawRoute();setTab('nav');startGPS();smUpdate();
  if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
  if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});})();
 </script>
