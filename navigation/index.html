@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="apple-mobile-web-app-title" content="Navigation">
+<meta name="apple-mobile-web-app-title" content="Mael">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -78,6 +78,7 @@ html,body{font-family:Manrope,system-ui,-apple-system,"Segoe UI",Roboto,sans-ser
 #map{background:#a9d3e6}
 .fab button{width:48px;height:48px;border-radius:16px;border:0;background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--ink);font-size:15px;font-weight:800;box-shadow:0 4px 16px rgba(15,29,58,.18);display:flex;align-items:center;justify-content:center;transition:transform .1s}
 .fab button:active{transform:scale(.93)}
+#bCarnet{width:48px;height:48px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#6d28d9,#a855f7);color:#fff;box-shadow:0 4px 16px rgba(109,40,217,.35)}#bCarnet svg{width:22px;height:22px}
 .fab button svg{width:22px;height:22px}
 .fab button.on{background:linear-gradient(135deg,var(--navy),var(--sea));color:#fff}
 #mob{background:linear-gradient(135deg,#ef4444,#b91c1c)!important;font-size:12px!important;font-weight:800!important;letter-spacing:.04em}
@@ -116,7 +117,7 @@ input,select,textarea{border-radius:12px;background:var(--card)}
 <body>
 <div id="map"></div>
 <div id="hud"><div><b id="hSpd">–</b><small>nœuds</small></div><div><b id="hCog">–</b><small>cap °</small></div><div id="hNext" style="display:none"><b id="hDtw">–</b><small id="hBrg">mille</small></div></div>
-<div class="fab" id="fabL"><button id="bFollow" class="on" title="Suivre ma position"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button><button id="bOrient" title="Orientation">N↑</button><button id="bZin" style="font-size:22px">+</button><button id="bZout" style="font-size:22px">−</button></div>
+<div class="fab" id="fabL"><button id="bFollow" class="on" title="Suivre ma position"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button><button id="bOrient" title="Orientation">N↑</button><a id="bCarnet" href="https://claude.ai/artifact/QJeKWftzcRZkBUT8FMRkCV" target="_blank" rel="noopener" title="Carnet d'entretien" aria-label="Carnet d'entretien"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-7"/><path d="M20 4v14h-7"/></svg></a><button id="bZin" style="font-size:22px">+</button><button id="bZout" style="font-size:22px">−</button></div>
 <div class="fab" id="fabR"><button id="mob">MOB</button><button id="bMark" title="Marque ou photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg></button><button id="bRec" title="Enregistrer la trace">●</button></div>
 <div id="scaleTxt"></div>
 <div id="sheet"><div id="grab"><i></i></div>
@@ -252,6 +253,7 @@ function renderNav(){const r=REC.cur&&REC.on?REC.cur:null;const tg=target();cons
  </div>
  <div class="bar"><button class="${REC.on?'red':'pri'}" id="nRec" style="flex:1">${REC.on?'Terminer la trace':'Démarrer l\'enregistrement'}</button><button id="nMark">Marque / photo</button></div>
  ${FOLLOW?'<div class="bar"><button id="nStop" style="flex:1">Arrêter le suivi d\'itinéraire</button></div>':''}
+ <a class="card" href="https://claude.ai/artifact/QJeKWftzcRZkBUT8FMRkCV" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit"><span style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#6d28d9,#a855f7);color:#fff;display:flex;align-items:center;justify-content:center;flex:none"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-7"/><path d="M20 4v14h-7"/></svg></span><span style="flex:1"><b>Carnet d'entretien</b><br><span class="muted">Entretien, diagnostic, sécurité, sorties</span></span><span class="muted">↗</span></a>
  <p class="muted">Garde l'écran allumé pendant l'enregistrement : les navigateurs coupent le GPS quand l'écran est verrouillé. Outil d'appoint : la carte marine officielle reste la référence.</p>`;
  $('#nRec').onclick=()=>{REC.on?REC.stop():REC.start();renderNav();};$('#nMark').onclick=markForm;if($('#nStop'))$('#nStop').onclick=()=>{FOLLOW=null;hud();renderNav();};}
 setInterval(()=>{if(TAB==='nav'&&REC.on)renderNav();},5000);
@@ -407,7 +409,7 @@ function replay(t){lyr.replay.clearLayers();const P=t.pts;for(let i=1;i<P.length
   let d=0;for(let k=1;k<=i;k++)d+=dist([P[k-1][0],P[k-1][1]],[P[k][0],P[k][1]]);$('#rpI').textContent=`${new Date(p[2]).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})} · ${f1(p[3])} nd · ${f1(d)} milles`;$('#rpL').setAttribute('x1',X(i));$('#rpL').setAttribute('x2',X(i));};
  set(0);$('#rpS').oninput=e=>set(+e.target.value);
  $('#rpP').onclick=()=>{if(RP){clearInterval(RP);RP=null;$('#rpP').textContent='Lecture';return;}$('#rpP').textContent='Pause';const step=Math.max(1,Math.round(P.length/300));RP=setInterval(()=>{const s=$('#rpS');if(!s){clearInterval(RP);RP=null;return;}let v=+s.value+step;if(v>=P.length){v=P.length-1;clearInterval(RP);RP=null;$('#rpP').textContent='Lecture';}s.value=v;set(v);},60);};
- $('#rpG').onclick=()=>downloadGPX(trackGPX(t),t.nom.replace(/[^\w-]+/g,'_')+'.gpx');
+ $('#rpG').onclick=async()=>{await downloadGPX(trackGPX(t),t.nom.replace(/[^\w-]+/g,'_')+'.gpx');openModal(`<h3>Trace exportée</h3><p>Dans le carnet, touche « Nouvelle sortie » puis « Importer une trace GPX » et choisis ce fichier : date, durée, distance, vitesses et consommation se rempliront seules.</p><div class="bar"><span class="sp"></span><button data-close>Plus tard</button><a href="https://claude.ai/artifact/QJeKWftzcRZkBUT8FMRkCV" target="_blank" rel="noopener"><button class="pri">Ouvrir le carnet</button></a></div>`);};
  $('#rpX').onclick=async()=>{await IDB.del('tracks',t.id);lyr.replay.clearLayers();renderTraces();};
  $('#rpC').onclick=()=>{if(RP){clearInterval(RP);RP=null;}lyr.replay.clearLayers();$('#replay').innerHTML='';};}
 
