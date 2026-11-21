@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#16306b">
+<meta name="theme-color" content="#0f2a5c">
 <title>Navigation – Mael</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
@@ -13,6 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Navigation">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f4f6f9;--card:#fff;--ink:#14213d;--mut:#5b6678;--line:#dfe4ec;--acc:#1f5fbf;--accbg:#e7effb;--ok:#1e7a4c;--okbg:#e3f4ea;--warn:#a05a00;--warnbg:#fdf0dc;--bad:#c0261a;--badbg:#fde8e6;--fs:15px}
 body.night{--bg:#0b0b0b;--card:#141010;--ink:#ff8a7a;--mut:#b5574c;--line:#3a1f1c;--acc:#ff6b5b;--accbg:#2a1412;--ok:#ff8a7a;--okbg:#2a1412;--warn:#ffb08a;--warnbg:#2a1a12;--bad:#ff4d3d;--badbg:#331210}
@@ -68,16 +69,58 @@ body.easy .wp-ico{width:32px!important;height:32px!important;line-height:32px;fo
 .wind small{display:block;font-size:11px;font-weight:700;color:#16306b}
 #scaleTxt{position:absolute;z-index:500;left:10px;bottom:calc(var(--sheet,46vh) + 26px);background:rgba(255,255,255,.85);color:#14213d;font-size:11px;padding:2px 6px;border-radius:6px}
 svg.prof{width:100%;height:90px;background:var(--card);border:1px solid var(--line);border-radius:10px}
+
+/* ===== habillage ===== */
+:root{--bg:#eef2f7;--card:#fff;--ink:#0f1d3a;--mut:#5d6b82;--line:#e3e8f0;--acc:#1d5fd1;--accbg:#e8f0fd;--navy:#0f2a5c;--sea:#0e7c86;--ok:#15803d;--okbg:#e4f5ea;--warn:#b45309;--warnbg:#fdf1de;--bad:#c2261b;--badbg:#fde9e7;--sh:0 1px 2px rgba(15,29,58,.05),0 4px 14px rgba(15,29,58,.07);--glass:rgba(255,255,255,.82)}
+@media (prefers-color-scheme:dark){:root{--bg:#0b111c;--card:#141c2b;--ink:#e9eef7;--mut:#97a3b8;--line:#243047;--acc:#7aa7ff;--accbg:#1a2a48;--ok:#5fd18e;--okbg:#122c1d;--warn:#f3b45c;--warnbg:#33240c;--bad:#ff8a7f;--badbg:#3a1714;--sh:none;--glass:rgba(20,28,43,.82)}}
+body.night{--bg:#0b0606;--card:#160c0b;--ink:#ff8a7a;--mut:#c0665a;--line:#3a1f1c;--acc:#ff6b5b;--accbg:#2a1412;--navy:#3a0f0c;--sea:#5a1a14;--glass:rgba(22,12,11,.85)}
+html,body{font-family:Manrope,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+#map{background:#a9d3e6}
+.fab button{width:48px;height:48px;border-radius:16px;border:0;background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--ink);font-size:15px;font-weight:800;box-shadow:0 4px 16px rgba(15,29,58,.18);display:flex;align-items:center;justify-content:center;transition:transform .1s}
+.fab button:active{transform:scale(.93)}
+.fab button svg{width:22px;height:22px}
+.fab button.on{background:linear-gradient(135deg,var(--navy),var(--sea));color:#fff}
+#mob{background:linear-gradient(135deg,#ef4444,#b91c1c)!important;font-size:12px!important;font-weight:800!important;letter-spacing:.04em}
+#bRec.on{background:linear-gradient(135deg,#ef4444,#b91c1c)!important;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}50%{box-shadow:0 0 0 10px rgba(239,68,68,0)}}
+#hud{gap:8px}
+#hud div{background:linear-gradient(135deg,rgba(15,42,92,.92),rgba(14,124,134,.9));color:#fff;border-radius:16px;padding:6px 12px 5px;min-width:76px;box-shadow:0 6px 20px rgba(15,42,92,.3);backdrop-filter:blur(8px)}
+body.night #hud div{background:rgba(40,10,8,.9);color:#ff8a7a}
+#hud b{font-weight:800;letter-spacing:-.02em}#hud small{font-weight:600;opacity:.8;letter-spacing:.02em}
+#scaleTxt{background:var(--glass);color:var(--ink);backdrop-filter:blur(8px);border-radius:8px;font-weight:600}
+#sheet{border-top:0;border-radius:24px 24px 0 0;box-shadow:0 -8px 30px rgba(15,29,58,.16);background:var(--bg)}
+#grab{height:22px}#grab i{width:44px;height:5px;background:var(--mut);opacity:.35}
+#tabs{gap:4px;padding:0 10px 8px}
+#tabs button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:700;padding:7px 2px 6px;border-radius:14px;color:var(--mut)}
+#tabs button svg{width:20px;height:20px}
+#tabs button.on{background:linear-gradient(135deg,var(--navy),var(--sea));color:#fff;font-weight:800}
+#panel{padding:4px 14px calc(16px + env(safe-area-inset-bottom))}
+.ins{border:0;border-radius:18px;padding:10px 12px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.ins small{font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em}
+.ins b{font-weight:800;letter-spacing:-.02em}
+.ins.hl{background:linear-gradient(135deg,var(--navy),var(--sea));color:#fff}.ins.hl small,.ins.hl span{color:rgba(255,255,255,.8)}
+.card{border:0;border-radius:18px;box-shadow:var(--sh)}
+h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:800}
+button{font-weight:700;border-radius:14px;transition:transform .1s}button:active{transform:scale(.97)}
+button.pri{background:linear-gradient(135deg,var(--acc),#3b82f6);border-color:transparent;box-shadow:0 4px 12px rgba(29,95,209,.25)}
+button.red{background:linear-gradient(135deg,#ef4444,#b91c1c);border-color:transparent;box-shadow:0 4px 12px rgba(194,38,27,.25)}
+input,select,textarea{border-radius:12px;background:var(--card)}
+.warnb,.badb{border-radius:14px;font-weight:600}
+.seg{border-radius:12px;background:var(--line)}.seg button{border-radius:10px;font-weight:700}
+.msheet{border-radius:24px 24px 0 0;background:var(--bg)}
+.leaflet-control-attribution{font-size:9px!important;background:var(--glass)!important;border-radius:8px 0 0 0}
+.leaflet-popup-content-wrapper{border-radius:14px;font-family:Manrope,system-ui,sans-serif}
+.wp-ico{background:linear-gradient(135deg,var(--acc),#3b82f6)}
 </style>
 </head>
 <body>
 <div id="map"></div>
 <div id="hud"><div><b id="hSpd">–</b><small>nœuds</small></div><div><b id="hCog">–</b><small>cap °</small></div><div id="hNext" style="display:none"><b id="hDtw">–</b><small id="hBrg">mille</small></div></div>
-<div class="fab" id="fabL"><button id="bFollow" class="on" title="Suivre ma position">◎</button><button id="bOrient" title="Orientation">N↑</button><button id="bZin">+</button><button id="bZout">−</button></div>
-<div class="fab" id="fabR"><button id="mob">MOB</button><button id="bMark" title="Marque ou photo">📍</button><button id="bRec" title="Enregistrer la trace">●</button></div>
+<div class="fab" id="fabL"><button id="bFollow" class="on" title="Suivre ma position"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button><button id="bOrient" title="Orientation">N↑</button><button id="bZin" style="font-size:22px">+</button><button id="bZout" style="font-size:22px">−</button></div>
+<div class="fab" id="fabR"><button id="mob">MOB</button><button id="bMark" title="Marque ou photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg></button><button id="bRec" title="Enregistrer la trace">●</button></div>
 <div id="scaleTxt"></div>
 <div id="sheet"><div id="grab"><i></i></div>
-<div id="tabs"><button data-t="nav" class="on">Navigation</button><button data-t="carte">Carte</button><button data-t="route">Itinéraire</button><button data-t="meteo">Météo</button><button data-t="traces">Traces</button><button data-t="regl">Réglages</button></div>
+<div id="tabs"><button data-t="nav" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 19-7-4-7 4z"/></svg><span>Navigation</span></button><button data-t="carte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>Carte</span></button><button data-t="route"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h7a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h7"/></svg><span>Itinéraire</span></button><button data-t="meteo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h11a3 3 0 1 0-3-3"/><path d="M3 12h15a3 3 0 1 1-3 3"/><path d="M3 16h7"/></svg><span>Météo</span></button><button data-t="traces"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19c3-6 5 2 8-4s5-2 8-8"/><circle cx="4" cy="19" r="1.5"/><circle cx="20" cy="7" r="1.5"/></svg><span>Traces</span></button><button data-t="regl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Réglages</span></button></div>
 <div id="panel"></div></div>
 <div class="modal" id="modal"><div class="msheet" id="msheet"></div></div>
 
@@ -193,13 +236,13 @@ function hud(){$('#hSpd').textContent=G.pos?f1(G.spd):'–';$('#hCog').textConte
 
 let TAB='nav';
 function setTab(t){TAB=t;document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));({nav:renderNav,carte:renderCarte,route:renderRoute,meteo:renderMeteo,traces:renderTraces,regl:renderRegl})[t]();}
-$('#tabs').onclick=e=>{if(e.target.dataset.t)setTab(e.target.dataset.t);};
+$('#tabs').onclick=e=>{const b=e.target.closest('[data-t]');if(b)setTab(b.dataset.t);};
 function renderNav(){const r=REC.cur&&REC.on?REC.cur:null;const tg=target();const flow=lph(G.spd);const auto=flow>0?ST.carbu/flow:Infinity;
  $('#panel').innerHTML=`${MOB?`<div class="badb"><b>Homme à la mer</b> – retour au point : ${G.pos?f1(dist(G.pos,MOB.ll))+' mille, cap '+Math.round(brg(G.pos,MOB.ll))+'°':'en attente du GPS'}</div>`:''}
  ${!G.pos?'<div class="warnb">En attente du signal GPS… Autorise la localisation si le navigateur le demande.</div>':''}
  <div class="grid">
- <div class="ins"><small>Vitesse</small><b>${G.pos?f1(G.spd):'–'}</b> <span>nd</span></div>
- <div class="ins"><small>Cap fond</small><b>${G.cog!=null&&G.spd>0.8?Math.round(G.cog)+'°':'–'}</b></div>
+ <div class="ins hl"><small>Vitesse</small><b>${G.pos?f1(G.spd):'–'}</b> <span>nd</span></div>
+ <div class="ins hl"><small>Cap fond</small><b>${G.cog!=null&&G.spd>0.8?Math.round(G.cog)+'°':'–'}</b></div>
  <div class="ins" style="grid-column:span 2"><small>Position${G.acc?` (± ${Math.round(G.acc)} m)`:''}</small><b style="font-size:calc(var(--fs) + 3px)">${G.pos?pos2(G.pos):'–'}</b></div>
  <div class="ins"><small>Distance parcourue</small><b>${r?f1(r.dist):'–'}</b> <span>milles</span></div>
  <div class="ins"><small>Durée</small><b style="font-size:calc(var(--fs) + 5px)">${r?hm((Date.now()-r.debut)/3600000):'–'}</b></div>
