@@ -158,7 +158,7 @@ const IDB={db:null,open(){return new Promise((ok,ko)=>{const r=indexedDB.open('n
 const DEF={nom:'Mael',tirant:0.6,marge:0.5,hauteurEau:0,reservoir:60,carbu:60,facteur:1,vitesse:18,
  courbe:[[0,0.8],[3,1.5],[5,2.5],[7,5],[10,9],[14,10],[18,11.5],[22,14],[25,17],[28,19]],
  couches:{delmar:true,balisageDet:true,balisage:false,profondeurs:false,relief:false,isobathes:true,satellite:false},night:false,easy:false,orient:'north',center:[48.56,-2.74],zoom:11};
-const ST=Object.assign({},DEF,LS.get('nav_st',{}));ST.couches=Object.assign({},DEF.couches,ST.couches||{});if(ST.couches.balisageDet===undefined)ST.couches.balisageDet=true;if(ST.couches.delmar===undefined)ST.couches.delmar=true;if(!LS.get('nav_v2',false)){ST.couches.balisageDet=true;ST.couches.balisage=false;LS.set('nav_v2',true);}
+const ST=Object.assign({},DEF,LS.get('nav_st',{}));ST.couches=Object.assign({},DEF.couches,ST.couches||{});if(ST.couches.balisageDet===undefined)ST.couches.balisageDet=true;if(ST.couches.delmar===undefined)ST.couches.delmar=true;if(!ST.couches.fond)ST.couches.fond=ST.couches.satellite?'sat':'osm';if(!LS.get('nav_v2',false)){ST.couches.balisageDet=true;ST.couches.balisage=false;LS.set('nav_v2',true);}
 const saveST=()=>LS.set('nav_st',ST);
 function lph(kn){const c=ST.courbe;if(!(kn>0.3))return 0;if(kn>=c[c.length-1][0])return c[c.length-1][1]*ST.facteur;for(let i=1;i<c.length;i++)if(kn<=c[i][0]){const a=c[i-1],b=c[i],f=(kn-a[0])/(b[0]-a[0]);return (a[1]+(b[1]-a[1])*f)*ST.facteur;}return 0;}
 document.body.classList.toggle('night',ST.night);document.body.classList.toggle('easy',ST.easy);
@@ -167,15 +167,18 @@ document.body.classList.toggle('night',ST.night);document.body.classList.toggle(
 const map=L.map('map',{zoomControl:false,attributionControl:true,rotate:!!L.Map.prototype.setBearing,touchRotate:false,rotateControl:false,bearing:0}).setView(ST.center,ST.zoom);
 map.attributionControl.setPrefix(false);
 const tsz=()=>ST.easy?{tileSize:512,zoomOffset:-1}:{};
-let base,sat,seamark,depthL,reliefL,isoL,delmarL;
-function buildLayers(){[base,sat,seamark,depthL,reliefL,isoL,delmarL].forEach(l=>l&&map.removeLayer(l));
+let base,sat,oceanL,ignL,orthoL,seamark,depthL,reliefL,isoL,delmarL;
+function buildLayers(){[base,sat,oceanL,ignL,orthoL,seamark,depthL,reliefL,isoL,delmarL].forEach(l=>l&&map.removeLayer(l));
  base=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap',...tsz()});
  sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagerie © Esri',...tsz()});
+ oceanL=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,maxNativeZoom:13,attribution:'Fond océan © Esri, GEBCO, NOAA',...tsz()});
+ const geopf=(layer,fmt)=>L.tileLayer(`https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=${layer}&STYLE=normal&TILEMATRIXSET=PM&FORMAT=${fmt}&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}`,{maxZoom:19,attribution:'© IGN (Licence Ouverte)',...tsz()});
+ ignL=geopf('GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2','image/png');orthoL=geopf('ORTHOIMAGERY.ORTHOPHOTOS','image/jpeg');
  seamark=L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png',{maxZoom:18,attribution:'Balisage © OpenSeaMap',...tsz()});
  const wms=(layers,op)=>L.tileLayer.wms('https://ows.emodnet-bathymetry.eu/wms',{layers,format:'image/png',transparent:true,opacity:op,attribution:'Bathymétrie © EMODnet'});
  delmarL=L.tileLayer('https://services.data.shom.fr/INSPIRE/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=DELMAR_PYR_PNG_WLD_3857_WMTS&style=normal&tilematrixset=3857&format=image/png&tilematrix={z}&tilecol={x}&tilerow={y}',{maxZoom:18,maxNativeZoom:16,opacity:.85,attribution:'Délimitations maritimes © Shom (Licence Ouverte)'});
  depthL=wms('emodnet:mean_multicolour',0.55);reliefL=wms('emodnet:mean_atlas_land',0.6);isoL=wms('emodnet:contours',0.9);
- (ST.couches.satellite?sat:base).addTo(map);if(ST.couches.relief)reliefL.addTo(map);if(ST.couches.profondeurs)depthL.addTo(map);if(ST.couches.isobathes)isoL.addTo(map);if(ST.couches.delmar)delmarL.addTo(map);if(ST.couches.balisage)seamark.addTo(map);}
+ ({osm:base,sat,ocean:oceanL,ign:ignL,ortho:orthoL}[ST.couches.fond]||base).addTo(map);if(ST.couches.relief)reliefL.addTo(map);if(ST.couches.profondeurs)depthL.addTo(map);if(ST.couches.isobathes)isoL.addTo(map);if(ST.couches.delmar)delmarL.addTo(map);if(ST.couches.balisage)seamark.addTo(map);}
 buildLayers();
 const lyr={route:L.layerGroup().addTo(map),track:L.layerGroup().addTo(map),marks:L.layerGroup().addTo(map),replay:L.layerGroup().addTo(map),wind:L.layerGroup().addTo(map),shallow:L.layerGroup().addTo(map),mob:L.layerGroup().addTo(map)};
 /* ===== balisage détaillé (OpenStreetMap / OpenSeaMap, via Overpass) ===== */
@@ -316,7 +319,8 @@ setInterval(()=>{if(TAB==='nav'&&REC.on)renderNav();},5000);
 
 /* ===== couches et affichage ===== */
 function renderCarte(){const C=ST.couches;const ck=(k,t,d)=>`<label class="c"><input type="checkbox" data-c="${k}" ${C[k]?'checked':''}><span class="t">${t}<small>${d}</small></span></label>`;
- $('#panel').innerHTML=`<h3>Fond de carte</h3><div class="card">${ck('satellite','Imagerie satellite','À la place de la carte terrestre')}</div>
+ const FD=[['osm','Carte standard','OpenStreetMap : côtes, ports, routes'],['ocean','Carte océan','Relief des fonds ombré et toponymie marine (Esri)'],['ign','Plan IGN','Carte officielle française, très détaillée sur le littoral'],['ortho','Photo aérienne IGN','Photos aériennes haute résolution : estran, roches, chenaux'],['sat','Satellite mondial','Imagerie Esri, pour naviguer hors de France']];
+ $('#panel').innerHTML=`<h3>Fond de carte</h3><div class="card">${FD.map(f=>`<label class="c"><input type="radio" name="fond" value="${f[0]}" ${C.fond===f[0]?'checked':''}><span class="t">${f[1]}<small>${f[2]}</small></span></label>`).join('')}</div>
  <h3>Superpositions</h3><div class="card">${ck('balisageDet','Balisage détaillé','Toutes les bouées, balises, feux, ports et dangers, avec leur description au toucher (à partir du zoom 11)')}${ck('balisage','Balisage OpenSeaMap (image)','Couche image complémentaire')}${ck('profondeurs','Profondeurs en couleur','Bathymétrie EMODnet')}${ck('relief','Relief des fonds','Ombrage du relief sous-marin')}${ck('isobathes','Isobathes','Lignes de même profondeur')}${ck('delmar','Délimitations maritimes (Shom)','Eaux territoriales (12 milles), zone contiguë, limites de souveraineté')}</div>
  <h3>Affichage</h3><div class="card"><label class="c"><input type="checkbox" id="cNight" ${ST.night?'checked':''}><span class="t">Mode nuit<small>Teintes rouges qui préservent la vision nocturne</small></span></label>
  <label class="c"><input type="checkbox" id="cEasy" ${ST.easy?'checked':''}><span class="t">Grand affichage<small>Textes, symboles et balisage agrandis</small></span></label>
@@ -326,6 +330,7 @@ function renderCarte(){const C=ST.couches;const ck=(k,t,d)=>`<label class="c"><i
  <h3>Profondeur en un point</h3><div class="card"><div class="muted">Appui long sur la carte pour connaître la profondeur estimée (EMODnet + hauteur d'eau réglée), comparée à ton tirant d'eau.</div></div>
  <h3>Marques et photos</h3><div class="card" id="mkList"></div>
  <p class="muted">Données ouvertes : OpenStreetMap, OpenSeaMap, EMODnet. Moins précises que les cartes officielles du SHOM, elles ne doivent pas servir seules à la navigation.</p>`;
+ $('#panel').querySelectorAll('[name=fond]').forEach(i=>i.onchange=()=>{ST.couches.fond=i.value;saveST();buildLayers();});
  $('#panel').querySelectorAll('[data-c]').forEach(i=>i.onchange=()=>{ST.couches[i.dataset.c]=i.checked;saveST();if(i.dataset.c==='balisageDet')smUpdate();else buildLayers();});
  $('#cNight').onchange=e=>{ST.night=e.target.checked;saveST();document.body.classList.toggle('night',ST.night);};
  $('#cEasy').onchange=e=>{ST.easy=e.target.checked;saveST();document.body.classList.toggle('easy',ST.easy);buildLayers();drawMarks();smDraw();};
