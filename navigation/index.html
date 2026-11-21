@@ -113,12 +113,25 @@ input,select,textarea{border-radius:12px;background:var(--card)}
 .leaflet-control-attribution{font-size:9px!important;background:var(--glass)!important;border-radius:8px 0 0 0}
 .leaflet-popup-content-wrapper{border-radius:14px;font-family:Manrope,system-ui,sans-serif}
 .wp-ico{background:linear-gradient(135deg,var(--acc),#3b82f6)}
+
+body.full #sheet{transform:translateY(110%);pointer-events:none}body.full #map{bottom:0!important}body.full #scaleTxt{bottom:34px}
+#sheet{transition:transform .25s}
+#bOrient span{display:inline-block;transition:transform .15s}
+@media (orientation:landscape) and (max-height:620px){
+ #map{bottom:0!important;right:min(380px,44vw)}
+ #sheet{left:auto;top:0;height:auto!important;width:min(380px,44vw);border-radius:24px 0 0 24px!important;padding-top:env(safe-area-inset-top)}
+ #grab{display:none}
+ #scaleTxt{bottom:34px!important}
+ #fabR{right:calc(min(380px,44vw) + 10px)}
+ #hud{right:calc(min(380px,44vw) + 66px)}
+ body.full #sheet{transform:translateX(110%)}body.full #map{right:0}body.full #fabR{right:10px}body.full #hud{right:66px}
+}
 </style>
 </head>
 <body>
 <div id="map"></div>
 <div id="hud"><div><b id="hSpd">–</b><small>nœuds</small></div><div><b id="hCog">–</b><small>cap °</small></div><div id="hNext" style="display:none"><b id="hDtw">–</b><small id="hBrg">mille</small></div></div>
-<div class="fab" id="fabL"><button id="bFollow" title="Suivre ma position"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button><button id="bOrient" title="Orientation">N↑</button><a id="bCarnet" href="https://claude.ai/artifact/QJeKWftzcRZkBUT8FMRkCV" target="_blank" rel="noopener" title="Carnet d'entretien" aria-label="Carnet d'entretien"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-7"/><path d="M20 4v14h-7"/></svg></a><button id="bZin" style="font-size:22px">+</button><button id="bZout" style="font-size:22px">−</button></div>
+<div class="fab" id="fabL"><button id="bFollow" title="Suivre ma position"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button><button id="bOrient" title="Orientation (touche pour remettre le nord)">N↑</button><button id="bFull" title="Carte plein écran" aria-label="Carte plein écran"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><a id="bCarnet" href="https://claude.ai/artifact/QJeKWftzcRZkBUT8FMRkCV" target="_blank" rel="noopener" title="Carnet d'entretien" aria-label="Carnet d'entretien"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-7"/><path d="M20 4v14h-7"/></svg></a><button id="bZin" style="font-size:22px">+</button><button id="bZout" style="font-size:22px">−</button></div>
 <div class="fab" id="fabR"><button id="mob">MOB</button><button id="bMark" title="Marque ou photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg></button><button id="bPeche" title="Noter ma pêche" aria-label="Noter ma pêche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c3-4.5 9-6 14-2l5-3-1.5 5 1.5 5-5-3c-5 4-11 2.5-14-2z"/><circle cx="6.5" cy="11.3" r=".9" fill="currentColor"/></svg></button><button id="bRec" title="Enregistrer la trace">●</button></div>
 <div id="scaleTxt"></div>
 <div id="sheet"><div id="grab"><i></i></div>
@@ -165,7 +178,7 @@ function lph(kn){const c=ST.courbe;if(!(kn>0.3))return 0;if(kn>=c[c.length-1][0]
 document.body.classList.toggle('night',ST.night);document.body.classList.toggle('easy',ST.easy);
 
 /* ===== carte ===== */
-const map=L.map('map',{zoomControl:false,attributionControl:true,rotate:!!L.Map.prototype.setBearing,touchRotate:false,rotateControl:false,bearing:0}).setView(ST.center,ST.zoom);
+const map=L.map('map',{zoomControl:false,attributionControl:true,rotate:!!L.Map.prototype.setBearing,touchRotate:!!L.Map.prototype.setBearing,rotateControl:false,bearing:0}).setView(ST.center,ST.zoom);
 map.attributionControl.setPrefix(false);
 const tsz=()=>ST.easy?{tileSize:512,zoomOffset:-1}:{};
 let base,sat,oceanL,ignL,orthoL,littoL,ndfL,seamark,depthL,reliefL,isoL,delmarL;
@@ -266,7 +279,7 @@ function startGPS(){if(!navigator.geolocation){toast('GPS indisponible sur cet a
  G.watch=navigator.geolocation.watchPosition(onFix,e=>{toast(e.code===1?'Autorise la localisation pour cette page dans les réglages du navigateur.':'Signal GPS indisponible.');},{enableHighAccuracy:true,maximumAge:1000,timeout:20000});}
 $('#bFollow').onclick=()=>{G.follow=!G.follow;$('#bFollow').classList.toggle('on',G.follow);if(G.follow&&G.pos)map.panTo(G.pos);};
 map.on('dragstart',()=>{G.follow=false;$('#bFollow').classList.remove('on');});
-$('#bOrient').onclick=()=>{ST.orient=ST.orient==='north'?'course':'north';saveST();applyOrient();};
+$('#bOrient').onclick=()=>{if(ST.orient==='north'&&map.getBearing&&Math.abs(map.getBearing())>1){map.setBearing(0);orientLabel();return;}ST.orient=ST.orient==='north'?'course':'north';saveST();applyOrient();};
 function applyOrient(){$('#bOrient').textContent=ST.orient==='north'?'N↑':'Cap↑';$('#bOrient').classList.toggle('on',ST.orient==='course');if(!map.setBearing){if(ST.orient==='course')toast('Rotation de carte indisponible.');return;}map.setBearing(ST.orient==='course'&&G.cog!=null?-G.cog:0);}
 applyOrient();
 
@@ -610,11 +623,22 @@ function renderRegl(){$('#panel').innerHTML=`<h3>Port d'attache</h3><div class="
 (function(){const g=$('#grab');let y0=null,h0=0;const set=h=>{h=Math.max(120,Math.min(window.innerHeight*0.85,h));document.documentElement.style.setProperty('--sheet',h+'px');map.invalidateSize();};
  g.addEventListener('pointerdown',e=>{y0=e.clientY;h0=$('#sheet').offsetHeight;g.setPointerCapture(e.pointerId);});g.addEventListener('pointermove',e=>{if(y0!=null)set(h0+(y0-e.clientY));});g.addEventListener('pointerup',()=>{y0=null;});})();
 
+
+/* ---- plein écran et rotation ---- */
+function setFull(on){document.body.classList.toggle('full',on);$('#bFull').classList.toggle('on',on);
+ $('#bFull').innerHTML=on?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+ const d=document,el=d.documentElement;try{if(on&&el.requestFullscreen&&!d.fullscreenElement&&!matchMedia('(display-mode: standalone)').matches)el.requestFullscreen().catch(()=>{});if(!on&&d.fullscreenElement)d.exitFullscreen().catch(()=>{});}catch(e){}
+ setTimeout(()=>map.invalidateSize(),300);}
+$('#bFull').onclick=()=>setFull(!document.body.classList.contains('full'));
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.body.classList.contains('full'))setFull(false);});
+function orientLabel(){const b=map.getBearing?map.getBearing():0;if(ST.orient==='north'){$('#bOrient').innerHTML=Math.abs(b)>1?`<span style="transform:rotate(${b}deg)">⬆</span>`:'N↑';$('#bOrient').classList.toggle('on',Math.abs(b)>1);}}
+map.on('rotate',orientLabel);
+window.addEventListener('resize',()=>setTimeout(()=>map.invalidateSize(),200));
 /* ===== démarrage ===== */
 (async()=>{try{await IDB.open();}catch(e){toast('Stockage local indisponible.');}
  const pend=LS.get('nav_rec',null);if(pend&&pend.pts&&pend.pts.length>1&&IDB.db){pend.fin=pend.pts[pend.pts.length-1][2];await IDB.put('tracks',pend);localStorage.removeItem('nav_rec');toast('Trace interrompue récupérée.');}
  document.title='Navigation – '+ST.nom;if(ST.port&&ST.port.ll)map.setView(ST.port.ll,14,{animate:false});drawPort();drawPeche();drawCatch();drawMarks();drawRoute();setTab('nav');startGPS();smUpdate();
- if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+ if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update().catch(()=>{});setInterval(()=>r.update().catch(()=>{}),3600000);}).catch(()=>{});let rl=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(rl||!had)return;rl=true;if(REC.on){toast('Nouvelle version prête : elle s\'appliquera au prochain lancement.');return;}location.reload();});}
  if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});})();
 </script>
 </body>

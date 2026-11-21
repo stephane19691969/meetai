@@ -1,4 +1,4 @@
-const V='nav-v12';const SHELL=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png','https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap',
+const V='nav-v13';const SHELL=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png','https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap',
  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css','https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js','https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js'];
 const TILES=/data\.geopf\.fr|services\.data\.shom\.fr|tile\.openstreetmap\.org|tiles\.openseamap\.org|server\.arcgisonline\.com|ows\.emodnet-bathymetry\.eu/;
 const DATA=/open-meteo\.com|rest\.emodnet-bathymetry\.eu/;
@@ -9,4 +9,5 @@ async function trim(){const c=await caches.open('nav-tiles');const k=await c.key
 self.addEventListener('fetch',e=>{const u=e.request.url;if(e.request.method!=='GET')return;
  if(TILES.test(u)){e.respondWith(caches.open('nav-tiles').then(async c=>{const hit=await c.match(e.request);if(hit)return hit;try{const r=await fetch(e.request);if(r.ok||r.type==='opaque'){c.put(e.request,r.clone());if(Math.random()<0.02)trim();}return r;}catch(x){return hit||Response.error();}}));return;}
  if(DATA.test(u)){e.respondWith(fetch(e.request).then(r=>{if(r.ok){const cl=r.clone();caches.open('nav-data').then(c=>c.put(e.request,cl));}return r;}).catch(()=>caches.open('nav-data').then(c=>c.match(e.request)).then(r=>r||Response.error())));return;}
+ if(e.request.mode==='navigate'||/\/(index\.html)?(\?.*)?$/.test(new URL(u).pathname+new URL(u).search)&&new URL(u).origin===location.origin){e.respondWith(Promise.race([fetch(e.request,{cache:'no-store'}).then(r=>{if(r.ok){const cl=r.clone();caches.open(V).then(c=>c.put('index.html',cl));}return r;}),new Promise((_,rj)=>setTimeout(rj,4000))]).catch(()=>caches.match('index.html').then(h=>h||caches.match('./'))));return;}
  e.respondWith(caches.match(e.request,{ignoreSearch:true}).then(hit=>{const net=fetch(e.request).then(r=>{if(r.ok&&new URL(u).origin===location.origin){const cl=r.clone();caches.open(V).then(c=>c.put(e.request,cl));}return r;}).catch(()=>hit);return hit||net;}));});
