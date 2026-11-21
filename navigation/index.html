@@ -155,10 +155,10 @@ const IDB={db:null,open(){return new Promise((ok,ko)=>{const r=indexedDB.open('n
  del(s,k){return new Promise(ok=>{const q=IDB.tx(s,'readwrite').delete(k);q.onsuccess=()=>ok();q.onerror=()=>ok();});}};
 
 /* ===== réglages ===== */
-const DEF={nom:'Mael',tirant:0.6,marge:0.5,hauteurEau:0,reservoir:60,carbu:60,facteur:1,vitesse:18,
+const DEF={port:{nom:'Binic',ll:[48.6012,-2.8247]},nom:'Mael',tirant:0.6,marge:0.5,hauteurEau:0,reservoir:60,carbu:60,facteur:1,vitesse:18,
  courbe:[[0,0.8],[3,1.5],[5,2.5],[7,5],[10,9],[14,10],[18,11.5],[22,14],[25,17],[28,19]],
  couches:{delmar:true,balisageDet:true,balisage:false,profondeurs:false,relief:false,isobathes:true,satellite:false},night:false,easy:false,orient:'north',center:[48.56,-2.74],zoom:11};
-const ST=Object.assign({},DEF,LS.get('nav_st',{}));ST.couches=Object.assign({},DEF.couches,ST.couches||{});if(ST.couches.balisageDet===undefined)ST.couches.balisageDet=true;if(ST.couches.delmar===undefined)ST.couches.delmar=true;if(!ST.couches.fond)ST.couches.fond=ST.couches.satellite?'sat':'osm';if(!LS.get('nav_v2',false)){ST.couches.balisageDet=true;ST.couches.balisage=false;LS.set('nav_v2',true);}
+const ST=Object.assign({},DEF,LS.get('nav_st',{}));ST.couches=Object.assign({},DEF.couches,ST.couches||{});if(ST.couches.balisageDet===undefined)ST.couches.balisageDet=true;if(ST.couches.delmar===undefined)ST.couches.delmar=true;if(!ST.couches.fond)ST.couches.fond=ST.couches.satellite?'sat':'osm';if(!ST.port)ST.port=DEF.port;if(!LS.get('nav_v3',false)){ST.center=ST.port.ll.slice();ST.zoom=13;LS.set('nav_v3',true);}if(!LS.get('nav_v2',false)){ST.couches.balisageDet=true;ST.couches.balisage=false;LS.set('nav_v2',true);}
 const saveST=()=>LS.set('nav_st',ST);
 function lph(kn){const c=ST.courbe;if(!(kn>0.3))return 0;if(kn>=c[c.length-1][0])return c[c.length-1][1]*ST.facteur;for(let i=1;i<c.length;i++)if(kn<=c[i][0]){const a=c[i-1],b=c[i],f=(kn-a[0])/(b[0]-a[0]);return (a[1]+(b[1]-a[1])*f)*ST.facteur;}return 0;}
 document.body.classList.toggle('night',ST.night);document.body.classList.toggle('easy',ST.easy);
@@ -288,7 +288,7 @@ $('#mob').onclick=()=>{if(MOB){openModal(`<h3>Homme à la mer</h3><p>Position : 
 
 /* ===== HUD et navigation ===== */
 let FOLLOW=null;
-function target(){if(MOB)return{ll:MOB.ll,nom:'MOB'};if(FOLLOW&&FOLLOW.i<FOLLOW.pts.length)return{ll:FOLLOW.pts[FOLLOW.i],nom:'Point '+(FOLLOW.i+1)};return null;}
+function target(){if(MOB)return{ll:MOB.ll,nom:'MOB'};if(FOLLOW&&FOLLOW.i<FOLLOW.pts.length)return{ll:FOLLOW.pts[FOLLOW.i],nom:FOLLOW.port?ST.port.nom:'Point '+(FOLLOW.i+1)};return null;}
 function hud(){$('#hSpd').textContent=G.pos?f1(G.spd):'–';$('#hCog').textContent=G.cog!=null&&G.spd>0.8?String(Math.round(G.cog)).padStart(3,'0'):'–';
  const tg=target();$('#hNext').style.display=tg&&G.pos?'':'none';
  if(tg&&G.pos){const d=dist(G.pos,tg.ll);$('#hDtw').textContent=d<10?f1(d):f0(d);$('#hBrg').textContent=`${tg.nom} · ${String(Math.round(brg(G.pos,tg.ll))).padStart(3,'0')}°`;
@@ -310,11 +310,12 @@ function renderNav(){const r=REC.cur&&REC.on?REC.cur:null;const tg=target();cons
  <div class="ins"><small>Autonomie (${f0(ST.carbu - (r?r.fuel:0))} L à bord)</small><b style="font-size:calc(var(--fs) + 5px)">${isFinite(auto)?hm((ST.carbu-(r?r.fuel:0))/flow):'–'}</b> <span>${isFinite(auto)&&G.spd>1?f0((ST.carbu-(r?r.fuel:0))/flow*G.spd)+' milles':''}</span></div>
  ${tg&&G.pos?`<div class="ins" style="grid-column:span 2"><small>Vers ${esc(tg.nom)}</small><b>${f1(dist(G.pos,tg.ll))}</b> <span>milles · cap ${Math.round(brg(G.pos,tg.ll))}° · ${G.spd>1?'arrivée dans '+hm(dist(G.pos,tg.ll)/G.spd):''}</span></div>`:''}
  </div>
+ ${ST.port&&!(FOLLOW&&FOLLOW.port)?`<div class="card" style="display:flex;align-items:center;gap:12px"><span style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--navy),var(--sea));color:#fff;display:flex;align-items:center;justify-content:center;flex:none;font-size:20px">⚓</span><span style="flex:1"><b>Port d'attache : ${esc(ST.port.nom)}</b><br><span class="muted">${G.pos?`${f1(dist(G.pos,ST.port.ll))} milles · cap ${String(Math.round(brg(G.pos,ST.port.ll))).padStart(3,'0')}°${G.spd>1?' · '+hm(dist(G.pos,ST.port.ll)/G.spd):''}${flow>0&&G.spd>1?' · '+f1(flow*dist(G.pos,ST.port.ll)/G.spd)+' L':''}`:'En attente du GPS'}</span></span><button class="sm" id="nPort">Rentrer</button></div>`:''}
  <div class="bar"><button class="${REC.on?'red':'pri'}" id="nRec" style="flex:1">${REC.on?'Terminer la trace':'Démarrer l\'enregistrement'}</button><button id="nMark">Marque / photo</button></div>
  ${FOLLOW?'<div class="bar"><button id="nStop" style="flex:1">Arrêter le suivi d\'itinéraire</button></div>':''}
  <a class="card" href="https://claude.ai/artifact/QJeKWftzcRZkBUT8FMRkCV" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit"><span style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#6d28d9,#a855f7);color:#fff;display:flex;align-items:center;justify-content:center;flex:none"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-7"/><path d="M20 4v14h-7"/></svg></span><span style="flex:1"><b>Carnet d'entretien</b><br><span class="muted">Entretien, diagnostic, sécurité, sorties</span></span><span class="muted">↗</span></a>
  <p class="muted">Garde l'écran allumé pendant l'enregistrement : les navigateurs coupent le GPS quand l'écran est verrouillé. Outil d'appoint : la carte marine officielle reste la référence.</p>`;
- $('#nRec').onclick=()=>{REC.on?REC.stop():REC.start();renderNav();};$('#nMark').onclick=markForm;if($('#nStop'))$('#nStop').onclick=()=>{FOLLOW=null;hud();renderNav();};}
+ $('#nRec').onclick=()=>{REC.on?REC.stop():REC.start();renderNav();};if($('#nPort'))$('#nPort').onclick=goPort;$('#nMark').onclick=markForm;if($('#nStop'))$('#nStop').onclick=()=>{FOLLOW=null;hud();renderNav();};}
 setInterval(()=>{if(TAB==='nav'&&REC.on)renderNav();},5000);
 
 /* ===== couches et affichage ===== */
@@ -346,6 +347,10 @@ async function depthAt(ll){const pop=L.popup().setLatLng(ll).setContent('Profond
 /* ===== marques et photos géolocalisées ===== */
 const MK_T={peche:'🎣 Spot de pêche',mouillage:'⚓ Mouillage',danger:'⚠️ Danger',photo:'📷 Photo',autre:'📍 Autre'};
 let MARKS=LS.get('nav_marks',[]);
+const portL=L.layerGroup().addTo(map);
+function drawPort(){portL.clearLayers();if(!ST.port||!ST.port.ll)return;const z=ST.easy?40:32;
+ L.marker(ST.port.ll,{zIndexOffset:500,icon:L.divIcon({className:'',iconSize:[z,z],iconAnchor:[z/2,z/2],html:`<svg width="${z}" height="${z}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#fff" stroke="#0f2a5c" stroke-width="3"/><g stroke="#0f2a5c" stroke-width="2.4" fill="none" stroke-linecap="round"><circle cx="16" cy="9" r="2.2"/><path d="M16 11.5 V24 M11 15 H21 M9 20 Q10 25 16 25 Q22 25 23 20"/></g></svg>`})}).addTo(portL).bindTooltip(`Port d'attache : ${esc(ST.port.nom)}`,{direction:'top',offset:[0,-z/2]});}
+function goPort(){if(!ST.port)return;FOLLOW={pts:[ST.port.ll],i:0,port:true};hud();setTab('nav');toast('Cap sur '+ST.port.nom+'.');}
 function drawMarks(){lyr.marks.clearLayers();MARKS.forEach(m=>{L.marker(m.ll,{icon:L.divIcon({className:'mk-ico',iconSize:ST.easy?[40,40]:[30,30],html:MK_T[m.type].split(' ')[0]})}).addTo(lyr.marks).on('click',()=>showMark(m.id));});}
 function renderMkList(){const el=$('#mkList');if(!el)return;el.innerHTML=MARKS.length?MARKS.slice().reverse().map(m=>`<div class="row" data-mk="${m.id}" style="cursor:pointer"><span style="font-size:20px">${MK_T[m.type].split(' ')[0]}</span><div class="t"><b>${esc(m.nom)}</b><small>${new Date(m.t).toLocaleDateString('fr-FR')} · ${pos2(m.ll)}${m.prof?' · '+m.prof+' m':''}</small></div></div>`).join(''):'<div class="muted">Aucune marque. Utilise le bouton 📍.</div>';
  el.onclick=e=>{const r=e.target.closest('[data-mk]');if(r){const m=MARKS.find(x=>x.id===r.dataset.mk);map.setView(m.ll,Math.max(map.getZoom(),15));showMark(m.id);}};}
@@ -393,7 +398,7 @@ function renderRoute(){const s=routeStats();const dep=ROUTE.depart?new Date(ROUT
  <h3>Itinéraires enregistrés</h3><div class="card">${saved.length?saved.map((r,i)=>`<div class="row"><div class="t"><b>${esc(r.nom)}</b><small>${r.pts.length} points</small></div><button class="sm" data-ld="${i}">Ouvrir</button><button class="sm" data-dl="${i}">×</button></div>`).join(''):'<div class="muted">Aucun.</div>'}</div>
  ${ROUTE.pts.length>1?'<div class="bar"><input id="rN" placeholder="Nom de l\'itinéraire" value="'+esc(ROUTE.nom)+'" style="flex:1"><button id="rSave">Enregistrer</button><button id="rGpx">GPX</button></div>':''}
  <p class="muted">Pas de routage automatique : vérifie toujours ton itinéraire sur la carte marine officielle (dangers, zones interdites, chenaux).</p>`;
- $('#rEdit').onclick=()=>{EDIT=!EDIT;renderRoute();};$('#rClr').onclick=()=>{ROUTE={nom:'',pts:[],vitesse:ROUTE.vitesse,depart:ROUTE.depart};WXR=null;SHAL=null;lyr.shallow.clearLayers();saveRoute();drawRoute();renderRoute();};
+ $('#rEdit').onclick=()=>{EDIT=!EDIT;if(EDIT&&!ROUTE.pts.length&&ST.port){ROUTE.pts.push(ST.port.ll.slice());saveRoute();drawRoute();toast('Départ depuis '+ST.port.nom+' : ajoute les points suivants.');}renderRoute();};$('#rClr').onclick=()=>{ROUTE={nom:'',pts:[],vitesse:ROUTE.vitesse,depart:ROUTE.depart};WXR=null;SHAL=null;lyr.shallow.clearLayers();saveRoute();drawRoute();renderRoute();};
  $('#rV').onchange=e=>{ROUTE.vitesse=Number(e.target.value)||ST.vitesse;saveRoute();renderRoute();};$('#rD').onchange=e=>{ROUTE.depart=e.target.value;WXR=null;saveRoute();renderRoute();};
  const q=s=>$(s);if(q('#rWx'))q('#rWx').onclick=routeWx;if(q('#rSh'))q('#rSh').onclick=checkShallow;if(q('#rSim'))q('#rSim').onclick=simulate;
  if(q('#rGo'))q('#rGo').onclick=()=>{FOLLOW={pts:ROUTE.pts.slice(1),i:0};EDIT=false;hud();setTab('nav');toast('Suivi de l\'itinéraire activé.');};
@@ -492,7 +497,9 @@ async function downloadGPX(txt,fn){const blob=new Blob([txt],{type:'application/
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);}
 
 /* ===== réglages ===== */
-function renderRegl(){$('#panel').innerHTML=`<h3>Bateau</h3><div class="card"><div class="two">
+function renderRegl(){$('#panel').innerHTML=`<h3>Port d'attache</h3><div class="card"><div class="two"><div><label class="f">Nom du port</label><input id="pNom" value="${esc(ST.port?ST.port.nom:'')}"></div><div><label class="f">Position</label><div style="padding:9px 0;font-size:13px;font-weight:600">${ST.port?pos2(ST.port.ll):'–'}</div></div></div>
+ <div class="bar" style="margin-bottom:0"><button id="pGps" class="sm">Ma position GPS</button><button id="pCtr" class="sm">Centre de la carte</button><button id="pSee" class="sm">Voir sur la carte</button></div></div>
+ <h3>Bateau</h3><div class="card"><div class="two">
  <div><label class="f">Nom</label><input data-s="nom" value="${esc(ST.nom)}"></div><div><label class="f">Tirant d'eau moteur baissé (m)</label><input data-s="tirant" type="number" step="0.05" inputmode="decimal" value="${ST.tirant}"></div>
  <div><label class="f">Marge de sécurité sous la coque (m)</label><input data-s="marge" type="number" step="0.1" inputmode="decimal" value="${ST.marge}"></div><div><label class="f">Hauteur d'eau au-dessus du zéro des cartes (m)</label><input data-s="hauteurEau" type="number" step="0.1" inputmode="decimal" value="${ST.hauteurEau}"></div>
  <div><label class="f">Réservoir (L)</label><input data-s="reservoir" type="number" inputmode="decimal" value="${ST.reservoir}"></div><div><label class="f">Carburant à bord (L)</label><input data-s="carbu" type="number" inputmode="decimal" value="${ST.carbu}"></div>
@@ -502,6 +509,8 @@ function renderRegl(){$('#panel').innerHTML=`<h3>Bateau</h3><div class="card"><d
  <div class="muted" style="margin-top:6px">Après un plein, ajuste le coefficient de correction : litres réellement remis ÷ litres estimés par l'appli.</div></div>
  <h3>Installer l'icône</h3><div class="card"><div class="muted" style="margin-bottom:8px">Ajoute l'icône Mael sur ce téléphone, une tablette ou un ordinateur.</div><a href="installer.html"><button class="pri" style="width:100%">Ouvrir l'installateur</button></a></div>
  <h3>Sauvegarde</h3><div class="card"><div class="bar"><button id="bkE">Exporter tout</button><label style="border:1px solid var(--line);border-radius:10px;padding:8px 12px">Importer<input type="file" id="bkI" accept=".json" style="display:none"></label></div><div class="muted">Les données restent sur ce téléphone (traces, marques, itinéraires). Exporte-les régulièrement.</div></div>`;
+ const setPort=ll=>{ST.port={nom:$('#pNom').value.trim()||'Port',ll};saveST();drawPort();renderRegl();toast('Port d\'attache enregistré.');};
+ $('#pNom').onchange=()=>{ST.port.nom=$('#pNom').value.trim()||ST.port.nom;saveST();drawPort();};$('#pGps').onclick=()=>G.pos?setPort(G.pos.slice()):toast('Pas encore de position GPS.');$('#pCtr').onclick=()=>{const c=map.getCenter();setPort([c.lat,c.lng]);};$('#pSee').onclick=()=>{map.setView(ST.port.ll,15);G.follow=false;$('#bFollow').classList.remove('on');};
  $('#panel').querySelectorAll('[data-s]').forEach(i=>i.onchange=()=>{const k=i.dataset.s;ST[k]=k==='nom'?i.value:Number(i.value);saveST();document.title='Navigation – '+ST.nom;});
  $('#panel').querySelectorAll('[data-cv]').forEach(i=>i.onchange=()=>{const [a,b]=i.dataset.cv.split(':').map(Number);ST.courbe[a][b]=Number(i.value);ST.courbe.sort((x,y)=>x[0]-y[0]);saveST();});
  $('#bkE').onclick=async()=>{const data={st:ST,marks:MARKS,routes:LS.get('nav_routes',[]),tracks:await IDB.all('tracks')};const blob=new Blob([JSON.stringify(data)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='navigation-sauvegarde.json';a.click();};
@@ -514,7 +523,7 @@ function renderRegl(){$('#panel').innerHTML=`<h3>Bateau</h3><div class="card"><d
 /* ===== démarrage ===== */
 (async()=>{try{await IDB.open();}catch(e){toast('Stockage local indisponible.');}
  const pend=LS.get('nav_rec',null);if(pend&&pend.pts&&pend.pts.length>1&&IDB.db){pend.fin=pend.pts[pend.pts.length-1][2];await IDB.put('tracks',pend);localStorage.removeItem('nav_rec');toast('Trace interrompue récupérée.');}
- document.title='Navigation – '+ST.nom;drawMarks();drawRoute();setTab('nav');startGPS();smUpdate();
+ document.title='Navigation – '+ST.nom;drawPort();drawMarks();drawRoute();setTab('nav');startGPS();smUpdate();
  if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
  if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});})();
 </script>
