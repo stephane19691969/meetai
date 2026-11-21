@@ -147,7 +147,7 @@ function closeModal(){$('#modal').classList.remove('on');}
 $('#modal').onclick=e=>{if(e.target.id==='modal'||e.target.dataset.close!==undefined)closeModal();};
 
 /* ===== stockage photos/traces (IndexedDB) ===== */
-const IDB={db:null,open(){return new Promise((ok,ko)=>{const r=indexedDB.open('navdb',1);r.onupgradeneeded=()=>{const d=r.result;d.createObjectStore('tracks',{keyPath:'id'});d.createObjectStore('photos',{keyPath:'id'});};r.onsuccess=()=>{IDB.db=r.result;ok();};r.onerror=()=>ko(r.error);});},
+const IDB={db:null,open(){return new Promise((ok,ko)=>{const r=indexedDB.open('navdb',2);r.onupgradeneeded=()=>{const d=r.result;['tracks','photos'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,{keyPath:'id'});});if(!d.objectStoreNames.contains('cells'))d.createObjectStore('cells',{keyPath:'key'});};r.onsuccess=()=>{IDB.db=r.result;ok();};r.onerror=()=>ko(r.error);});},
  tx(s,m){return IDB.db.transaction(s,m).objectStore(s);},
  put(s,o){return new Promise((ok,ko)=>{const q=IDB.tx(s,'readwrite').put(o);q.onsuccess=()=>ok();q.onerror=()=>ko(q.error);});},
  get(s,k){return new Promise(ok=>{const q=IDB.tx(s,'readonly').get(k);q.onsuccess=()=>ok(q.result);q.onerror=()=>ok(null);});},
@@ -157,8 +157,8 @@ const IDB={db:null,open(){return new Promise((ok,ko)=>{const r=indexedDB.open('n
 /* ===== réglages ===== */
 const DEF={nom:'Mael',tirant:0.6,marge:0.5,hauteurEau:0,reservoir:60,carbu:60,facteur:1,vitesse:18,
  courbe:[[0,0.8],[3,1.5],[5,2.5],[7,5],[10,9],[14,10],[18,11.5],[22,14],[25,17],[28,19]],
- couches:{balisage:true,profondeurs:false,relief:false,isobathes:true,satellite:false},night:false,easy:false,orient:'north',center:[48.56,-2.74],zoom:11};
-const ST=Object.assign({},DEF,LS.get('nav_st',{}));ST.couches=Object.assign({},DEF.couches,ST.couches||{});
+ couches:{balisageDet:true,balisage:false,profondeurs:false,relief:false,isobathes:true,satellite:false},night:false,easy:false,orient:'north',center:[48.56,-2.74],zoom:11};
+const ST=Object.assign({},DEF,LS.get('nav_st',{}));ST.couches=Object.assign({},DEF.couches,ST.couches||{});if(ST.couches.balisageDet===undefined)ST.couches.balisageDet=true;if(!LS.get('nav_v2',false)){ST.couches.balisageDet=true;ST.couches.balisage=false;LS.set('nav_v2',true);}
 const saveST=()=>LS.set('nav_st',ST);
 function lph(kn){const c=ST.courbe;if(!(kn>0.3))return 0;if(kn>=c[c.length-1][0])return c[c.length-1][1]*ST.facteur;for(let i=1;i<c.length;i++)if(kn<=c[i][0]){const a=c[i-1],b=c[i],f=(kn-a[0])/(b[0]-a[0]);return (a[1]+(b[1]-a[1])*f)*ST.facteur;}return 0;}
 document.body.classList.toggle('night',ST.night);document.body.classList.toggle('easy',ST.easy);
@@ -177,6 +177,61 @@ function buildLayers(){[base,sat,seamark,depthL,reliefL,isoL].forEach(l=>l&&map.
  (ST.couches.satellite?sat:base).addTo(map);if(ST.couches.relief)reliefL.addTo(map);if(ST.couches.profondeurs)depthL.addTo(map);if(ST.couches.isobathes)isoL.addTo(map);if(ST.couches.balisage)seamark.addTo(map);}
 buildLayers();
 const lyr={route:L.layerGroup().addTo(map),track:L.layerGroup().addTo(map),marks:L.layerGroup().addTo(map),replay:L.layerGroup().addTo(map),wind:L.layerGroup().addTo(map),shallow:L.layerGroup().addTo(map),mob:L.layerGroup().addTo(map)};
+/* ===== balisage détaillé (OpenStreetMap / OpenSeaMap, via Overpass) ===== */
+const SM={layer:L.layerGroup(),cells:new Map(),loading:new Set(),CELL:0.2,MINZ:11};
+const SMC={red:'#d62828',green:'#2a9d47',yellow:'#f2c200',black:'#111',white:'#ffffff',blue:'#1d4ed8',orange:'#f97316',grey:'#888',gray:'#888',brown:'#8b5a2b',magenta:'#c026d3',amber:'#f59e0b',violet:'#7c3aed'};
+const SMFR={buoy_lateral:'Bouée latérale',beacon_lateral:'Balise latérale',buoy_cardinal:'Bouée cardinale',beacon_cardinal:'Balise cardinale',buoy_isolated_danger:'Bouée de danger isolé',beacon_isolated_danger:'Balise de danger isolé',buoy_safe_water:'Bouée d\'eaux saines',beacon_safe_water:'Balise d\'eaux saines',buoy_special_purpose:'Bouée spéciale',beacon_special_purpose:'Balise spéciale',buoy_installation:'Bouée d\'installation',light_major:'Phare',light_minor:'Feu',light_vessel:'Bateau-feu',landmark:'Amer',mooring:'Corps-mort / coffre',harbour:'Port',anchorage:'Zone de mouillage',rock:'Roche',wreck:'Épave',obstruction:'Obstruction',small_craft_facility:'Équipement plaisance',fog_signal:'Signal de brume',beacon_emergency_wreck:'Balise d\'épave récente',buoy_emergency_wreck:'Bouée d\'épave récente',daymark:'Marque de jour',platform:'Plateforme',pile:'Pieu',notice:'Panneau',restricted_area:'Zone réglementée',bridge:'Pont',lock_basin:'Écluse',signal_station_traffic:'Sémaphore',signal_station_warning:'Station de signaux',rescue_station:'Station de sauvetage',coastguard_station:'Garde-côtes'};
+const CATFR={port:'bâbord',starboard:'tribord',preferred_channel_port:'chenal préféré à bâbord',preferred_channel_starboard:'chenal préféré à tribord',north:'Nord',east:'Est',south:'Sud',west:'Ouest'};
+const COLFR={red:'rouge',green:'vert',yellow:'jaune',black:'noir',white:'blanc',blue:'bleu',orange:'orange'};
+const TOPFR={'cylinder':'cylindre','cone, point up':'cône pointe en haut','cone, point down':'cône pointe en bas','2 cones up':'2 cônes pointes en haut','2 cones down':'2 cônes pointes en bas','2 cones base together':'2 cônes opposés par la base','2 cones point together':'2 cônes opposés par la pointe','2 spheres':'2 sphères','sphere':'sphère','x-shape':'croix en X','cross':'croix'};
+function smTag(t,k){const ty=t['seamark:type'];return t[`seamark:${ty}:${k}`];}
+function smInfer(t){const ty=t['seamark:type']||'';let col=(smTag(t,'colour')||'').split(';').filter(Boolean);let top=t['seamark:topmark:shape'];let tc=t['seamark:topmark:colour'];const cat=smTag(t,'category');
+ if(/lateral/.test(ty)){if(!col.length)col=cat==='port'?['red']:cat==='starboard'?['green']:cat==='preferred_channel_port'?['green','red','green']:cat==='preferred_channel_starboard'?['red','green','red']:[];if(!top)top=/port/.test(cat||'')&&!/channel_port/.test(cat)?'cylinder':/starboard/.test(cat||'')&&!/channel_starboard/.test(cat)?'cone, point up':cat==='preferred_channel_port'?'cone, point up':cat==='preferred_channel_starboard'?'cylinder':null;if(!tc)tc=col[0];}
+ if(/cardinal/.test(ty)){if(!col.length)col=cat==='north'?['black','yellow']:cat==='south'?['yellow','black']:cat==='east'?['black','yellow','black']:['yellow','black','yellow'];if(!top)top={north:'2 cones up',south:'2 cones down',east:'2 cones base together',west:'2 cones point together'}[cat];tc=tc||'black';}
+ if(/isolated_danger/.test(ty)){if(!col.length)col=['black','red','black'];top=top||'2 spheres';tc=tc||'black';}
+ if(/safe_water/.test(ty)){if(!col.length)col=['red','white'];top=top||'sphere';tc=tc||'red';}
+ if(/special_purpose/.test(ty)){if(!col.length)col=['yellow'];top=top||'x-shape';tc=tc||'yellow';}
+ if(/emergency_wreck/.test(ty)){if(!col.length)col=['blue','yellow'];top=top||'cross';tc=tc||'yellow';}
+ return{col,top,tc:(tc||'black').split(';')[0],pat:smTag(t,'colour_pattern')||(/safe_water|emergency/.test(ty)?'vertical':'horizontal'),cat};}
+function smLight(t){const out=[];const one=p=>{const ch=t[p+'character'];const c=t[p+'colour'];if(!ch&&!c)return;const g=t[p+'group'];const per=t[p+'period'];const r=t[p+'range'];
+  const cc=(c||'').split(';').map(x=>({white:'W',red:'R',green:'G',yellow:'Y',blue:'Bu',orange:'Or'})[x]||'').join('');out.push(`${ch||''}${g?'('+g+')':''} ${cc}${per?' '+per+'s':''}${r?' '+r+'M':''}`.trim());};
+ one('seamark:light:');for(let i=1;i<8;i++)one(`seamark:light:${i}:`);return [...new Set(out)];}
+function smLightCol(t){const c=(t['seamark:light:colour']||t['seamark:light:1:colour']||'').split(';')[0];return SMC[c]||null;}
+function smSvg(t){const ty=t['seamark:type']||'';const z=ST.easy?1.35:1;const lc=smLightCol(t);
+ const flare=lc?`<path d="M20 12 C15 5 17 1 23 -2 C21 4 25 7 20 12Z" fill="#c026d3" opacity=".85"/><circle cx="20" cy="12" r="2.2" fill="${lc==='#ffffff'?'#fde047':lc}" stroke="#111" stroke-width=".5"/>`:'';
+ if(/^(buoy_|beacon_)/.test(ty)){const I=smInfer(t);const beacon=/^beacon_/.test(ty);const cols=(I.col.length?I.col:['grey']).map(c=>SMC[c]||'#888');const id='m'+Math.random().toString(36).slice(2,7);
+  const body=beacon?'M11 14 L15 14 L15 34 L11 34 Z':'M9 16 L17 16 L19 33 L7 33 Z';const y0=beacon?14:16,y1=beacon?34:33,x0=beacon?11:7,w0=beacon?4:12;let fill='';
+  if(I.pat==='vertical'){const w=w0/cols.length;cols.forEach((c,i)=>fill+=`<rect x="${x0+i*w}" y="${y0}" width="${w+.2}" height="${y1-y0}" fill="${c}"/>`);}else{const h=(y1-y0)/cols.length;cols.forEach((c,i)=>fill+=`<rect x="${x0-2}" y="${y0+i*h}" width="${w0+4}" height="${h+.2}" fill="${c}"/>`);}
+  const tc=SMC[I.tc]||'#111';const T={'cylinder':`<rect x="10" y="5" width="6" height="7" fill="${tc}" stroke="#111" stroke-width=".4"/>`,'cone, point up':`<path d="M13 3 L9.5 11 L16.5 11Z" fill="${tc}" stroke="#111" stroke-width=".4"/>`,'cone, point down':`<path d="M9.5 3 L16.5 3 L13 11Z" fill="${tc}" stroke="#111" stroke-width=".4"/>`,
+   '2 cones up':`<path d="M13 0 L10 6 L16 6Z M13 7 L10 13 L16 13Z" fill="${tc}"/>`,'2 cones down':`<path d="M10 0 L16 0 L13 6Z M10 7 L16 7 L13 13Z" fill="${tc}"/>`,'2 cones base together':`<path d="M13 0 L10 6 L16 6Z M10 7 L16 7 L13 13Z" fill="${tc}"/>`,'2 cones point together':`<path d="M10 0 L16 0 L13 6Z M13 7 L10 13 L16 13Z" fill="${tc}"/>`,
+   '2 spheres':`<circle cx="13" cy="3.5" r="3" fill="${tc}"/><circle cx="13" cy="10" r="3" fill="${tc}"/>`,'sphere':`<circle cx="13" cy="8" r="3.6" fill="${tc}"/>`,'x-shape':`<path d="M10 4 L16 12 M16 4 L10 12" stroke="${tc}" stroke-width="2.2"/>`,'cross':`<path d="M13 3 V13 M9 8 H17" stroke="${tc}" stroke-width="2.2"/>`};
+  return `<svg width="${30*z}" height="${40*z}" viewBox="-2 -3 30 40"><clipPath id="${id}"><path d="${body}"/></clipPath><g clip-path="url(#${id})">${fill}</g><path d="${body}" fill="none" stroke="#111" stroke-width=".8"/><line x1="13" y1="12" x2="13" y2="${y0}" stroke="#111" stroke-width=".8"/>${T[I.top]||''}${beacon?'':'<path d="M4 34.5 Q13 31.5 22 34.5" fill="none" stroke="#2563eb" stroke-width="1.4"/>'}${flare}</svg>`;}
+ if(/^light_|landmark|light_vessel/.test(ty))return `<svg width="${24*z}" height="${26*z}" viewBox="0 0 24 26"><path d="M12 18 C6 11 7 5 15 0 C13 7 17 11 12 18Z" fill="#c026d3"/><circle cx="12" cy="19" r="3.5" fill="${lc&&lc!=='#ffffff'?lc:'#fde047'}" stroke="#111" stroke-width="1"/>${/landmark/.test(ty)?'<path d="M7 25 L12 15 L17 25Z" fill="none" stroke="#111"/>':''}</svg>`;
+ const G={mooring:`<circle cx="12" cy="12" r="5" fill="#f2c200" stroke="#111"/>`,harbour:`<circle cx="12" cy="12" r="9" fill="#fff" stroke="#c026d3" stroke-width="2"/><text x="12" y="16" font-size="11" font-weight="800" text-anchor="middle" fill="#c026d3">⚓</text>`,anchorage:`<text x="12" y="17" font-size="15" text-anchor="middle" fill="#c026d3">⚓</text>`,rock:`<text x="12" y="17" font-size="16" font-weight="800" text-anchor="middle" fill="#111">+</text>`,wreck:`<path d="M3 12 H21 M8 8 V16 M12 8 V16 M16 8 V16" stroke="#111" stroke-width="1.6"/>`,obstruction:`<circle cx="12" cy="12" r="7" fill="none" stroke="#111" stroke-dasharray="2 2"/><text x="12" y="15" font-size="8" text-anchor="middle">Obs</text>`};
+ return `<svg width="${24*z}" height="${24*z}" viewBox="0 0 24 24">${G[ty]||'<circle cx="12" cy="12" r="4" fill="#c026d3" stroke="#fff"/>'}</svg>`;}
+function smPopup(t){const ty=t['seamark:type']||'';const I=smInfer(t);const name=t['seamark:name']||t.name||'';const L2=smLight(t);
+ const rows=[[SMFR[ty]||ty.replace(/_/g,' '),''],I.cat&&CATFR[I.cat]?['Catégorie',CATFR[I.cat]]:null,I.col.length&&/buoy|beacon/.test(ty)?['Couleurs',I.col.map(c=>COLFR[c]||c).join(', ')]:null,I.top&&/buoy|beacon/.test(ty)?['Voyant',TOPFR[I.top]||I.top]:null,L2.length?['Feu',L2.join(' · ')]:null,t['seamark:fog_signal:category']?['Signal de brume',t['seamark:fog_signal:category']]:null,t['seamark:light:height']?['Hauteur',t['seamark:light:height']+' m']:null].filter(Boolean);
+ const adv=/cardinal/.test(ty)&&I.cat?`<br><i>Passer au ${({north:'nord',east:'large à l\'est',south:'sud',west:'large à l\'ouest'})[I.cat]} de la marque.</i>`.replace('large à l\'est','côté est').replace('large à l\'ouest','côté ouest'):/lateral/.test(ty)&&(I.cat==='port'||I.cat==='starboard')?`<br><i>En entrant au port : à laisser ${I.cat==='port'?'à bâbord (gauche)':'à tribord (droite)'}.</i>`:/isolated_danger/.test(ty)?'<br><i>Danger ponctuel : passer au large.</i>':'';
+ return `<b>${esc(name||rows[0][0])}</b>${name?`<br><small>${esc(rows[0][0])}</small>`:''}${rows.slice(1).map(r=>`<br><small>${esc(r[0])} :</small> ${esc(r[1])}`).join('')}${adv}`;}
+const SM_Q=(s,w,n,e)=>`[out:json][timeout:25];(node["seamark:type"](${s},${w},${n},${e});way["seamark:type"~"^(harbour|anchorage|mooring|wreck|rock|light_major|light_minor|landmark)$"](${s},${w},${n},${e}););out center tags 2500;`;
+async function smFetchCell(key){if(SM.cells.has(key)||SM.loading.has(key))return;SM.loading.add(key);
+ try{let rec=IDB.db?await IDB.get('cells',key):null;
+  if(!rec||Date.now()-rec.t>30*864e5){const [i,j]=key.split(':').map(Number);const s=i*SM.CELL,w=j*SM.CELL;const q=SM_Q(s.toFixed(3),w.toFixed(3),(s+SM.CELL).toFixed(3),(w+SM.CELL).toFixed(3));
+   let js=null;for(const ep of ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter']){try{const r=await fetch(ep,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'}});if(r.ok){js=await r.json();break;}}catch(e){}}
+   if(js){rec={key,t:Date.now(),els:js.elements.map(e=>({id:e.type+e.id,lat:e.lat??(e.center&&e.center.lat),lon:e.lon??(e.center&&e.center.lon),tags:e.tags||{}})).filter(e=>e.lat!=null)};if(IDB.db)await IDB.put('cells',rec);}
+  }
+  if(rec){SM.cells.set(key,rec.els);smDraw();}}
+ finally{SM.loading.delete(key);}}
+const SM_MINOR=/mooring|small_craft|notice|pile|platform|bridge|restricted/;
+function smDraw(){SM.layer.clearLayers();if(!ST.couches.balisageDet||map.getZoom()<SM.MINZ)return;const b=map.getBounds().pad(0.2);const z=map.getZoom();let n=0;
+ for(const els of SM.cells.values())for(const e of els){if(!b.contains([e.lat,e.lon]))continue;const ty=e.tags['seamark:type']||'';if(z<14&&SM_MINOR.test(ty))continue;if(++n>1500)return;
+  const html=smSvg(e.tags);const m=html.match(/width="([\d.]+)" height="([\d.]+)"/);const W=+m[1],H=+m[2];const anchor=/^(buoy_|beacon_)/.test(ty)?[W*0.43,H*0.92]:[W/2,H*0.75];
+  L.marker([e.lat,e.lon],{icon:L.divIcon({className:'',html,iconSize:[W,H],iconAnchor:anchor,popupAnchor:[0,-H*0.6]}),keyboard:false}).bindPopup(()=>smPopup(e.tags)).addTo(SM.layer);}}
+function smUpdate(){if(!ST.couches.balisageDet){SM.layer.remove();return;}if(!map.hasLayer(SM.layer))SM.layer.addTo(map);
+ if(map.getZoom()<SM.MINZ){SM.layer.clearLayers();return;}const b=map.getBounds();const C=SM.CELL;
+ for(let i=Math.floor(b.getSouth()/C);i<=Math.floor(b.getNorth()/C);i++)for(let j=Math.floor(b.getWest()/C);j<=Math.floor(b.getEast()/C);j++)smFetchCell(i+':'+j);smDraw();}
+map.on('moveend zoomend',()=>{clearTimeout(SM.t);SM.t=setTimeout(smUpdate,350);});
+
 map.on('moveend',()=>{const c=map.getCenter();ST.center=[c.lat,c.lng];ST.zoom=map.getZoom();saveST();scaleTxt();});
 function scaleTxt(){const b=map.getBounds();const w=dist([b.getSouth(),b.getWest()],[b.getSouth(),b.getEast()]);$('#scaleTxt').textContent=`Largeur affichée ≈ ${w<10?f1(w):f0(w)} milles`;}
 scaleTxt();
@@ -261,7 +316,7 @@ setInterval(()=>{if(TAB==='nav'&&REC.on)renderNav();},5000);
 /* ===== couches et affichage ===== */
 function renderCarte(){const C=ST.couches;const ck=(k,t,d)=>`<label class="c"><input type="checkbox" data-c="${k}" ${C[k]?'checked':''}><span class="t">${t}<small>${d}</small></span></label>`;
  $('#panel').innerHTML=`<h3>Fond de carte</h3><div class="card">${ck('satellite','Imagerie satellite','À la place de la carte terrestre')}</div>
- <h3>Superpositions</h3><div class="card">${ck('balisage','Balisage','Bouées, phares, marques (OpenSeaMap)')}${ck('profondeurs','Profondeurs en couleur','Bathymétrie EMODnet')}${ck('relief','Relief des fonds','Ombrage du relief sous-marin')}${ck('isobathes','Isobathes','Lignes de même profondeur')}</div>
+ <h3>Superpositions</h3><div class="card">${ck('balisageDet','Balisage détaillé','Toutes les bouées, balises, feux, ports et dangers, avec leur description au toucher (à partir du zoom 11)')}${ck('balisage','Balisage OpenSeaMap (image)','Couche image complémentaire')}${ck('profondeurs','Profondeurs en couleur','Bathymétrie EMODnet')}${ck('relief','Relief des fonds','Ombrage du relief sous-marin')}${ck('isobathes','Isobathes','Lignes de même profondeur')}</div>
  <h3>Affichage</h3><div class="card"><label class="c"><input type="checkbox" id="cNight" ${ST.night?'checked':''}><span class="t">Mode nuit<small>Teintes rouges qui préservent la vision nocturne</small></span></label>
  <label class="c"><input type="checkbox" id="cEasy" ${ST.easy?'checked':''}><span class="t">Grand affichage<small>Textes, symboles et balisage agrandis</small></span></label>
  <div style="padding:8px 0;border-top:1px solid var(--line)">Orientation<div class="seg" style="margin-top:6px"><button data-o="north" class="${ST.orient==='north'?'on':''}">Nord en haut</button><button data-o="course" class="${ST.orient==='course'?'on':''}">Route en haut</button></div></div></div>
@@ -269,9 +324,9 @@ function renderCarte(){const C=ST.couches;const ck=(k,t,d)=>`<label class="c"><i
  <h3>Profondeur en un point</h3><div class="card"><div class="muted">Appui long sur la carte pour connaître la profondeur estimée (EMODnet + hauteur d'eau réglée), comparée à ton tirant d'eau.</div></div>
  <h3>Marques et photos</h3><div class="card" id="mkList"></div>
  <p class="muted">Données ouvertes : OpenStreetMap, OpenSeaMap, EMODnet. Moins précises que les cartes officielles du SHOM, elles ne doivent pas servir seules à la navigation.</p>`;
- $('#panel').querySelectorAll('[data-c]').forEach(i=>i.onchange=()=>{ST.couches[i.dataset.c]=i.checked;saveST();buildLayers();});
+ $('#panel').querySelectorAll('[data-c]').forEach(i=>i.onchange=()=>{ST.couches[i.dataset.c]=i.checked;saveST();if(i.dataset.c==='balisageDet')smUpdate();else buildLayers();});
  $('#cNight').onchange=e=>{ST.night=e.target.checked;saveST();document.body.classList.toggle('night',ST.night);};
- $('#cEasy').onchange=e=>{ST.easy=e.target.checked;saveST();document.body.classList.toggle('easy',ST.easy);buildLayers();drawMarks();};
+ $('#cEasy').onchange=e=>{ST.easy=e.target.checked;saveST();document.body.classList.toggle('easy',ST.easy);buildLayers();drawMarks();smDraw();};
  $('#panel').querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{ST.orient=b.dataset.o;saveST();applyOrient();renderCarte();});
  renderMkList();if(navigator.storage&&navigator.storage.estimate)navigator.storage.estimate().then(e=>{const el=$('#cacheInfo');if(el)el.textContent=`Mémoire utilisée : ${(e.usage/1048576).toFixed(0)} Mo`;});}
 map.on('contextmenu',e=>depthAt([e.latlng.lat,e.latlng.lng]));
@@ -452,7 +507,7 @@ function renderRegl(){$('#panel').innerHTML=`<h3>Bateau</h3><div class="card"><d
 /* ===== démarrage ===== */
 (async()=>{try{await IDB.open();}catch(e){toast('Stockage local indisponible.');}
  const pend=LS.get('nav_rec',null);if(pend&&pend.pts&&pend.pts.length>1&&IDB.db){pend.fin=pend.pts[pend.pts.length-1][2];await IDB.put('tracks',pend);localStorage.removeItem('nav_rec');toast('Trace interrompue récupérée.');}
- document.title='Navigation – '+ST.nom;drawMarks();drawRoute();setTab('nav');startGPS();
+ document.title='Navigation – '+ST.nom;drawMarks();drawRoute();setTab('nav');startGPS();smUpdate();
  if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
  if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});})();
 </script>
