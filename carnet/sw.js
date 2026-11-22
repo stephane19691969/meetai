@@ -1,4 +1,4 @@
-const V='carnet-v1';const SHELL=['./','index.html','data.js','shim.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
+const V='carnet-v2';const SHELL=['./','index.html','data.js','shim.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 const CDN=/cdnjs\.cloudflare\.com|fonts\.(googleapis|gstatic)\.com|unpkg\.com|cdn\.jsdelivr\.net/;
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>Promise.all(SHELL.map(u=>c.add(u).catch(()=>{})))).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x.startsWith('carnet-')&&x!==V&&x!=='carnet-cdn').map(x=>caches.delete(x)))).then(()=>self.clients.claim()));});
