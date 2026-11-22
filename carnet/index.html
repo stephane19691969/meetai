@@ -352,7 +352,7 @@ function linesHtml(ls){if(!(ls||[]).length)return '';return `<table class="lines
 const eur2=n=>(Number(n)||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR'});
 function loadScript(src){return new Promise((ok,ko)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=ko;document.head.appendChild(s);});}
 async function pdfToImages(file,max=2){
-  if(!window.pdfjsLib){await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js');}
+  if(!window.pdfjsLib){window.__pdfLib=window.__pdfLib||(async()=>{await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js');})();try{await window.__pdfLib;}catch(e){window.__pdfLib=null;throw e;}}
   const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;const out=[];
   for(let p=1;p<=Math.min(max,pdf.numPages);p++){const pg=await pdf.getPage(p);const v0=pg.getViewport({scale:1});const v=pg.getViewport({scale:1600/Math.max(v0.width,v0.height)});
     const c=document.createElement('canvas');c.width=v.width;c.height=v.height;const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:ctx,viewport:v}).promise;
@@ -445,6 +445,7 @@ function interForm(id,preTaches){
 /* ---------- infographies ---------- */
 function donutSvg(parts,center,sub){const tot=parts.reduce((a,p)=>a+p.v,0)||1,R=40,C=2*Math.PI*R;let off=0;
  return `<svg viewBox="0 0 110 110"><circle cx="55" cy="55" r="${R}" fill="none" stroke="var(--neu)" stroke-width="14"/>${parts.filter(p=>p.v).map(p=>{const l=C*p.v/tot;const el=`<circle cx="55" cy="55" r="${R}" fill="none" stroke="${p.c}" stroke-width="14" stroke-dasharray="${l} ${C-l}" stroke-dashoffset="${-off}" transform="rotate(-90 55 55)"/>`;off+=l;return el;}).join('')}<text x="55" y="56" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)">${center}</text><text x="55" y="72" text-anchor="middle" font-size="9" fill="var(--mut)">${sub}</text></svg>`;}
+const PDFTH=new Map(),PDFJOB=new Map();
 function renderInfog(){const el=$('#infog');if(!el)return;
  // sécurité
  const sc={ok:0,soon:0,miss:0,exp:0};S.secu.forEach(x=>sc[secuStatus(x).k]++);const sp=[{k:'ok',l:'En règle',c:'#16a34a',v:sc.ok},{k:'soon',l:'Expire bientôt',c:'#f59e0b',v:sc.soon},{k:'miss',l:'À vérifier',c:'#94a3b8',v:sc.miss},{k:'exp',l:'Périmé',c:'#dc2626',v:sc.exp}];
@@ -467,9 +468,11 @@ function renderInfog(){const el=$('#infog');if(!el)return;
  const ev=S.taches.map(t=>({t,st:tacheStatus(t)})).filter(x=>['late','soon','ok','todo'].includes(x.st.k)&&x.st.next).sort((a,b)=>(a.st.k==='late'?-1:0)-(b.st.k==='late'?-1:0)||(a.st.sort??9e9)-(b.st.sort??9e9)).slice(0,10);
  const fr=ev.length?`<div class="igc" style="grid-column:1/-1"><h4><i>🗓️</i>Frise des échéances</h4><div class="tl2">${ev.map(x=>`<div class="ev ${x.st.cls==='bad'?'bad':x.st.cls==='warn'?'warn':''}"><div class="d">${esc(x.st.next)}</div><b>${esc(x.t.label||x.t.nom||'')}</b><small>${esc(x.t.cat||'')}</small></div>`).join('')}</div></div>`:'';
  // galerie
- const ph=[];[...S.inter].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).forEach(i=>(i.photos||[]).forEach(p=>{if(p.url&&!/pdf/.test(p.type||''))ph.push(p.url);}));S.secu.forEach(x=>{if(x.photo&&x.photo.url)ph.push(x.photo.url);});
- const gal=ph.length?`<div class="igc" style="grid-column:1/-1"><h4><i>📷</i>Photos du bord <span class="muted" style="text-transform:none;letter-spacing:0;margin-left:auto">${ph.length}</span></h4><div class="gal">${ph.slice(0,8).map(u=>`<img src="${esc(u)}" data-big="${esc(u)}" loading="lazy" alt="">`).join('')}</div></div>`:'';
+ const ph=[];[...S.inter].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).forEach(i=>(i.photos||[]).forEach(p=>{if(p.url)ph.push({u:p.url,pdf:/pdf/.test(p.type||'')||/^data:application\/pdf/.test(p.url)});}));S.secu.forEach(x=>{if(x.photo&&x.photo.url)ph.push({u:x.photo.url});});(S.cfg.photo&&S.cfg.photo.url)&&ph.push({u:S.cfg.photo.url});
+ const gal=ph.length?`<div class="igc" style="grid-column:1/-1"><h4><i>📷</i>Photos du bord <span class="muted" style="text-transform:none;letter-spacing:0;margin-left:auto">${ph.length}</span></h4><div class="gal">${ph.slice(0,12).map(x=>x.pdf?(PDFTH.get(x.u)?`<img src="${PDFTH.get(x.u)}" data-big="${PDFTH.get(x.u)}" alt="Facture">`:`<img data-pdfth="${esc(x.u)}" alt="Facture" style="background:var(--neu)">`):`<img src="${esc(x.u)}" data-big="${esc(x.u)}" loading="lazy" alt="" onerror="this.remove()">`).join('')}</div></div>`:'';
  el.innerHTML=`<div class="ig">${secu}${mot}${plan}${money}${fr}${gal}</div>`;
+ el.querySelectorAll('[data-pdfth]').forEach(im=>{const u=im.dataset.pdfth;if(!PDFJOB.has(u))PDFJOB.set(u,(async()=>{const b=await (await fetch(u)).blob();const [j]=await pdfToImages(b,1);const ou=URL.createObjectURL(j);PDFTH.set(u,ou);return ou;})());
+  PDFJOB.get(u).then(ou=>document.querySelectorAll('img[data-pdfth]').forEach(x=>{if(x.dataset.pdfth===u){x.src=ou;x.dataset.big=ou;x.removeAttribute('data-pdfth');}})).catch(()=>document.querySelectorAll('img[data-pdfth]').forEach(x=>{if(x.dataset.pdfth===u)x.remove();}));});
  el.onclick=e=>{if(e.target.closest('[data-big]'))return;const g=e.target.closest('[data-go]');if(g)location.hash=g.dataset.go;};}
 let SV=false;
 function secuGrid(F){return `<div class="sgrid">${F.map(s=>{const st=secuStatus(s);const u=s.photo&&s.photo.url;return `<div class="scard" data-secu="${s._id}"><div class="ph" ${u?`style="background-image:url('${esc(u)}')"`:''}>${u?'':icoSvg(s)}<span class="pill ${st.cls}">${st.txt}</span></div><div class="tx"><b>${esc(s.item)}</b><small>${esc(s.cat)}${s.nb?' · '+esc(s.nb):''}${s.dlc?' · '+fmtD(s.dlc):''}</small></div></div>`;}).join('')}</div>`;}
@@ -478,8 +481,9 @@ const CLAUDE_URL='https://claude.ai/artifact/QJeKWftzcRZkBUT8FMRkCV';
 const HOST_URL='https://stephane19691969.github.io/meetai/carnet/';
 function allDocs(){const out={bateaux:(S.boats||[]).map(b=>({id:b._id,data:strip(b)}))};Object.entries(MAP).forEach(([col,key])=>{out[col]=(S.all[key]||[]).map(d=>({id:d._id,data:strip(d)}));});return out;}
 const blobToData=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(b);});
+const imgToData=u=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>{try{const c=document.createElement('canvas');const k=Math.min(1,1600/Math.max(im.naturalWidth,im.naturalHeight));c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.85));}catch(e){rej(e);}};im.onerror=rej;im.src=u;});
 async function inlineBlobs(o,st){if(Array.isArray(o)){for(const x of o)await inlineBlobs(x,st);return;}if(!o||typeof o!=='object')return;
- for(const k of Object.keys(o)){const v=o[k];if(typeof v==='string'&&(v.startsWith('/_blob/')||v.startsWith('blob:'))){try{const r=await fetch(v);if(r.ok){o[k]=await blobToData(await r.blob());st.n++;}else st.ko++;}catch(e){st.ko++;}}else if(v&&typeof v==='object')await inlineBlobs(v,st);}}
+ for(const k of Object.keys(o)){const v=o[k];if(typeof v==='string'&&(v.startsWith('/_blob/')||v.startsWith('blob:'))){let ok=false;try{const r=await fetch(v,{credentials:'include'});if(r.ok){o[k]=await blobToData(await r.blob());ok=true;}}catch(e){}if(!ok){try{o[k]=await imgToData(v);ok=true;}catch(e){}}if(ok)st.n++;else st.ko++;}else if(v&&typeof v==='object')await inlineBlobs(v,st);}}
 async function exportAll(btn,msg){const lab=btn.textContent;btn.disabled=true;btn.textContent='Préparation…';
  try{const cols=allDocs();const st={n:0,ko:0};await inlineBlobs(cols,st);
   const data={app:'carnet-mael',v:1,date:new Date().toISOString(),cols};
@@ -492,9 +496,10 @@ async function exportAll(btn,msg){const lab=btn.textContent;btn.disabled=true;bt
  btn.disabled=false;btn.textContent=lab;}
 async function importFile(f,msg){try{const d=JSON.parse(await f.text());if(d.app!=='carnet-mael'||!d.cols)throw new Error('Ce fichier n\'est pas une sauvegarde du carnet.');
   const have={bateaux:new Set((S.boats||[]).map(b=>b._id))};Object.entries(MAP).forEach(([col,key])=>have[col]=new Set((S.all[key]||[]).map(x=>x._id)));
+  let lost=0,fixed=0;const clean=o=>{if(Array.isArray(o)){for(let i=o.length-1;i>=0;i--){const x=o[i];if(x&&typeof x==='object'&&typeof x.url==='string'&&!/^(data:|https?:)/.test(x.url)){o.splice(i,1);lost++;}else clean(x);}return;}if(!o||typeof o!=='object')return;for(const k of Object.keys(o)){const v=o[k];if(v&&typeof v==='object'&&typeof v.url==='string'&&!/^(data:|https?:)/.test(v.url)){o[k]=null;lost++;}else if(v&&typeof v==='object')clean(v);}};clean(d.cols);
   const added={};const newInter=[];const taskMap=new Map((S.all.taches||[]).map(t=>[t._id,strip(t)]));
   for(const col of['bateaux','taches','securite','sorties','diagnostics','interventions']){const list=d.cols[col]||[];added[col]=0;
-   for(const doc of list){if(!doc||!doc.id||(have[col]&&have[col].has(doc.id)))continue;await db.collection(col).doc(doc.id).set(doc.data);added[col]++;
+   for(const doc of list){if(!doc||!doc.id)continue;if(have[col]&&have[col].has(doc.id)){const cur=(col==='bateaux'?S.boats:S.all[MAP[col]]||[]).find(x=>x._id===doc.id);if(cur&&/"\/_blob\//.test(JSON.stringify(strip(cur)))&&!/"\/_blob\//.test(JSON.stringify(doc.data))){await db.collection(col).doc(doc.id).set(doc.data);fixed++;}continue;}await db.collection(col).doc(doc.id).set(doc.data);added[col]++;
     if(col==='taches')taskMap.set(doc.id,doc.data);if(col==='interventions')newInter.push(doc.data);}}
   newInter.sort((a,b)=>(a.date||'').localeCompare(b.date||''));let maj=0;
   for(const it of newInter){for(const tid of it.taches||[]){const t=taskMap.get(tid);if(!t)continue;const d2=it.date;let nt=null;
@@ -502,7 +507,7 @@ async function importFile(f,msg){try{const d=JSON.parse(await f.text());if(d.app
     if(nt){await db.collection('taches').doc(tid).set(nt);taskMap.set(tid,nt);maj++;}}}
   const lab={bateaux:'bateau',taches:'tâche',interventions:'intervention',sorties:'sortie',securite:'équipement',diagnostics:'diagnostic'};
   const parts=Object.entries(added).filter(([k,v])=>v).map(([k,v])=>`${v} ${lab[k]}${v>1?'s':''}`);
-  $(msg).innerHTML=parts.length?`✅ Ajouté : ${parts.join(', ')}.${maj?` ${maj} tâche(s) du plan mise(s) à jour.`:''}`:'Rien de nouveau : tout était déjà dans le carnet.';}
+  $(msg).innerHTML=(parts.length||fixed?(parts.length?`✅ Ajouté : ${parts.join(', ')}.${maj?` ${maj} tâche(s) du plan mise(s) à jour.`:''}`:'')+'':'Rien de nouveau : tout était déjà dans le carnet.')+(fixed?`<br>📷 Photos récupérées sur ${fixed} fiche(s).`:'')+(lost?`<br>⚠️ ${lost} photo(s) absente(s) du fichier.`:'');}
  catch(e){$(msg).textContent='Erreur : '+(e.message||e);}}
 function renderXfer(){const el=$('#xfer');if(!el)return;
  if(window.__HOSTED){el.innerHTML=`<div class="card" style="margin:4px 0 12px"><b>🔄 Factures et sauvegarde</b>
