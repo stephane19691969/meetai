@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carnet Mael</title><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#16306b"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Carnet Mael"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef2f7;--card:#fff;--ink:#0f1d3a;--mut:#5d6b82;--line:#e3e8f0;--navy:#0f2a5c;--sea:#0e7c86;--acc:#1d5fd1;--accbg:#e8f0fd;--ok:#15803d;--okbg:#e4f5ea;--warn:#b45309;--warnbg:#fdf1de;--bad:#c2261b;--badbg:#fde9e7;--neu:#eef1f6;--r:16px;--sh:0 1px 2px rgba(15,29,58,.05),0 4px 14px rgba(15,29,58,.06)}
+@media (prefers-color-scheme:dark){:root{--bg:#0b111c;--card:#141c2b;--ink:#e9eef7;--mut:#97a3b8;--line:#243047;--navy:#0b1f45;--sea:#2bb3bd;--acc:#7aa7ff;--accbg:#1a2a48;--ok:#5fd18e;--okbg:#122c1d;--warn:#f3b45c;--warnbg:#33240c;--bad:#ff8a7f;--badbg:#3a1714;--neu:#1c2638;--sh:none}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:Manrope,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+header{padding:12px 16px 6px;max-width:900px;margin:0 auto;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:15;background:var(--bg)}
+header h1{font-size:17px;margin:0;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.25}
+header .sub{font-size:12.5px;color:var(--mut);font-weight:500}
+main{max-width:900px;margin:0 auto;padding:0 14px}
+nav{position:fixed;left:10px;right:10px;bottom:calc(8px + env(safe-area-inset-bottom));background:var(--card);border:1px solid var(--line);border-radius:22px;display:flex;justify-content:space-around;padding:6px;z-index:20;box-shadow:0 8px 30px rgba(15,29,58,.14);max-width:620px;margin:0 auto}
+nav a{flex:1;text-align:center;text-decoration:none;color:var(--mut);font-size:11px;font-weight:600;padding:6px 0 5px;border-radius:16px;transition:background .2s,color .2s}
+nav a svg{display:block;margin:0 auto 2px;width:22px;height:22px}
+nav a.on{color:#fff;background:linear-gradient(135deg,var(--navy),var(--sea))}
+section{display:none;animation:fade .25s ease}section.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.ptitle{margin:6px 2px 12px}.ptitle h1{font-size:24px;margin:0;font-weight:800;letter-spacing:-.02em}.ptitle p{margin:2px 0 0;color:var(--mut);font-size:13.5px}
+h2{font-size:16px;margin:22px 2px 10px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+h3{font-size:12.5px;margin:18px 4px 8px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;box-shadow:var(--sh)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(min-width:700px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;box-shadow:var(--sh)}
+.kpi .l{font-size:12px;color:var(--mut);font-weight:600}.kpi .v{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.kpi.bad .v{color:var(--bad)}.kpi.warn .v{color:var(--warn)}
+.row{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row .t{flex:1;min-width:0}.row .t b{font-weight:650;display:block}.row .t small{color:var(--mut);font-size:12.5px}
+.pill{font-size:11.5px;font-weight:700;padding:3px 9px 3px 8px;border-radius:99px;white-space:nowrap;background:var(--neu);color:var(--mut);display:inline-flex;align-items:center;gap:5px}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.9}
+.pill.ok{background:var(--okbg);color:var(--ok)}.pill.warn{background:var(--warnbg);color:var(--warn)}.pill.bad{background:var(--badbg);color:var(--bad)}.pill.acc{background:var(--accbg);color:var(--acc)}
+button,.btn{font:inherit;font-size:14px;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:9px 14px;cursor:pointer;transition:transform .1s}
+button:active{transform:scale(.97)}
+button.pri{background:linear-gradient(135deg,var(--acc),#3b82f6);border-color:transparent;color:#fff;box-shadow:0 4px 12px rgba(29,95,209,.25)}
+@media (prefers-color-scheme:dark){button.pri{color:#0b111c;background:var(--acc);box-shadow:none}}
+button.sm{font-size:12.5px;padding:6px 10px;border-radius:10px}
+button.ghost{border-color:transparent;background:transparent;color:var(--acc);box-shadow:none}
+button.del{color:var(--bad)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 10px}
+.bar .sp{flex:1}
+.seg{display:inline-flex;background:var(--neu);border-radius:12px;padding:3px}
+.seg button{border:0;background:transparent;padding:7px 14px;font-size:13.5px;color:var(--mut);box-shadow:none}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(15,29,58,.12)}
+.hero{position:relative;border-radius:22px;padding:18px;color:#fff;overflow:hidden;background:linear-gradient(135deg,#0f2a5c 0%,#13467e 55%,#0e7c86 100%);box-shadow:0 10px 30px rgba(15,42,92,.25);margin-bottom:12px;min-height:150px}
+.hero.ph{background-size:cover;background-position:center}
+.hero.ph::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,25,55,.25),rgba(10,25,55,.85))}
+.hero>*{position:relative}
+.hero .waves{position:absolute;left:0;right:0;bottom:0;height:46px;opacity:.18}
+.hero .hn{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.1}.hero .hm{opacity:.85;font-size:13.5px;margin-top:2px}
+.hero .hc{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}.hero .hc span{background:rgba(255,255,255,.16);backdrop-filter:blur(4px);border-radius:99px;padding:4px 10px;font-size:12.5px;font-weight:600}
+.ring{position:absolute;right:16px;top:16px;width:84px;height:84px;text-align:center}.ring svg{position:absolute;inset:0}.ring b{display:block;font-size:22px;font-weight:800;padding-top:20px;line-height:1}.ring small{font-size:10.5px;opacity:.85;font-weight:600}
+.qa{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:6px}
+@media(min-width:700px){.qa{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.qa button{display:flex;align-items:center;gap:10px;text-align:left;padding:12px;border-radius:16px;box-shadow:var(--sh);font-size:13.5px;line-height:1.2}
+.qa .qi{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none}.qa .qi svg{width:21px;height:21px}
+.qa small{display:block;color:var(--mut);font-weight:500;font-size:11.5px;margin-top:2px}
+.todo{display:flex;gap:12px;align-items:center;padding:11px 12px;border-radius:14px;background:var(--card);border:1px solid var(--line);margin-bottom:8px;text-decoration:none;color:inherit;box-shadow:var(--sh);border-left:4px solid var(--neu)}
+.todo.bad{border-left-color:var(--bad)}.todo.warn{border-left-color:var(--warn)}
+.todo .t{flex:1;min-width:0}.todo b{font-weight:650;display:block}.todo small{color:var(--mut);font-size:12.5px}
+.tl{position:relative;padding-left:18px}.tl::before{content:"";position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.tl .it{position:relative;padding:6px 0 10px}.tl .it::before{content:"";position:absolute;left:-17px;top:11px;width:10px;height:10px;border-radius:50%;background:var(--card);border:2px solid var(--acc)}
+.tl .it.bad::before{border-color:var(--bad);background:var(--bad)}.tl .it.warn::before{border-color:var(--warn)}
+.tl .it b{font-weight:650}.tl .it small{display:block;color:var(--mut);font-size:12.5px}
+.onb .row{cursor:pointer}.onb .ck{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px}.onb .ck.on{background:var(--ok);border-color:var(--ok)}
+details.cat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;box-shadow:var(--sh);overflow:hidden}
+details.cat>summary{list-style:none;cursor:pointer;padding:13px 14px;display:flex;align-items:center;gap:8px;font-weight:750}
+details.cat>summary::-webkit-details-marker{display:none}
+details.cat>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:rotate(45deg);margin-left:6px;transition:transform .2s}
+details.cat[open]>summary::after{transform:rotate(-135deg)}
+details.cat>summary .t{flex:1;min-width:0}
+details.cat .inner{padding:0 14px 6px;border-top:1px solid var(--line)}
+.modal{position:fixed;inset:0;background:rgba(10,15,25,.55);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.modal.on{display:flex}
+.sheet{background:var(--card);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+@media(min-width:700px){.modal{align-items:center}.sheet{border-radius:16px}}
+.sheet h2{margin:0 0 12px}
+label.f{display:block;font-size:12.5px;color:var(--mut);margin:10px 0 4px}
+input,select,textarea{font:inherit;font-size:16px;width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+textarea{min-height:70px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.err{color:var(--bad);font-size:13px;min-height:18px;margin-top:6px}
+.chk{max-height:200px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:6px 10px}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;padding:3px 0}
+.chk input{width:auto;margin-top:3px}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.thumbs img,.thumbs .pdf{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:pointer}
+.thumbs .pdf{display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--mut);background:var(--neu);text-decoration:none}
+.drop{display:block;border:1.5px dashed var(--line);border-radius:10px;padding:14px;text-align:center;color:var(--mut);font-size:13.5px;cursor:pointer}
+.drop b{color:var(--acc);font-weight:500}
+.banner{background:var(--warnbg);color:var(--warn);padding:10px 12px;border-radius:10px;font-size:13.5px;margin:8px 0}
+.muted{color:var(--mut);font-size:13px}
+.empty{text-align:center;color:var(--mut);padding:20px 10px;font-size:14px}
+.big img{max-width:100%;border-radius:10px}
+.tot{font-size:13px;color:var(--mut);margin:0 4px 8px}
+.boatbtn{display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;text-align:left;flex:1;min-width:0}
+.boatbtn .av{width:42px;height:42px;border-radius:12px;background:var(--accbg);color:var(--acc);display:flex;align-items:center;justify-content:center;font-weight:600;overflow:hidden;flex:none}
+.boatbtn .av img{width:100%;height:100%;object-fit:cover}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}
+.chips button{white-space:nowrap;font-size:12.5px;padding:5px 10px;border-radius:99px}
+.chips button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.st{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+.st button{font-size:12.5px;padding:7px 2px}
+.st button.on[data-st=ok]{background:var(--okbg);color:var(--ok);border-color:var(--ok)}
+.st button.on[data-st=surv]{background:var(--warnbg);color:var(--warn);border-color:var(--warn)}
+.st button.on[data-st=def]{background:var(--badbg);color:var(--bad);border-color:var(--bad)}
+.st button.on[data-st=na]{background:var(--neu);color:var(--ink);border-color:var(--mut)}
+.prog{height:8px;background:var(--neu);border-radius:99px;overflow:hidden;margin:6px 0 12px}.prog i{display:block;height:100%;background:var(--acc)}
+.bars .b{display:flex;align-items:center;gap:8px;font-size:13px;margin:6px 0}.bars .b span:first-child{flex:0 0 46%}.bars .b .tr{flex:1;height:10px;background:var(--neu);border-radius:99px;overflow:hidden}.bars .b .tr i{display:block;height:100%}
+.score{font-size:40px;font-weight:600;line-height:1;white-space:nowrap}
+.fiche h3{margin-top:14px}.fiche ol{padding-left:20px;margin:4px 0}.fiche p{margin:4px 0}
+.badge240{font-size:10.5px;padding:1px 6px;border-radius:6px;background:var(--accbg);color:var(--acc);margin-left:6px;vertical-align:2px}
+.cgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(min-width:700px){.cgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.cfig{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px;box-shadow:var(--sh)}.cfig svg{width:100%;height:auto;max-height:150px;display:block;margin:0 auto 6px}.cfig b{font-weight:750;font-size:14px;display:block;line-height:1.25}.cfig small{color:var(--mut);font-size:12.5px;display:block;margin-top:3px;line-height:1.4}
+.cintro{color:var(--mut);font-size:13.5px;margin:-2px 2px 10px}.ctab td{padding:6px 4px;border-top:1px solid var(--line);font-size:13.5px;vertical-align:top}.ctab td:first-child{font-weight:800;white-space:nowrap}
+.lex dt{font-weight:600;margin-top:10px}.lex dd{margin:2px 0 0;color:var(--mut);font-size:14px}
+.ico{width:46px;height:46px;flex:none;border-radius:10px;background:var(--accbg);color:var(--acc);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.ico img{width:100%;height:100%;object-fit:cover;cursor:pointer}.ico svg{width:26px;height:26px}
+.ph{display:flex;gap:12px;align-items:center}
+.lines{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}.lines td{padding:6px 4px;border-top:1px solid var(--line);vertical-align:top}.lines select{font-size:13px;padding:4px 6px}
+.parts{font-size:12px;color:var(--mut);margin-top:2px}.parts b{font-weight:500;color:var(--ink)}
+.aiBox{background:var(--accbg);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:13.5px}.ph .ico{width:72px;height:72px}
+</style>
+</head>
+<body>
+<header>
+  <button class="boatbtn" id="btnFleet" aria-label="Changer de bateau"><span class="av" id="hAv">B</span><h1 id="hName">Mon bateau<br><span class="sub">Carnet de bord</span></h1></button>
+  <button class="sm" id="btnCfg" aria-label="Fiche du bateau">Fiche bateau</button>
+</header>
+<main>
+<div id="dbBanner" class="banner" style="display:none"></div>
+
+<section id="s-bord">
+  <div id="hero"></div>
+  <div id="ftech"></div>
+  <div id="onb"></div>
+  <div class="qa">
+    <button id="qaSortie"><span class="qi" style="background:#e0f2fe;color:#0369a1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg></span><span>Nouvelle sortie<small>Trace GPX, durée…</small></span></button>
+    <button id="qaFact"><span class="qi" style="background:#ede9fe;color:#6d28d9"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span><span>Ajouter une facture<small>Lecture automatique</small></span></button>
+    <button id="qaDiag"><span class="qi" style="background:#dcfce7;color:#15803d"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6v3H9z"/><path d="M7 5H5v16h14V5h-2"/><path d="M8.5 13l2.5 2.5 4.5-5"/></svg></span><span>Diagnostic<small>61 points</small></span></button>
+    <button id="qaSecu"><span class="qi" style="background:#fee2e2;color:#b91c1c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/></svg></span><span>Sécurité<small>Dates et matériel</small></span></button>
+  </div>
+  <a class="todo" href="https://stephane19691969.github.io/meetai/navigation/" target="_blank" rel="noopener" style="border-left-color:var(--sea)"><span class="qi" style="width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f2a5c,#0e7c86);color:#fff;flex:none"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg></span><div class="t"><b>Ouvrir la navigation</b><small>Carte, GPS, traces, itinéraires, météo</small></div><span class="muted">↗</span></a>
+  <a href="https://stephane19691969.github.io/meetai/navigation/installer.html" target="_blank" rel="noopener" style="display:block;text-align:center;font-size:13px;font-weight:700;color:var(--acc);margin:-2px 0 10px;text-decoration:none">Installer l'icône Mael sur ce téléphone ↗</a>
+  <div id="xfer"></div>
+  <h2>À faire</h2>
+  <div id="alerts"><div class="empty">Chargement…</div></div>
+  <h2>Prochaines échéances</h2>
+  <div class="card"><div class="tl" id="tline"></div></div>
+  <div class="grid" id="kpis" style="margin-top:12px"></div>
+  <h2>Rapports d'état</h2>
+  <div class="card"><div class="muted" style="margin-bottom:8px">PDF générés à partir du dernier diagnostic, du carnet d'entretien et de l'équipement de sécurité.</div>
+    <div class="qa" style="margin:0"><button id="repEtat"><span class="qi" style="background:var(--accbg);color:var(--acc)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 14l2 2 4-4"/></svg></span><span>Rapport d'état<small>Synthèse PDF</small></span></button><button id="repTrans"><span class="qi" style="background:#fef3c7;color:#b45309"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l3-3 4 4 4-4 4 4 3-3"/><path d="M5 19h14"/></svg></span><span>Revente / assurance<small>Dossier complet</small></span></button></div><div class="err" id="repErr"></div></div>
+  <h2>Sorties</h2>
+  <div class="bar"><span class="sp"></span><button class="pri" id="addSortie">+ Sortie</button></div>
+  <div class="grid" id="sKpis"></div>
+  <div id="sList" style="margin-top:10px"></div>
+  <h2>Dernières activités</h2>
+  <div class="card" id="recent"></div>
+</section>
+
+<section id="s-diag"><div class="ptitle"><h1>Diagnostic</h1><p>Inspection guidée, point par point</p></div><div id="diagView"></div></section>
+
+<section id="s-fiches">
+  <div class="ptitle"><h1>Fiches</h1><p>Contrôles, code du permis côtier et lexique</p></div>
+  <div class="seg" id="segF" style="display:flex;margin-bottom:10px"><button data-m="fic" class="on" style="flex:1">Contrôles</button><button data-m="code" style="flex:1">Code côtier</button><button data-m="lex" style="flex:1">Lexique</button></div>
+  <input id="fSearch" placeholder="Rechercher (anode, turbine, taquet…)" style="margin-bottom:8px">
+  <div id="fList"></div>
+</section>
+
+<section id="s-entretien">
+  <div class="ptitle"><h1>Entretien</h1><p>Plan préventif et historique des interventions</p></div>
+  <div class="bar"><button id="addPlan" style="flex:1">+ Planifier</button><button class="pri" id="addInt" style="flex:1">+ Intervention</button></div>
+  <div class="seg" id="segE" style="display:flex;margin-bottom:10px"><button data-m="plan" class="on" style="flex:1">Plan préventif</button><button data-m="hist" style="flex:1">Historique</button></div>
+  <div class="chips" id="pFilt"><button data-pf="all" class="on">Tout</button><button data-pf="late">À faire</button><button data-pf="soon">Bientôt</button><button data-pf="ok">À jour</button></div><div id="ePlan"></div>
+  <div id="eHist" style="display:none"></div>
+</section>
+
+<section id="s-securite">
+  <div class="ptitle"><h1>Sécurité</h1><p>Armement côtier – Division 240</p></div>
+  <div class="bar"><span class="sp"></span><button class="pri" id="addSecu">+ Équipement</button></div>
+  <div class="grid" id="secKpis"></div><div class="chips" id="sFilt" style="margin-top:10px"><button data-sf="all" class="on">Tout</button><button data-sf="rev">À revoir</button><button data-sf="ok">En règle</button></div>
+  <div id="secList" style="margin-top:10px"></div>
+</section>
+</main>
+
+<nav>
+  <a href="#bord" data-s="bord"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16l2 4h14l2-4z"/><path d="M12 3v13"/><path d="M12 5l6 9h-6"/></svg>Bord</a>
+  <a href="#diag" data-s="diag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6v3H9z"/><path d="M7 5H5v16h14V5h-2"/><path d="M8.5 13l2.5 2.5 4.5-5"/></svg>Diagnostic</a>
+  <a href="#entretien" data-s="entretien"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg>Entretien</a>
+  <a href="#securite" data-s="securite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/></svg>Sécurité</a>
+  <a href="#fiches" data-s="fiches"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-7"/><path d="M20 4v14h-7"/></svg>Fiches</a>
+</nav>
+
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+
+<script src="shim.js"></script><script src="data.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtD=d=>d?new Date(d+'T12:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
+const eur=n=>(Number(n)||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+const today=()=>new Date().toISOString().slice(0,10);
+const addM=(d,m)=>{const x=new Date(d+'T12:00');x.setMonth(x.getMonth()+m);return x.toISOString().slice(0,10);};
+const daysTo=d=>Math.round((new Date(d+'T12:00')-new Date(today()+'T12:00'))/864e5);
+
+const S={cfg:{},boats:[],cur:'b1',all:{taches:[],inter:[],sorties:[],secu:[],diags:[]},taches:[],inter:[],sorties:[],secu:[],diags:[],loaded:{}};
+try{S.cur=localStorage.getItem('cb_cur')||'b1';}catch(e){}
+let db=null,assets=null,sampleFn=null,imgOK=false;
+
+/* ---------- navigation ---------- */
+const SECTIONS=['bord','diag','entretien','securite','fiches'];
+function route(){let h=location.hash.slice(1);if(!SECTIONS.includes(h))h='bord';
+  SECTIONS.forEach(s=>{$('#s-'+s).classList.toggle('on',s===h);document.querySelector(`nav a[data-s="${s}"]`).classList.toggle('on',s===h);});
+  boat.active=(h==='bord');window.scrollTo(0,0);}
+addEventListener('hashchange',route);
+
+/* ---------- modal ---------- */
+function openModal(html){$('#sheet').innerHTML=html;$('#modal').classList.add('on');}
+function closeModal(){$('#modal').classList.remove('on');$('#sheet').innerHTML='';}
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal'||e.target.dataset.close!==undefined)closeModal();});
+function confirmBox(msg,cb){openModal(`<h2>Confirmer</h2><p>${esc(msg)}</p><div class="bar"><span class="sp"></span><button data-close>Annuler</button><button class="pri" id="cfOk">Supprimer</button></div>`);$('#cfOk').onclick=async()=>{$('#cfOk').disabled=true;await cb();closeModal();};}
+
+/* ---------- calculs ---------- */
+function engineHours(){let h=Number(S.cfg.heures)||0;
+  S.sorties.forEach(s=>{if(Number(s.compteur)>h)h=Number(s.compteur);});
+  S.inter.forEach(i=>{if(Number(i.heures)>h)h=Number(i.heures);});return h;}
+function tacheStatus(t){
+  if(t.actif===false)return{k:'na',txt:'Sans objet',cls:''};
+  if(t.oneoff){if(t.done)return{k:'done',txt:'Réalisée',cls:'ok'};if(!t.due)return{k:'todo',txt:'À dater',cls:'warn'};const d=daysTo(t.due);return d<0?{k:'late',txt:'En retard',cls:'bad',next:fmtD(t.due)}:d<=30?{k:'soon',txt:'Bientôt',cls:'warn',next:fmtD(t.due)}:{k:'ok',txt:'Planifiée',cls:'acc',next:fmtD(t.due)};}
+  if(!t.mois&&!t.heures)return{k:'routine',txt:'Routine',cls:'acc'};
+  if(!t.last)return{k:'todo',txt:'À renseigner',cls:'warn',sort:-1};
+  let due=t.mois?addM(t.last,t.mois):null,dd=due?daysTo(due):null;
+  let hLeft=(t.heures&&t.lastH!=null&&t.lastH!=='')?(Number(t.lastH)+t.heures-engineHours()):null;
+  let next=[];if(due)next.push(fmtD(due));if(hLeft!=null)next.push((Number(t.lastH)+t.heures)+' h');
+  if((dd!=null&&dd<0)||(hLeft!=null&&hLeft<0))return{k:'late',txt:'En retard',cls:'bad',next:next.join(' ou '),sort:dd??hLeft};
+  if((dd!=null&&dd<=30)||(hLeft!=null&&hLeft<=10))return{k:'soon',txt:'Bientôt',cls:'warn',next:next.join(' ou '),sort:dd??hLeft};
+  return{k:'ok',txt:'À jour',cls:'ok',next:next.join(' ou ')};}
+function secuStatus(s){
+  if(!s.nb||String(s.nb).trim()==='')return{k:'miss',txt:'À vérifier',cls:'warn'};
+  const dd=[s.dlc,s.revision].filter(Boolean).sort()[0];if(!dd)return{k:'ok',txt:'OK',cls:'ok'};
+  const d=daysTo(dd);
+  if(d<0)return{k:'exp',txt:'Périmé',cls:'bad'};
+  if(d<=90)return{k:'soon',txt:'Expire bientôt',cls:'warn'};
+  return{k:'ok',txt:'OK',cls:'ok'};}
+
+/* ---------- rendu ---------- */
+function applyBoat(){const m=x=>(x.boat||'b1')===S.cur;['taches','inter','sorties','secu','diags'].forEach(k=>S[k]=S.all[k].filter(m));S.cfg=S.boats.find(b=>b._id===S.cur)||{};}
+function renderAll(){applyBoat();renderHeader();renderBord();renderFicheTech();renderPlan();renderHist();renderSorties();renderSecu();if(D.view!=='run')renderDiag();renderFiches();}
+function renderHeader(){const c=S.cfg;$('#hName').innerHTML=`${esc(c.nom||'Mon bateau')}${S.boats.length>1?' ▾':''}<br><span class="sub">${esc([[c.constructeur,c.modele].filter(Boolean).join(' '),c.immat].filter(Boolean).join(' · ')||'Carnet de bord')}</span>`;$('#hAv').innerHTML=c.photo&&c.photo.url?`<img src="${esc(c.photo.url)}" alt="">`:esc((c.nom||c.modele||'B')[0].toUpperCase());}
+function health(){const per=S.taches.filter(t=>t.actif!==false&&(t.mois||t.heures||t.oneoff)&&!t.done);const dated=per.filter(t=>!['todo'].includes(tacheStatus(t).k));
+  const ent=dated.length?100*dated.filter(t=>tacheStatus(t).k!=='late').length/dated.length:null;
+  const sec=S.secu.length?100*S.secu.filter(s=>secuStatus(s).k==='ok').length/S.secu.length:null;const d=lastDiag();const dg=d?diagScore(d).score:null;
+  const parts=[[dg,0.4],[ent,0.3],[sec,0.3]].filter(x=>x[0]!=null);if(!parts.length)return null;const w=parts.reduce((s,x)=>s+x[1],0);return Math.round(parts.reduce((s,x)=>s+x[0]*x[1],0)/w);}
+function relDays(d){const n=daysTo(d);return n<0?`en retard de ${-n} j`:n===0?'aujourd\'hui':n<31?`dans ${n} j`:n<365?`dans ${Math.round(n/30)} mois`:`dans ${(n/365).toFixed(1).replace('.',',')} an(s)`;}
+function nextDue(t){if(t.oneoff)return t.done?null:t.due;if(t.actif===false||!t.last||!t.mois)return null;return addM(t.last,t.mois);}
+function renderBord(){const c=S.cfg;const hs=health();const col=hs==null?'#ffffff':hs>=80?'#4ade80':hs>=60?'#fbbf24':'#f87171';const R=34,C=2*Math.PI*R;
+  $('#hero').innerHTML=`<div class="hero ${c.photo&&c.photo.url?'ph':''}" ${c.photo&&c.photo.url?`style="background-image:url('${esc(c.photo.url)}')"`:''}>
+   <svg class="waves" viewBox="0 0 400 46" preserveAspectRatio="none"><path d="M0 20 Q50 5 100 20 T200 20 T300 20 T400 20 V46 H0Z" fill="#fff"/><path d="M0 30 Q50 18 100 30 T200 30 T300 30 T400 30 V46 H0Z" fill="#fff" opacity=".6"/></svg>
+   <div style="padding-right:96px"><div class="hn">${esc(c.nom||'Mon bateau')}</div><div class="hm">${esc([[c.constructeur,c.modele].filter(Boolean).join(' '),c.immat].filter(Boolean).join(' · ')||'Complète la fiche du bateau')}</div></div>
+   <div class="ring"><svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="${R}" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="7"/><circle cx="42" cy="42" r="${R}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${hs==null?C:C*(1-hs/100)}" transform="rotate(-90 42 42)"/></svg><b>${hs??'–'}</b><small>${hs==null?'à évaluer':hs>=80?'bon état':hs>=60?'à surveiller':'attention'}</small></div>
+   <div class="hc"><span>${engineHours()} h moteur</span>${c.moteur?`<span>${esc(c.moteur)}</span>`:''}${c.port?`<span>⚓ ${esc(c.port)}</span>`:''}${c.longueur?`<span>${String(c.longueur).replace('.',',')} m</span>`:''}</div></div>`;
+  const steps=[['Compléter la fiche du bateau',!!(c.nom&&c.modele&&c.immat),()=>boatForm(S.cur)],['Indiquer les heures moteur',!!engineHours(),()=>boatForm(S.cur)],['Faire un premier diagnostic',!!lastDiag(),()=>{location.hash='#diag';}],['Compter le matériel de sécurité',!S.secu.some(s=>secuStatus(s).k==='miss'),()=>{location.hash='#securite';}]];
+  const left=steps.filter(s=>!s[1]).length;
+  $('#onb').innerHTML=left?`<div class="card onb"><b>Bien démarrer</b> <span class="muted">· ${4-left}/4</span>${steps.map((s,i)=>`<div class="row" data-onb="${i}"><span class="ck ${s[1]?'on':''}">${s[1]?'✓':''}</span><div class="t" style="${s[1]?'text-decoration:line-through;color:var(--mut)':''}">${s[0]}</div>${s[1]?'':'<span class="muted">›</span>'}</div>`).join('')}</div>`:'';
+  $('#onb').onclick=e=>{const r=e.target.closest('[data-onb]');if(r)steps[r.dataset.onb][2]();};
+  const lateOnly=S.taches.filter(t=>tacheStatus(t).k==='late');const y=new Date().getFullYear()+'';
+  const dep=S.inter.filter(i=>(i.date||'').startsWith(y)).reduce((a,i)=>a+(Number(i.montant)||0),0)+S.sorties.filter(s=>(s.date||'').startsWith(y)).reduce((a,s)=>a+(Number(s.cout)||0),0);
+  const d=lastDiag();
+  $('#kpis').innerHTML=`<div class="kpi"><div class="l">Dépenses ${y}</div><div class="v">${eur(dep)}</div></div><div class="kpi"><div class="l">Sécurité en règle</div><div class="v">${S.secu.filter(s=>secuStatus(s).k==='ok').length}/${S.secu.length}</div></div>
+  <div class="kpi"><div class="l">Dernier diagnostic</div><div class="v" style="font-size:${d?22:15}px">${d?diagScore(d).score+' %':'<a href="#diag">À faire</a>'}</div></div><div class="kpi"><div class="l">Interventions</div><div class="v">${S.inter.length}</div></div>`;
+  let a=[];
+  S.secu.filter(s=>secuStatus(s).k==='exp').forEach(s=>a.push([0,'bad','Remplacer : '+s.item,`${s.cat} · périmé depuis le ${fmtD([s.dlc,s.revision].filter(Boolean).sort()[0])}`,'#securite']));
+  if(d){const n=Object.values(d.results||{}).filter(r=>r.s==='def').length;if(n)a.push([1,'bad',`${n} défaut(s) relevé(s) au diagnostic`,`Diagnostic du ${fmtD(d.date)}`,'#diag']);}
+  lateOnly.forEach(t=>a.push([2,'bad',t.label,`${t.cat} · échéance ${tacheStatus(t).next||''}`,'#entretien']));
+  S.secu.filter(s=>secuStatus(s).k==='soon').forEach(s=>a.push([3,'warn',s.item,`${s.cat} · ${relDays([s.dlc,s.revision].filter(Boolean).sort()[0])}`,'#securite']));
+  S.taches.filter(t=>tacheStatus(t).k==='soon').forEach(t=>a.push([4,'warn',t.label,`${t.cat} · ${tacheStatus(t).next||''}`,'#entretien']));
+  const todo=S.taches.filter(t=>tacheStatus(t).k==='todo').length;if(todo)a.push([5,'warn',`${todo} entretien(s) sans date`,'Indique quand ils ont été faits, ou « sans objet »','#entretien']);
+  const miss=S.secu.filter(s=>secuStatus(s).k==='miss').length;if(miss)a.push([6,'warn',`${miss} équipement(s) à compter`,'Quantité non renseignée','#securite']);
+  a.sort((x,y)=>x[0]-y[0]);const MAXA=5;
+  $('#alerts').innerHTML=a.length?a.slice(0,MAXA).map(r=>`<a href="${r[4]}" class="todo ${r[1]}"><div class="t"><b>${esc(r[2])}</b><small>${esc(r[3])}</small></div><span class="muted">›</span></a>`).join('')+(a.length>MAXA?`<button class="ghost" id="moreA">Voir les ${a.length-MAXA} autres</button>`:''):(S.loaded.all?'<div class="card empty">Rien d\'urgent. Bon vent !</div>':'<div class="empty">Chargement…</div>');
+  if($('#moreA'))$('#moreA').onclick=()=>{$('#alerts').innerHTML=a.map(r=>`<a href="${r[4]}" class="todo ${r[1]}"><div class="t"><b>${esc(r[2])}</b><small>${esc(r[3])}</small></div><span class="muted">›</span></a>`).join('');};
+  const ev=[...S.taches.map(t=>({d:nextDue(t),t:t.label,s:t.cat})),...S.secu.flatMap(s=>[s.dlc?{d:s.dlc,t:s.item,s:'Date limite'}:null,s.revision?{d:s.revision,t:s.item,s:'Révision'}:null].filter(Boolean))].filter(x=>x.d&&daysTo(x.d)>=-365).sort((x,y)=>x.d.localeCompare(y.d));
+  const up=[...ev.filter(x=>daysTo(x.d)<0).slice(-2),...ev.filter(x=>daysTo(x.d)>=0).slice(0,5)];
+  $('#tline').innerHTML=up.length?up.map(x=>{const n=daysTo(x.d);return `<div class="it ${n<0?'bad':n<=30?'warn':''}"><b>${esc(x.t)}</b><small>${fmtD(x.d)} · ${relDays(x.d)} · ${esc(x.s)}</small></div>`;}).join(''):'<div class="muted">Renseigne les dates d\'entretien pour voir les échéances.</div>';
+  const ev2=[...S.inter.map(i=>({d:i.date,t:i.titre,s:'Intervention'+(i.montant?' · '+eur(i.montant):''),h:'#entretien'})),...S.sorties.map(s=>({d:s.date,t:s.lieu||'Sortie',s:'Sortie'+(s.duree?' · '+s.duree+' h':''),h:'#bord'}))].sort((a,b)=>(b.d||'').localeCompare(a.d||'')).slice(0,5);
+  $('#recent').innerHTML=ev2.length?ev2.map(e=>`<a href="${e.h}" class="row" style="text-decoration:none;color:inherit"><div class="t"><b>${esc(e.t)}</b><small>${esc(e.s)}</small></div><span class="muted">${fmtD(e.d)}</span></a>`).join(''):'<div class="empty">Aucune sortie ni intervention pour l\'instant.</div>';}
+
+let PF='all';
+function renderPlan(){
+  if(!S.taches.length){$('#ePlan').innerHTML=`<div class="empty">${S.loaded.taches?'Aucune tâche d\'entretien.':'Chargement…'}</div>`;return;}
+  const grp=k=>k==='late'||k==='todo'?'late':k==='soon'?'soon':k==='ok'||k==='done'||k==='routine'?'ok':'na';
+  const key=c=>{const ts=S.taches.filter(t=>t.cat===c);return (ts.every(t=>t.actif===false)?1e6:0)+Math.min(...ts.map(t=>t.ordre??0));};
+  const cats=[...new Set(S.taches.map(t=>t.cat))].sort((a,b)=>key(a)-key(b));
+  const html=cats.map((c,ci)=>{const all=S.taches.filter(t=>t.cat===c).sort((a,b)=>a.ordre-b.ordre);const ts=all.filter(t=>PF==='all'||grp(tacheStatus(t).k)===PF);if(!ts.length)return '';
+    const cnt=k=>all.filter(t=>grp(tacheStatus(t).k)===k).length;const off=all.every(t=>t.actif===false);const open=PF!=='all'||(!off&&(cnt('late')||cnt('soon')||ci===0));let sub=null;
+    return `<details class="cat" ${open?'open':''}><summary><span class="t">${esc(c)}<div class="muted" style="font-weight:500">${off?'Désactivé':all.length+' point(s)'}</div></span>${cnt('late')?`<span class="pill bad">${cnt('late')}</span>`:''}${cnt('soon')?`<span class="pill warn">${cnt('soon')}</span>`:''}${!off&&!cnt('late')&&!cnt('soon')?'<span class="pill ok">OK</span>':''}</summary><div class="inner">${ts.map(t=>{const st=tacheStatus(t);const hd=(t.sub&&t.sub!==sub)?`<div class="muted" style="padding-top:10px;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.04em">${esc(sub=t.sub)}</div>`:'';return hd+`<div class="row"><div class="t"><b style="${t.actif===false?'opacity:.5':''}">${esc(t.label)}</b><small>${esc(t.perio)}${t.last?' · fait le '+fmtD(t.last):''}${t.lastH!=null&&t.lastH!==''?' à '+t.lastH+' h':''}${st.next&&st.k!=='na'?' · prochain : '+esc(st.next):''}</small>${(()=>{const p=partsFor(t._id);return p&&p.items.length?`<div class="parts">Pièces (${fmtD(p.date)}) : ${p.items.map(x=>`<b>${esc(x.libelle)}</b>${x.ref?' '+esc(x.ref):''}${x.prix!=null?' – '+eur2(x.prix):''}`).join(' · ')}</div>`:''})()}</div>
+      <span class="pill ${st.cls}">${st.txt}</span><button class="sm" data-tache="${t._id}" aria-label="Détails">⋯</button></div>`;}).join('')}</div></details>`;}).join('');
+  $('#ePlan').innerHTML=(html||'<div class="card empty">Aucun point dans ce filtre.</div>')+`<p class="muted" style="margin:10px 4px">Programme moteur repris du manuel Mercury 40/50/60 4 temps. Touche ⋯ pour dater un point ou le marquer « sans objet ».</p>`;}
+$('#pFilt').onclick=e=>{const f=e.target.dataset.pf;if(!f)return;PF=f;[...$('#pFilt').children].forEach(b=>b.classList.toggle('on',b.dataset.pf===f));renderPlan();};
+
+function tacheMenu(id){const t=S.taches.find(x=>x._id===id);if(!t)return;if(t.oneoff)return planForm(id);
+  openModal(`<h2>${esc(t.label)}</h2><p class="muted">${esc(t.cat)} · ${esc(t.perio)}</p>
+  <label class="f">Dernière vérification</label><input type="date" id="tLast" value="${esc(t.last||'')}">
+  <label class="f">Heures moteur à ce moment</label><input type="number" inputmode="decimal" id="tLastH" value="${esc(t.lastH??'')}">
+  <div class="two"><div><label class="f">Périodicité (mois)</label><input type="number" id="tMois" value="${esc(t.mois||'')}"></div><div><label class="f">Ou toutes les (heures)</label><input type="number" id="tH" value="${esc(t.heures||'')}"></div></div>
+  ${(()=>{const H=S.inter.filter(i=>(i.taches||[]).includes(id)).sort((a,b)=>(b.date||'').localeCompare(a.date||''));return H.length?`<label class="f">Historique</label>${H.map(i=>`<div class="parts"><b>${fmtD(i.date)}</b> – ${esc(i.titre)}${(i.lignes||[]).filter(l=>(l.taches||[]).includes(id)).map(l=>' · '+esc(l.libelle)+(l.prix!=null?' '+eur2(l.prix):'')).join('')}</div>`).join('')}`:'';})()}
+  <label class="f" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="tNa" style="width:auto" ${t.actif===false?'checked':''}> Sans objet pour mon bateau</label>
+  <div class="err" id="tErr"></div>
+  <div class="bar"><button class="ghost" id="tInt">Saisir une intervention</button><span class="sp"></span><button data-close>Annuler</button><button class="pri" id="tSave">Enregistrer</button></div>`);
+  $('#tInt').onclick=()=>interForm(null,[id]);
+  $('#tSave').onclick=async()=>{const m=$('#tMois').value,h=$('#tH').value;
+    const per=[m?(m%12===0?(m/12===1?'annuel':m/12+' ans'):m+' mois'):'',h?h+' h':''].filter(Boolean).join(' ou ')||t.perio;
+    await save('taches',id,{...strip(t),last:$('#tLast').value,lastH:$('#tLastH').value===''?null:Number($('#tLastH').value),mois:m?Number(m):null,heures:h?Number(h):null,perio:per,actif:!$('#tNa').checked},'#tErr')&&closeModal();};}
+
+function photoThumbs(ph){return (ph||[]).map(p=>p.type==='application/pdf'?`<a class="pdf" href="${esc(p.url)}" target="_blank" rel="noopener">PDF</a>`:`<img src="${esc(p.url)}" alt="Facture" data-big="${esc(p.url)}" loading="lazy">`).join('');}
+function renderHist(){
+  const L=[...S.inter].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const tot=L.reduce((a,i)=>a+(Number(i.montant)||0),0);
+  $('#eHist').innerHTML=L.length?`<p class="tot">${L.length} intervention(s) · total ${eur(tot)}</p>`+L.map(i=>`<div class="card"><div class="row" style="padding:0"><div class="t"><b>${esc(i.titre)}</b><small>${fmtD(i.date)}${i.presta?' · '+esc(i.presta):''}${i.heures?' · '+i.heures+' h':''}</small></div><b>${i.montant?eur(i.montant):''}</b><button class="sm" data-inter="${i._id}">⋯</button></div>
+    ${(i.lignes||[]).length?linesHtml(i.lignes):(i.taches||[]).length?`<div class="muted" style="margin-top:6px">${(i.taches||[]).map(tid=>esc((S.taches.find(t=>t._id===tid)||{}).label||'')).filter(Boolean).join(' · ')}</div>`:''}
+    ${i.notes?`<div style="margin-top:6px;font-size:13.5px">${esc(i.notes)}</div>`:''}<div class="thumbs">${photoThumbs(i.photos)}</div></div>`).join(''):`<div class="empty">${S.loaded.inter?'Aucune intervention. Ajoute la première avec la photo de la facture.':'Chargement…'}</div>`;}
+
+
+/* ---------- pièces par point d'entretien ---------- */
+function partsFor(tid){const L=[...S.inter].filter(i=>(i.lignes||[]).some(l=>(l.taches||[]).includes(tid))).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(!L.length)return null;const i=L[0];return{date:i.date,items:(i.lignes||[]).filter(l=>(l.taches||[]).includes(tid)&&l.type!=='main_oeuvre')};}
+function linesHtml(ls){if(!(ls||[]).length)return '';return `<table class="lines">${ls.map(l=>`<tr><td>${esc(l.libelle)}${l.ref?`<div class="muted">${esc(l.ref)}${l.qte&&l.qte!=1?' · ×'+l.qte:''}</div>`:''}</td><td style="text-align:right;white-space:nowrap">${l.prix!=null?eur2(l.prix):''}</td><td class="muted">${(l.taches||[]).map(t=>esc((S.taches.find(x=>x._id===t)||{}).label||'')).filter(Boolean).join(', ')||'—'}</td></tr>`).join('')}</table>`;}
+const eur2=n=>(Number(n)||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR'});
+function loadScript(src){return new Promise((ok,ko)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=ko;document.head.appendChild(s);});}
+async function pdfToImages(file,max=2){
+  if(!window.pdfjsLib){await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js');}
+  const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;const out=[];
+  for(let p=1;p<=Math.min(max,pdf.numPages);p++){const pg=await pdf.getPage(p);const v0=pg.getViewport({scale:1});const v=pg.getViewport({scale:1600/Math.max(v0.width,v0.height)});
+    const c=document.createElement('canvas');c.width=v.width;c.height=v.height;const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:ctx,viewport:v}).promise;
+    out.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.85)));}
+  return out;}
+async function analyseInvoice(files){
+  let imgs=[];for(const f of files){if(f.type==='application/pdf')imgs.push(...await pdfToImages(f));else imgs.push(await compress(f));}
+  const lim=await sampleFn.limits();imgs=imgs.slice(0,lim.images.maxCount);
+  const plan=S.taches.filter(t=>t.actif!==false).sort((a,b)=>a.ordre-b.ordre).map(t=>`${t._id} | ${t.cat} | ${t.label}`).join('\n');
+  const prompt=`Les images sont une facture d'entretien d'un bateau (moteur ${S.cfg.moteur||'hors-bord'}). Lis chaque ligne de la facture et rattache-la aux points du plan d'entretien ci-dessous, par leur identifiant.
+Règles : une pièce ou un produit peut correspondre à 0, 1 ou plusieurs points (exemple : huile moteur et filtre à huile → point de vidange ; huile d'embase et joints d'embase → point de vidange d'embase ; bougies → point des bougies ; anode → point des anodes ; turbine → point de la turbine). Main-d'œuvre, frais de port, écotaxe et fournitures diverses : type "main_oeuvre" ou "divers" ; rattache la main-d'œuvre aux points de sa section si la facture le précise, sinon taches vide. N'invente aucun point absent de la liste.
+Réponds uniquement avec un objet JSON de cette forme :
+{"date":"AAAA-MM-JJ","numero":"FAC…","presta":"nom du prestataire","montant":total TTC en nombre,"titre":"intitulé court de l'intervention","heures":heures moteur si indiquées sinon null,"lignes":[{"libelle":"…","ref":"référence pièce ou vide","qte":nombre,"prix":total TTC de la ligne en nombre,"type":"piece|main_oeuvre|divers","taches":["id"]}]}
+Plan d'entretien (id | catégorie | point) :
+${plan}`;
+  return await sampleFn.json(prompt,{images:imgs});}
+
+/* ---------- photos ---------- */
+async function compress(file){
+  if(!file.type.startsWith('image/'))return file;
+  try{const bmp=await createImageBitmap(file);const k=Math.min(1,3200/Math.max(bmp.width,bmp.height));
+    const c=document.createElement('canvas');c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+    return await new Promise(r=>c.toBlob(b=>r(b||file),'image/jpeg',0.9));}catch(e){return file;}}
+
+function interForm(id,preTaches){
+  const i=id?S.inter.find(x=>x._id===id):{date:today(),taches:preTaches||[],photos:[]};
+  let photos=[...(i.photos||[])],pending=[],rawFiles=[],lignes=JSON.parse(JSON.stringify(i.lignes||[]));
+  const cats=[...new Set(S.taches.filter(t=>t.actif!==false&&!t.done).map(t=>t.cat))];
+  openModal(`<h2>${id?'Modifier':'Nouvelle'} intervention</h2>
+  <label class="f">Date</label><input type="date" id="iDate" value="${esc(i.date||'')}">
+  <label class="f">Intitulé</label><input id="iTitre" placeholder="Révision annuelle moteur" value="${esc(i.titre||'')}">
+  <div class="two"><div><label class="f">Prestataire</label><input id="iPresta" placeholder="Chantier naval" value="${esc(i.presta||'')}"></div><div><label class="f">Montant (€)</label><input type="number" inputmode="decimal" id="iMontant" value="${esc(i.montant||'')}"></div></div>
+  <label class="f">Heures moteur</label><input type="number" inputmode="decimal" id="iHeures" placeholder="${engineHours()}" value="${esc(i.heures||'')}">
+  <label class="f">Points du plan d'entretien réalisés</label>
+  <div class="chk">${cats.map(c=>`<div class="muted" style="margin-top:4px">${esc(c)}</div>`+S.taches.filter(t=>t.cat===c&&t.actif!==false&&!t.done).map(t=>`<label><input type="checkbox" value="${t._id}" ${(i.taches||[]).includes(t._id)?'checked':''}>${esc(t.label)}</label>`).join('')).join('')}</div>
+  <label class="f">Photos de facture</label>
+  <label class="drop" for="iFile"><b>Prendre une photo</b> ou choisir des fichiers<br><span class="muted">Images ou PDF</span></label>
+  <input type="file" id="iFile" accept="image/*,application/pdf" multiple style="display:none">
+  <div class="thumbs" id="iThumbs"></div>
+  <div id="iAIwrap" style="display:none"><button class="pri" id="iAI" style="width:100%;margin-top:10px">Lire la facture et répartir dans le plan</button></div>${window.__HOSTED?`<div class="note" style="margin-top:10px;font-size:13px">📷 Lecture automatique de facture : ouvre <a href="${CLAUDE_URL}" target="_blank" rel="noopener"><b>la version Claude</b></a>, ajoute la facture, puis touche « Transférer vers l'appli Mael » et importe le fichier ici (onglet Bord).</div>`:''}
+  <div id="iAImsg"></div>
+  <div id="iLines"></div>
+  <label class="f">Notes</label><textarea id="iNotes">${esc(i.notes||'')}</textarea>
+  <div class="err" id="iErr"></div>
+  <div class="bar">${id?'<button class="del" id="iDel">Supprimer</button>':''}<span class="sp"></span><button data-close>Annuler</button><button class="pri" id="iSave">Enregistrer</button></div>`);
+  const draw=()=>{$('#iThumbs').innerHTML=photos.map((p,k)=>`<div style="position:relative">${p.type==='application/pdf'?`<span class="pdf">PDF</span>`:`<img src="${esc(p.url)}" alt="">`}<button class="sm" data-rm="${k}" style="position:absolute;top:-6px;right:-6px;padding:0 6px;border-radius:99px" aria-label="Retirer">×</button></div>`).join('')+pending.map(()=>'<span class="pdf">Envoi…</span>').join('');};
+  draw();
+  $('#iThumbs').onclick=e=>{const k=e.target.dataset.rm;if(k!==undefined){photos.splice(Number(k),1);draw();}};
+  $('#iFile').onchange=async e=>{if(!assets){$('#iErr').textContent='L\'envoi de photos n\'est pas disponible dans cette vue.';return;}
+    const files=[...e.target.files];e.target.value='';
+    for(const f of files){pending.push(f);draw();
+      rawFiles.push(f);try{const b=await compress(f);const r=await assets.upload(b);photos.push({id:r.id,url:r.url||('/_blob/'+r.id),type:r.contentType||b.type,name:f.name});}
+      catch(err){$('#iErr').textContent='Une photo n\'a pas pu être envoyée. Réessaie.';}
+      pending.shift();draw();}aiShow();};
+  const actives=S.taches.filter(t=>t.actif!==false).sort((a,b)=>a.ordre-b.ordre);
+  const aiShow=()=>{$('#iAIwrap').style.display=(sampleFn&&imgOK&&rawFiles.length)?'':'none';};
+  const drawLines=()=>{if(!lignes.length){$('#iLines').innerHTML='';return;}
+    $('#iLines').innerHTML=`<label class="f">Lignes de la facture → point du plan</label><table class="lines">${lignes.map((l,k)=>`<tr><td>${esc(l.libelle)}${l.ref?`<div class="muted">${esc(l.ref)}</div>`:''}</td><td style="text-align:right;white-space:nowrap">${l.prix!=null?eur2(l.prix):''}</td><td style="width:42%"><select data-ln="${k}"><option value="">— hors plan —</option>${actives.map(t=>`<option value="${t._id}" ${(l.taches||[])[0]===t._id?'selected':''}>${esc(t.label)}</option>`).join('')}</select>${(l.taches||[]).length>1?`<div class="muted">+ ${(l.taches||[]).slice(1).map(x=>esc((S.taches.find(t=>t._id===x)||{}).label||'')).join(', ')}</div>`:''}</td></tr>`).join('')}</table>`;};
+  drawLines();
+  $('#iLines').onchange=e=>{const k=e.target.dataset.ln;if(k===undefined)return;const v=e.target.value;lignes[k].taches=v?[v,...(lignes[k].taches||[]).slice(1).filter(x=>x!==v)]:[];syncChecks();drawLines();};
+  const syncChecks=()=>{const set=new Set(lignes.flatMap(l=>l.taches||[]));document.querySelectorAll('.chk input').forEach(c=>{if(set.has(c.value))c.checked=true;});};
+  $('#iAI').onclick=async()=>{const btn=$('#iAI');btn.disabled=true;$('#iAImsg').innerHTML='<div class="aiBox">Lecture de la facture en cours… (jusqu’à une minute)</div>';
+    try{const r=await analyseInvoice(rawFiles);
+      if(r.date&&/^\d{4}-\d{2}-\d{2}$/.test(r.date))$('#iDate').value=r.date;
+      if(r.titre&&!$('#iTitre').value)$('#iTitre').value=r.titre+(r.numero?' ('+r.numero+')':'');
+      if(r.presta)$('#iPresta').value=r.presta;if(r.montant!=null&&!isNaN(r.montant))$('#iMontant').value=Number(r.montant);
+      if(r.heures!=null&&!isNaN(r.heures)&&!$('#iHeures').value)$('#iHeures').value=Number(r.heures);
+      const ids=new Set(S.taches.map(t=>t._id));
+      lignes=(r.lignes||[]).map(l=>({libelle:String(l.libelle||''),ref:String(l.ref||''),qte:Number(l.qte)||1,prix:l.prix==null?null:Number(l.prix),type:['piece','main_oeuvre','divers'].includes(l.type)?l.type:'piece',taches:(l.taches||[]).map(String).filter(x=>ids.has(x))}));
+      syncChecks();drawLines();const n=new Set(lignes.flatMap(l=>l.taches)).size;
+      $('#iAImsg').innerHTML=`<div class="aiBox">${lignes.length} lignes lues, ${n} point(s) du plan concernés. Vérifie la répartition puis enregistre.</div>`;}
+    catch(e){const m={not_granted:'Autorisation refusée.',rate_limited:'Trop de demandes, réessaie plus tard.',invalid_json:'La facture n\'a pas pu être lue correctement. Réessaie.',image_rejected:'Fichier illisible.'}[e&&e.code]||'La lecture a échoué. Réessaie.';$('#iAImsg').innerHTML=`<div class="aiBox" style="color:var(--bad)">${m}</div>`;}
+    btn.disabled=false;};
+  if(id)$('#iDel').onclick=()=>confirmBox('Supprimer cette intervention et ses photos ?',async()=>{for(const p of i.photos||[]){try{await assets?.delete(p.id);}catch(e){}}await db.collection('interventions').doc(id).delete();});
+  $('#iSave').onclick=async()=>{
+    if(pending.length){$('#iErr').textContent='Attends la fin de l\'envoi des photos.';return;}
+    const d=$('#iDate').value,ti=$('#iTitre').value.trim();
+    if(!d||!ti){$('#iErr').textContent='Indique au moins la date et l\'intitulé.';return;}
+    const tids=[...document.querySelectorAll('.chk input:checked')].map(x=>x.value);
+    const h=$('#iHeures').value===''?null:Number($('#iHeures').value);
+    lignes.forEach(l=>(l.taches||[]).forEach(t=>{if(!tids.includes(t))tids.push(t);}));
+    const doc={date:d,titre:ti,presta:$('#iPresta').value.trim(),montant:$('#iMontant').value===''?null:Number($('#iMontant').value),heures:h,taches:tids,lignes,photos,notes:$('#iNotes').value.trim()};
+    $('#iSave').disabled=true;
+    const ok=await save('interventions',id||db.collection('interventions').doc().id,doc,'#iErr');
+    if(ok){for(const tid of tids){const t=S.taches.find(x=>x._id===tid);if(t&&t.oneoff&&!t.done){await save('taches',tid,{...strip(t),done:true,last:d});}else if(t&&!t.oneoff&&(!t.last||t.last<=d)){await save('taches',tid,{...strip(t),last:d,lastH:h??t.lastH??null});}}closeModal();}
+    else $('#iSave').disabled=false;};}
+
+
+/* ---------- transfert entre la version Claude et l'appli hébergée ---------- */
+const CLAUDE_URL='https://claude.ai/artifact/QJeKWftzcRZkBUT8FMRkCV';
+const HOST_URL='https://stephane19691969.github.io/meetai/carnet/';
+function allDocs(){const out={bateaux:(S.boats||[]).map(b=>({id:b._id,data:strip(b)}))};Object.entries(MAP).forEach(([col,key])=>{out[col]=(S.all[key]||[]).map(d=>({id:d._id,data:strip(d)}));});return out;}
+const blobToData=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(b);});
+async function inlineBlobs(o,st){if(Array.isArray(o)){for(const x of o)await inlineBlobs(x,st);return;}if(!o||typeof o!=='object')return;
+ for(const k of Object.keys(o)){const v=o[k];if(typeof v==='string'&&(v.startsWith('/_blob/')||v.startsWith('blob:'))){try{const r=await fetch(v);if(r.ok){o[k]=await blobToData(await r.blob());st.n++;}else st.ko++;}catch(e){st.ko++;}}else if(v&&typeof v==='object')await inlineBlobs(v,st);}}
+async function exportAll(btn,msg){const lab=btn.textContent;btn.disabled=true;btn.textContent='Préparation…';
+ try{const cols=allDocs();const st={n:0,ko:0};await inlineBlobs(cols,st);
+  const data={app:'carnet-mael',v:1,date:new Date().toISOString(),cols};
+  const dl=await claude.use('downloads');if(!dl)throw new Error('Téléchargement indisponible dans cette vue.');
+  const fn='carnet-mael-'+new Date().toISOString().slice(0,10)+'.json';
+  await dl.save({filename:fn,data:new Blob([JSON.stringify(data)],{type:'application/json'})});
+  const nb=Object.values(cols).reduce((a,b)=>a+b.length,0);
+  $(msg).innerHTML=`✅ Fichier <b>${esc(fn)}</b> enregistré (${nb} fiches, ${st.n} photos${st.ko?`, ${st.ko} photo(s) non récupérée(s)`:''}).`;}
+ catch(e){$(msg).textContent='Erreur : '+(e.message||e);}
+ btn.disabled=false;btn.textContent=lab;}
+async function importFile(f,msg){try{const d=JSON.parse(await f.text());if(d.app!=='carnet-mael'||!d.cols)throw new Error('Ce fichier n\'est pas une sauvegarde du carnet.');
+  const have={bateaux:new Set((S.boats||[]).map(b=>b._id))};Object.entries(MAP).forEach(([col,key])=>have[col]=new Set((S.all[key]||[]).map(x=>x._id)));
+  const added={};const newInter=[];const taskMap=new Map((S.all.taches||[]).map(t=>[t._id,strip(t)]));
+  for(const col of['bateaux','taches','securite','sorties','diagnostics','interventions']){const list=d.cols[col]||[];added[col]=0;
+   for(const doc of list){if(!doc||!doc.id||(have[col]&&have[col].has(doc.id)))continue;await db.collection(col).doc(doc.id).set(doc.data);added[col]++;
+    if(col==='taches')taskMap.set(doc.id,doc.data);if(col==='interventions')newInter.push(doc.data);}}
+  newInter.sort((a,b)=>(a.date||'').localeCompare(b.date||''));let maj=0;
+  for(const it of newInter){for(const tid of it.taches||[]){const t=taskMap.get(tid);if(!t)continue;const d2=it.date;let nt=null;
+    if(t.oneoff&&!t.done)nt={...t,done:true,last:d2};else if(!t.oneoff&&(!t.last||t.last<=d2))nt={...t,last:d2,lastH:it.heures??t.lastH??null};
+    if(nt){await db.collection('taches').doc(tid).set(nt);taskMap.set(tid,nt);maj++;}}}
+  const lab={bateaux:'bateau',taches:'tâche',interventions:'intervention',sorties:'sortie',securite:'équipement',diagnostics:'diagnostic'};
+  const parts=Object.entries(added).filter(([k,v])=>v).map(([k,v])=>`${v} ${lab[k]}${v>1?'s':''}`);
+  $(msg).innerHTML=parts.length?`✅ Ajouté : ${parts.join(', ')}.${maj?` ${maj} tâche(s) du plan mise(s) à jour.`:''}`:'Rien de nouveau : tout était déjà dans le carnet.';}
+ catch(e){$(msg).textContent='Erreur : '+(e.message||e);}}
+function renderXfer(){const el=$('#xfer');if(!el)return;
+ if(window.__HOSTED){el.innerHTML=`<div class="card" style="margin:4px 0 12px"><b>🔄 Factures et sauvegarde</b>
+  <p class="muted" style="margin:6px 0 10px;font-size:13px">Pour qu'une facture soit lue automatiquement, ajoute-la dans la version Claude, puis transfère ici le fichier qu'elle produit. Seules les nouvelles fiches sont ajoutées.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="ghost sm" href="${CLAUDE_URL}" target="_blank" rel="noopener" style="text-decoration:none">📷 Lire une facture (Claude) ↗</a>
+  <label class="pri sm" style="cursor:pointer">📥 Importer un fichier<input type="file" id="xIn" accept=".json,application/json" style="display:none"></label>
+  <button class="ghost sm" id="xOut">💾 Sauvegarder</button></div><div id="xMsg" style="margin-top:8px;font-size:13px"></div><a href="installer.html" style="display:block;margin-top:8px;font-size:13px;font-weight:700;color:var(--acc)">Installer l'icône Carnet Mael sur ce téléphone</a></div>`;
+  $('#xIn').onchange=e=>{const f=e.target.files[0];if(f){$('#xMsg').textContent='Import en cours…';importFile(f,'#xMsg');}e.target.value='';};
+  $('#xOut').onclick=()=>exportAll($('#xOut'),'#xMsg');
+  setTimeout(()=>{if(!(S.boats||[]).length&&el.parentNode)el.parentNode.prepend(el);},900);}
+ else{el.innerHTML=`<div class="card" style="margin:4px 0 12px"><b>📲 Appli Carnet Mael (hors Claude)</b>
+  <p class="muted" style="margin:6px 0 10px;font-size:13px">Après avoir ajouté une facture ici, transfère tes données vers l'appli installée sur ton téléphone : touche le bouton, puis dans l'appli, « Importer un fichier ».</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="pri sm" id="xOut">📤 Transférer vers l'appli Mael</button><a class="ghost sm" href="${HOST_URL}installer.html" target="_blank" rel="noopener" style="text-decoration:none">Installer l'appli ↗</a></div>
+  <div id="xMsg" style="margin-top:8px;font-size:13px"></div></div>`;
+  $('#xOut').onclick=()=>exportAll($('#xOut'),'#xMsg');}}
+/* ---------- sorties ---------- */
+const R_NM=3440.065;function gdist(a,b){const r=x=>x*Math.PI/180;const h=Math.sin(r(b[0]-a[0])/2)**2+Math.cos(r(a[0]))*Math.cos(r(b[0]))*Math.sin(r(b[1]-a[1])/2)**2;return 2*R_NM*Math.asin(Math.min(1,Math.sqrt(h)));}
+const COURBE=[[0,0.8],[3,1.5],[5,2.5],[7,5],[10,9],[14,10],[18,11.5],[22,14],[25,17],[28,19]];
+function lphC(kn){const c=COURBE;if(!(kn>0.3))return 0;if(kn>=28)return 19;for(let i=1;i<c.length;i++)if(kn<=c[i][0]){const a=c[i-1],b=c[i];return a[1]+(b[1]-a[1])*(kn-a[0])/(b[0]-a[0]);}return 0;}
+function parseGPXc(txt){const x=new DOMParser().parseFromString(txt,'application/xml');let nodes=[...x.getElementsByTagName('trkpt')];if(!nodes.length)nodes=[...x.getElementsByTagName('rtept')];
+  const P=nodes.map(n=>{const t=n.getElementsByTagName('time')[0];return [+n.getAttribute('lat'),+n.getAttribute('lon'),t?Date.parse(t.textContent):null];}).filter(p=>isFinite(p[0])&&isFinite(p[1]));
+  if(P.length<2)throw new Error('vide');let d=0,vmax=0,fuel=0,mov=0;
+  for(let i=1;i<P.length;i++){const s=gdist(P[i-1],P[i]);d+=s;if(P[i][2]&&P[i-1][2]){const hh=(P[i][2]-P[i-1][2])/3600000;if(hh>0&&hh<1){const v=s/hh;if(v<60){if(v>vmax&&s>0.01)vmax=v;fuel+=lphC(v)*hh;if(v>1)mov+=hh;}}}}
+  const ext=tag=>{const e=x.getElementsByTagName(tag)[0];return e?Number(e.textContent):null;};const fx=ext('cb:carburant');
+  const t0=P[0][2],t1=P[P.length-1][2];const step=Math.ceil(P.length/300);
+  return{date:t0?new Date(t0).toISOString().slice(0,10):'',duree:t0&&t1?Math.round((t1-t0)/360000)/10:null,distance:Math.round(d*10)/10,vmax:Math.round(vmax*10)/10,vmoy:mov?Math.round(d/mov*10)/10:null,carbu:fx!=null?Math.round(fx*10)/10:(fuel?Math.round(fuel*10)/10:null),
+    nom:(x.getElementsByTagName('name')[0]||{}).textContent||'',trace:P.filter((_,i)=>i%step===0||i===P.length-1).map(p=>[+p[0].toFixed(5),+p[1].toFixed(5)])};}
+function traceSvg(tr,w=64,hgt=48){if(!tr||tr.length<2)return '';const la=tr.map(p=>p[0]),lo=tr.map(p=>p[1]);const k=Math.cos(la[0]*Math.PI/180);const x0=Math.min(...lo),x1=Math.max(...lo),y0=Math.min(...la),y1=Math.max(...la);const sc=Math.min((w-6)/((x1-x0)*k||1e-6),(hgt-6)/((y1-y0)||1e-6));
+  return `<svg width="${w}" height="${hgt}" viewBox="0 0 ${w} ${hgt}" style="flex:none;background:var(--accbg);border-radius:8px"><polyline fill="none" stroke="var(--acc)" stroke-width="1.6" stroke-linejoin="round" points="${tr.map(p=>(3+(p[1]-x0)*k*sc).toFixed(1)+','+(hgt-3-(p[0]-y0)*sc).toFixed(1)).join(' ')}"/></svg>`;}
+function renderSorties(){
+  const L=[...S.sorties].sort((a,b)=>(b.date||'').localeCompare(a.date||''));const y=new Date().getFullYear()+'';
+  const Y=L.filter(s=>(s.date||'').startsWith(y));
+  $('#sKpis').innerHTML=`<div class="kpi"><div class="l">Sorties ${y}</div><div class="v">${Y.length}</div></div><div class="kpi"><div class="l">Heures en mer ${y}</div><div class="v">${Y.reduce((a,s)=>a+(Number(s.duree)||0),0).toLocaleString('fr-FR')} h</div></div><div class="kpi"><div class="l">Carburant ${y}</div><div class="v">${Math.round(Y.reduce((a,s)=>a+(Number(s.carbu)||0),0))} L</div></div><div class="kpi"><div class="l">Coût ${y}</div><div class="v">${eur(Y.reduce((a,s)=>a+(Number(s.cout)||0),0))}</div></div>`;
+  $('#sList').innerHTML=L.length?`<div class="card">${L.map(s=>`<div class="row">${traceSvg(s.trace)}<div class="t"><b>${esc(s.lieu||'Sortie')}</b><small>${fmtD(s.date)}${s.duree?' · '+s.duree+' h':''}${s.distance?' · '+s.distance.toLocaleString('fr-FR')+' milles':''}${s.vmoy?' · moy. '+s.vmoy.toLocaleString('fr-FR')+' nd':''}${s.vmax?' · max '+s.vmax.toLocaleString('fr-FR')+' nd':''}${s.equipage?' · '+esc(s.equipage)+' pers.':''}${s.meteo?' · '+esc(s.meteo):''}${s.compteur?' · compteur '+s.compteur+' h':''}</small>${s.notes?`<small style="display:block">${esc(s.notes)}</small>`:''}</div><button class="sm" data-sortie="${s._id}">⋯</button></div>`).join('')}</div>`:`<div class="empty">${S.loaded.sorties?'Aucune sortie enregistrée.':'Chargement…'}</div>`;}
+function sortieForm(id){const s=id?S.sorties.find(x=>x._id===id):{date:today()};
+  let gpx={trace:s.trace||null,distance:s.distance??null,vmax:s.vmax??null,vmoy:s.vmoy??null};
+  openModal(`<h2>${id?'Modifier la':'Nouvelle'} sortie</h2>
+  <label class="drop" for="oGpx"><b>Importer une trace GPX</b><br><span class="muted">Exportée depuis C-MAP, Navionics ou l'appli de navigation</span></label><input type="file" id="oGpx" accept=".gpx,application/gpx+xml,application/xml,text/xml" style="display:none">
+  <div id="oGpxInfo">${gpx.trace?`<div class="row">${traceSvg(gpx.trace,90,64)}<div class="t"><small>${gpx.distance??'–'} milles · moy. ${gpx.vmoy??'–'} nd · max ${gpx.vmax??'–'} nd</small></div></div>`:''}</div>
+  <div class="two"><div><label class="f">Date</label><input type="date" id="oDate" value="${esc(s.date||'')}"></div><div><label class="f">Durée (h)</label><input type="number" step="0.5" inputmode="decimal" id="oDuree" value="${esc(s.duree||'')}"></div></div>
+  <label class="f">Destination / zone</label><input id="oLieu" placeholder="Tour des îles" value="${esc(s.lieu||'')}">
+  <div class="two"><div><label class="f">Équipage (pers.)</label><input type="number" id="oEq" value="${esc(s.equipage||'')}"></div><div><label class="f">Météo / mer</label><input id="oMeteo" placeholder="Beau, mer belle" value="${esc(s.meteo||'')}"></div></div>
+  <div class="two"><div><label class="f">Compteur moteur au retour (h)</label><input type="number" step="0.1" inputmode="decimal" id="oCpt" placeholder="${engineHours()}" value="${esc(s.compteur||'')}"></div><div><label class="f">Carburant (L)</label><input type="number" inputmode="decimal" id="oCarbu" value="${esc(s.carbu||'')}"></div></div>
+  <label class="f">Coût (carburant, port…) €</label><input type="number" inputmode="decimal" id="oCout" value="${esc(s.cout||'')}">
+  <label class="f">Notes</label><textarea id="oNotes">${esc(s.notes||'')}</textarea>
+  <div class="err" id="oErr"></div>
+  <div class="bar">${id?'<button class="del" id="oDel">Supprimer</button>':''}<span class="sp"></span><button data-close>Annuler</button><button class="pri" id="oSave">Enregistrer</button></div>`);
+  if(id)$('#oDel').onclick=()=>confirmBox('Supprimer cette sortie ?',()=>db.collection('sorties').doc(id).delete());
+  $('#oGpx').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const g=parseGPXc(await f.text());gpx={trace:g.trace,distance:g.distance,vmax:g.vmax,vmoy:g.vmoy};
+      if(g.date)$('#oDate').value=g.date;if(g.duree&&!$('#oDuree').value)$('#oDuree').value=g.duree;if(g.carbu&&!$('#oCarbu').value)$('#oCarbu').value=g.carbu;if(g.nom&&!$('#oLieu').value)$('#oLieu').value=g.nom;
+      $('#oGpxInfo').innerHTML=`<div class="row">${traceSvg(g.trace,90,64)}<div class="t"><small>${g.distance} milles${g.vmoy?' · moy. '+g.vmoy+' nd':''}${g.vmax?' · max '+g.vmax+' nd':''}${g.carbu?' · carburant estimé '+g.carbu+' L':''}</small></div></div>`;}
+    catch(x){$('#oErr').textContent='Fichier GPX illisible ou sans trace.';}};
+  $('#oSave').onclick=async()=>{if(!$('#oDate').value){$('#oErr').textContent='Indique la date.';return;}
+    const n=v=>v===''?null:Number(v);
+    await save('sorties',id||db.collection('sorties').doc().id,{date:$('#oDate').value,duree:n($('#oDuree').value),lieu:$('#oLieu').value.trim(),equipage:n($('#oEq').value),meteo:$('#oMeteo').value.trim(),compteur:n($('#oCpt').value),carbu:n($('#oCarbu').value),cout:n($('#oCout').value),notes:$('#oNotes').value.trim(),trace:gpx.trace,distance:gpx.distance,vmax:gpx.vmax,vmoy:gpx.vmoy},'#oErr')&&closeModal();};}
+
+/* ---------- sécurité ---------- */
+function renderSecu(){
+  const L=[...S.secu].sort((a,b)=>a.ordre-b.ordre);
+  const c={exp:0,soon:0,miss:0,ok:0};L.forEach(s=>c[secuStatus(s).k]++);
+  $('#secKpis').innerHTML=`<div class="kpi ${c.exp?'bad':''}"><div class="l">Périmés</div><div class="v">${c.exp}</div></div><div class="kpi ${c.soon?'warn':''}"><div class="l">DLC ≤ 3 mois</div><div class="v">${c.soon}</div></div><div class="kpi ${c.miss?'warn':''}"><div class="l">À vérifier</div><div class="v">${c.miss}</div></div><div class="kpi"><div class="l">OK</div><div class="v">${c.ok}</div></div>`;
+  const F=L.filter(s=>SF==='all'||(SF==='ok')===(secuStatus(s).k==='ok'));const cats=[...new Set(F.map(s=>s.cat))];
+  $('#secList').innerHTML=!L.length?'':!F.length?'<div class="card empty">Tout est en règle.</div>':cats.map(ca=>`<h3>${esc(ca)}</h3><div class="card">${F.filter(s=>s.cat===ca).map(s=>{const st=secuStatus(s);return `<div class="row">${icoTile(s)}<div class="t"><b>${esc(s.item)}</b>${s.ref?`<small style="display:block">${esc(s.ref)}</small>`:''}<small>${s.nb?'Qté '+esc(s.nb):'Qté ?'}${s.dlc?' · DLC '+fmtD(s.dlc):''}${s.revision?' · révision '+fmtD(s.revision):''}${s.achat?' · acheté '+fmtD(s.achat):''}${s.note?' · '+esc(s.note):''}${s.prix&&st.k!=='ok'?' · remplacement '+esc(s.prix):''}</small></div><span class="pill ${st.cls}">${st.txt}</span><button class="sm" data-secu="${s._id}">⋯</button></div>`;}).join('')}</div>`).join('')+
+  `<p class="muted" style="margin:10px 4px">Armement côtier (jusqu'à 6 milles d'un abri). Les prix de remplacement sont les moins chers de ton comparatif.</p>`;if(!L.length)$('#secList').innerHTML=`<div class="empty">${S.loaded.secu?'Aucun équipement.':'Chargement…'}</div>`;}
+let SF='all';$('#sFilt').onclick=e=>{const f=e.target.dataset.sf;if(!f)return;SF=f;[...$('#sFilt').children].forEach(b=>b.classList.toggle('on',b.dataset.sf===f));renderSecu();};
+const ICONS=[
+[/gilet/,'M8 3L5 6v14h6V9M16 3l3 3v14h-6V9M8 3c1.5 2 6.5 2 8 0'],
+[/bâton|lampe|signalisation/,'M9 2h6v5l-1 2v11h-4V9L9 7zM12 13v2'],
+[/extincteur|incendie/,'M9 8h6v13H9zM10 8V5h4v3M14 5h3l2 2M12 3v2'],
+[/pompe/,'M10 3h4v18h-4zM8 3h8M14 15h4v3'],
+[/écope|bouchon|assèchement/,'M4 10h14l-2 8H6zM18 12l3-3'],
+[/taquet/,'M5 14h14M8 14l-2-3h12l-2 3M12 14v5'],
+[/bout|remorquage|câblot/,'M4 12c0-4 6-4 6 0s6 4 6 0 4-4 4 0M3 18h18'],
+[/ancre|chaîne|mouillage/,'M12 2.5a1.8 1.8 0 1 0 .01 0M12 6v15M8 9h8M5 14c0 4 3 7 7 7s7-3 7-7M3 14h4M17 14h4'],
+[/marée/,'M2 12c3-3 5 3 8 0s5 3 8 0 3 0 4 0M2 17c3-3 5 3 8 0s5 3 8 0'],
+[/pavillon/,'M5 21V3M5 4h12l-3 4 3 4H5'],
+[/feux|fusée|détresse/,'M12 3c3 4 5 6 5 10a5 5 0 0 1-10 0c0-3 2-4 2-6 1 1 2 2 3 2 0-2-1-4 0-6z'],
+[/bouée/,'M6 20v-9a6 6 0 0 1 12 0v9M10 20v-9a2 2 0 0 1 4 0v9'],
+[/gps/,'M12 21s-6-6-6-11a6 6 0 0 1 12 0c0 5-6 11-6 11zM12 8a2 2 0 1 0 .01 0'],
+[/compas|navigation/,'M12 3a9 9 0 1 0 .01 0M15 9l-2 5-4 1 2-5z'],
+[/carte/,'M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2zM9 4v14M15 6v14'],
+[/ripam/,'M4 4h7a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4zM20 4h-7M20 4v14h-7'],
+[/pharmacie|secours/,'M4 7h16v13H4zM9 7V4h6v3M12 10v7M8.5 13.5h7'],
+[/vhf/,'M8 8h8v13H8zM10 8V2M10 12h4M10 15h4'],
+[/échelle/,'M8 3v18M16 3v18M8 7h8M8 12h8M8 17h8'],
+[/gaffe|rame/,'M4 20L18 6M18 6c2-2 3 0 1 2'],
+[/corne|sonore/,'M3 10v4h4l6 4V6l-6 4zM16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12']];
+function icoSvg(s){const it=(s.item||'').toLowerCase(),ca=(s.cat||'').toLowerCase();const f=ICONS.find(x=>x[0].test(it))||ICONS.find(x=>x[0].test(ca));
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${f?f[1]:'M12 3l8 3v6c0 5-4 8-8 9-4-1-8-4-8-9V6z'}"/></svg>`;}
+function icoTile(s){return `<div class="ico">${s.photo&&s.photo.url?`<img src="${esc(s.photo.url)}" alt="${esc(s.item)}" data-big="${esc(s.photo.url)}" loading="lazy">`:icoSvg(s)}</div>`;}
+function secuForm(id){const s=id?S.secu.find(x=>x._id===id):{cat:'',item:'',ordre:(Math.max(0,...S.secu.map(x=>x.ordre||0))+1)};
+  const cats=[...new Set(S.secu.map(x=>x.cat))];let qPhoto=s.photo||null;
+  openModal(`<h2>${id?'Modifier':'Nouvel'} équipement</h2>
+  <label class="f">Catégorie</label><input id="qCat" list="qCats" value="${esc(s.cat)}"><datalist id="qCats">${cats.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
+  <label class="f">Équipement</label><input id="qItem" value="${esc(s.item)}">
+  <div class="two"><div><label class="f">Quantité</label><input id="qNb" value="${esc(s.nb||'')}"></div><div><label class="f">Date limite (DLC)</label><input type="date" id="qDlc" value="${esc(s.dlc||'')}"></div></div>
+  <div class="two"><div><label class="f">Date d'achat</label><input type="date" id="qAchat" value="${esc(s.achat||'')}"></div><div><label class="f">Prochaine révision</label><input type="date" id="qRev" value="${esc(s.revision||'')}"></div></div>
+  <label class="f">Marque, modèle, n° de série</label><input id="qRef" value="${esc(s.ref||'')}">
+  <label class="f">Remarque</label><input id="qNote" value="${esc(s.note||'')}">
+  <label class="f">Prix de remplacement</label><input id="qPrix" value="${esc(s.prix||'')}">
+  <label class="f">Photo de l'équipement</label>
+  <div class="ph"><div id="qIco">${icoTile(s)}</div><div><label class="drop" for="qFile" style="padding:10px 14px"><b>Prendre une photo</b></label><input type="file" id="qFile" accept="image/*" style="display:none"><button class="ghost sm" id="qRm" style="${s.photo?'':'display:none'}">Retirer la photo</button></div></div>
+  <div class="err" id="qErr"></div>
+  <div class="bar">${id?'<button class="del" id="qDel">Supprimer</button>':''}<span class="sp"></span><button data-close>Annuler</button><button class="pri" id="qSave">Enregistrer</button></div>`);
+  const qDraw=()=>{$('#qIco').innerHTML=icoTile({...s,item:$('#qItem').value,photo:qPhoto});$('#qRm').style.display=qPhoto?'':'none';};
+  $('#qRm').onclick=()=>{qPhoto=null;qDraw();};
+  $('#qFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(!assets){$('#qErr').textContent='L\'envoi de photos n\'est pas disponible dans cette vue.';return;}
+    $('#qIco').innerHTML='<div class="ico"><span class="muted">Envoi…</span></div>';$('#qSave').disabled=true;
+    try{const b=await compress(f);const r=await assets.upload(b);qPhoto={id:r.id,url:r.url||('/_blob/'+r.id),type:r.contentType||b.type};}catch(err){$('#qErr').textContent='La photo n\'a pas pu être envoyée. Réessaie.';}
+    $('#qSave').disabled=false;qDraw();};
+  if(id)$('#qDel').onclick=()=>confirmBox('Supprimer cet équipement ?',()=>db.collection('securite').doc(id).delete());
+  $('#qSave').onclick=async()=>{if(!$('#qItem').value.trim()||!$('#qCat').value.trim()){$('#qErr').textContent='Indique la catégorie et l\'équipement.';return;}
+    await save('securite',id||db.collection('securite').doc().id,{cat:$('#qCat').value.trim(),item:$('#qItem').value.trim(),nb:$('#qNb').value.trim(),dlc:$('#qDlc').value,note:$('#qNote').value.trim(),prix:$('#qPrix').value.trim(),ordre:s.ordre??0,photo:qPhoto,achat:$('#qAchat').value,revision:$('#qRev').value,ref:$('#qRef').value.trim()},'#qErr')&&closeModal();};}
+
+/* ---------- réglages ---------- */
+$('#btnCfg').onclick=()=>boatForm(S.cur);$('#btnFleet').onclick=fleet;
+
+const CONSO=[['huile','Huile moteur (type, quantité)'],['filtreHuile','Filtre à huile'],['bougies','Bougies'],['embase','Huile d\'embase'],['filtreEss','Filtre à essence'],['turbine','Turbine / kit pompe à eau'],['anodes','Anodes'],['helice','Hélice']];
+function renderFicheTech(){const c=S.cfg;const sp=[['Port d\'attache',c.port],['Année',c.annee],['Longueur',c.longueur&&String(c.longueur).replace('.',',')+' m'],['Largeur',c.largeur&&String(c.largeur).replace('.',',')+' m'],['Tirant d\'eau',c.tirant&&String(c.tirant).replace('.',',')+' m'],['Masse à vide',c.poids&&c.poids+' kg'],['Personnes max',c.personnes],['Puissance max',c.puissanceMax&&c.puissanceMax+' CV'],['Réservoir',c.reservoir&&c.reservoir+' L'],['Catégorie CE',c.categorie],['Moteur',c.moteur],['N° moteur',c.numMoteur],['HIN',c.hin]].filter(x=>x[1]);
+  const co=CONSO.filter(k=>(c.conso||{})[k[0]]);
+  $('#ftech').innerHTML=`<details class="cat"><summary><span class="t">Fiche technique<div class="muted" style="font-weight:500">${sp.length} caractéristiques · ${co.length} consommables · ${(c.docs||[]).length} document(s)</div></span></summary><div class="inner">
+   <div class="grid" style="margin:10px 0">${sp.map(x=>`<div><div class="muted" style="font-size:12px">${x[0]}</div><b style="font-weight:700">${esc(x[1])}</b></div>`).join('')}</div>
+   ${c.aConfirmer?'<div class="banner">Valeurs indicatives : à confirmer sur la plaque constructeur, la plaque CE et la plaque du moteur (numéro de série).</div>':''}
+   ${co.length?`<h3>Consommables</h3>${co.map(k=>`<div class="row"><div class="t"><small>${k[1]}</small><b>${esc(c.conso[k[0]])}</b></div></div>`).join('')}`:''}
+   ${(c.docs||[]).length?`<h3>Documents</h3>${c.docs.map(x=>`<div class="row"><a href="${esc(x.url)}" target="_blank" rel="noopener" style="flex:1;color:var(--acc);font-weight:650">${esc(x.nom)}</a><span class="muted">${x.type==='application/pdf'?'PDF':'Image'}</span></div>`).join('')}`:''}
+   <div class="bar"><span class="sp"></span><button class="sm" id="ftEdit">Modifier</button></div></div></details>`;
+  $('#ftEdit').onclick=()=>boatForm(S.cur);}
+/* ---------- flotte ---------- */
+function fleet(){
+  openModal(`<h2>Ma flotte</h2>${S.boats.map(b=>`<div class="row" data-pick="${b._id}" style="cursor:pointer"><span class="boatbtn" style="flex:none"><span class="av">${b.photo&&b.photo.url?`<img src="${esc(b.photo.url)}" alt="">`:esc((b.nom||b.modele||'B')[0].toUpperCase())}</span></span><div class="t"><b>${esc(b.nom||'Sans nom')}</b><small>${esc([b.constructeur,b.modele].filter(Boolean).join(' '))}</small></div>${b._id===S.cur?'<span class="pill ok">Actif</span>':''}</div>`).join('')}
+  <div class="bar" style="margin-top:12px"><span class="sp"></span><button data-close>Fermer</button><button class="pri" id="fAdd">+ Ajouter un bateau</button></div>`);
+  $('#sheet').onclick=e=>{const r=e.target.closest('[data-pick]');if(r){S.cur=r.dataset.pick;try{localStorage.setItem('cb_cur',S.cur);}catch(x){}closeModal();D.view='list';renderAll();}};
+  $('#fAdd').onclick=()=>boatForm(null);}
+function boatForm(id){
+  const b=id?(S.boats.find(x=>x._id===id)||{}):{modelId:'qs500c'};let bPhoto=b.photo||null;let bDocs=[...(b.docs||[])];
+  const F=[['nom','Nom du bateau','text'],['constructeur','Constructeur','text'],['modele','Modèle','text'],['annee','Année','number'],['immat','Immatriculation','text'],['port','Port d\'attache','text'],['hin','N° de coque (HIN)','text'],['longueur','Longueur (m)','number'],['largeur','Largeur (m)','number'],['tirant','Tirant d\'eau (m)','number'],['poids','Masse à vide (kg)','number'],['personnes','Personnes max','number'],['categorie','Catégorie CE','text'],['puissanceMax','Puissance max (CV)','number'],['reservoir','Réservoir (L)','number'],['moteur','Moteur','text'],['numMoteur','N° de série moteur','text'],['heures','Heures moteur','number']];
+  openModal(`<h2>${id?'Fiche du bateau':'Nouveau bateau'}</h2>
+  <label class="f">Modèle (catalogue)</label><select id="bModel">${MODELES.map(m=>`<option value="${m.id}" ${b.modelId===m.id?'selected':''}>${esc([m.constructeur,m.modele].filter(Boolean).join(' '))}</option>`).join('')}</select>
+  <div class="muted" id="bNote" style="margin-top:4px"></div>
+  <div class="ph" style="margin-top:10px"><div id="bIco"></div><div><label class="drop" for="bFile" style="padding:10px 14px"><b>Photo du bateau</b></label><input type="file" id="bFile" accept="image/*" style="display:none"></div></div>
+  <div class="two">${F.map(f=>`<div><label class="f">${f[1]}</label><input id="b_${f[0]}" type="${f[2]}" ${f[2]==='number'?'step="any" inputmode="decimal"':''} value="${esc(b[f[0]]??'')}"></div>`).join('')}</div>
+  <h3>Consommables</h3><div class="two">${CONSO.map(c=>`<div style="grid-column:span 2"><label class="f">${c[1]}</label><input id="bc_${c[0]}" value="${esc((b.conso||{})[c[0]]||'')}"></div>`).join('')}</div>
+  <h3>Documents</h3><div id="bDocs"></div><label class="drop" for="bDocF" style="padding:10px 14px;margin-top:6px"><b>Ajouter un document</b> (PDF ou photo : manuel, acte, assurance…)</label><input type="file" id="bDocF" accept="application/pdf,image/*" style="display:none">
+  ${id?'':`<label class="f" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="bCopy" style="width:auto" checked> Reprendre le plan d'entretien et la liste de sécurité de « ${esc(S.cfg.nom||'mon bateau')} » (sans les dates)</label>`}
+  <div class="err" id="bErr"></div>
+  <div class="bar"><span class="sp"></span><button data-close>Annuler</button><button class="pri" id="bSave">Enregistrer</button></div>`);
+  const ico=()=>{$('#bIco').innerHTML=`<div class="ico">${bPhoto?`<img src="${esc(bPhoto.url)}" alt="">`:icoSvg({item:'bateau'})}</div>`;};ico();
+  const note=()=>{const m=MODELES.find(x=>x.id===$('#bModel').value);$('#bNote').textContent=m&&m.note||'';};note();
+  const drawDocs=()=>{$('#bDocs').innerHTML=bDocs.length?bDocs.map((x,k)=>`<div class="row"><a href="${esc(x.url)}" target="_blank" rel="noopener" style="flex:1;color:var(--acc);font-weight:600">${esc(x.nom)}</a><button class="sm" data-rmd="${k}">Retirer</button></div>`).join(''):'<div class="muted">Aucun document.</div>';};drawDocs();
+  $('#bDocs').onclick=e=>{const k=e.target.dataset.rmd;if(k!==undefined){bDocs.splice(+k,1);drawDocs();}};
+  $('#bDocF').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f||!assets)return;$('#bSave').disabled=true;try{const blob=f.type==='application/pdf'?f:await compress(f);const r=await assets.upload(blob);bDocs.push({nom:f.name.replace(/\.[^.]+$/,''),url:r.url||('/_blob/'+r.id),id:r.id,type:r.contentType||blob.type});}catch(x){$('#bErr').textContent='Document non envoyé.';}$('#bSave').disabled=false;drawDocs();};
+  $('#bModel').onchange=()=>{const m=MODELES.find(x=>x.id===$('#bModel').value);if(m&&m.id!=='autre')['constructeur','modele','longueur','largeur','tirant','poids','personnes','categorie','puissanceMax','reservoir'].forEach(k=>{if(m[k]!==''&&m[k]!=null)$('#b_'+k).value=m[k];});note();};
+  if(!id)$('#bModel').onchange();
+  $('#bFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f||!assets)return;$('#bSave').disabled=true;try{const r=await assets.upload(await compress(f));bPhoto={id:r.id,url:r.url||('/_blob/'+r.id)};}catch(x){$('#bErr').textContent='Photo non envoyée.';}$('#bSave').disabled=false;ico();};
+  $('#bSave').onclick=async()=>{if(!db)return;const d={...(id?strip(b):{}),modelId:$('#bModel').value,photo:bPhoto,docs:bDocs,cree:b.cree||new Date().toISOString(),conso:Object.fromEntries(CONSO.map(c=>[c[0],$('#bc_'+c[0]).value.trim()]))};
+    F.forEach(f=>{const v=$('#b_'+f[0]).value.trim();d[f[0]]=f[2]==='number'?(v===''?null:Number(v)):v;});
+    if(!d.nom&&!d.modele){$('#bErr').textContent='Indique au moins un nom ou un modèle.';return;}
+    $('#bSave').disabled=true;const nid=id||db.collection('bateaux').doc().id;
+    try{await db.collection('bateaux').doc(nid).set(d);
+      if(!id&&$('#bCopy')&&$('#bCopy').checked){for(const t of S.taches.filter(t=>!t.oneoff)){await db.collection('taches').doc().set({...strip(t),boat:nid,last:'',lastH:null});}
+        for(const s of S.secu){await db.collection('securite').doc().set({...strip(s),boat:nid,nb:'',dlc:'',revision:'',achat:'',photo:null,ref:''});}}
+      if(!id){S.cur=nid;try{localStorage.setItem('cb_cur',nid);}catch(x){}}closeModal();renderAll();}
+    catch(x){$('#bErr').textContent='Enregistrement impossible. Réessaie.';$('#bSave').disabled=false;}};}
+
+/* ---------- intervention planifiée ---------- */
+function planForm(id){const t=id?S.taches.find(x=>x._id===id):{cat:'Interventions planifiées',due:addM(today(),1)};
+  const cats=[...new Set(['Interventions planifiées',...S.taches.map(x=>x.cat)])];
+  openModal(`<h2>${id?'Intervention planifiée':'Planifier une intervention'}</h2>
+  <label class="f">Intitulé</label><input id="pLab" value="${esc(t.label||'')}" placeholder="Remplacer la turbine de pompe à eau">
+  <label class="f">Date prévue</label><input type="date" id="pDue" value="${esc(t.due||'')}">
+  <label class="f">Rubrique</label><select id="pCat">${cats.map(c=>`<option ${c===t.cat?'selected':''}>${esc(c)}</option>`).join('')}</select>
+  <label class="f">Notes</label><textarea id="pNotes">${esc(t.notes||'')}</textarea>
+  ${id?`<label class="f" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="pDone" style="width:auto" ${t.done?'checked':''}> Réalisée</label>`:''}
+  <div class="err" id="pErr"></div>
+  <div class="bar">${id?'<button class="del" id="pDel">Supprimer</button>':''}<span class="sp"></span><button data-close>Annuler</button><button class="pri" id="pSave">Enregistrer</button></div>`);
+  if(id)$('#pDel').onclick=()=>confirmBox('Supprimer cette intervention planifiée ?',()=>db.collection('taches').doc(id).delete());
+  $('#pSave').onclick=async()=>{if(!$('#pLab').value.trim()||!$('#pDue').value){$('#pErr').textContent='Indique l\'intitulé et la date.';return;}
+    await save('taches',id||db.collection('taches').doc().id,{...(id?strip(t):{}),oneoff:true,label:$('#pLab').value.trim(),due:$('#pDue').value,cat:$('#pCat').value,notes:$('#pNotes').value.trim(),perio:'ponctuelle',actif:true,done:id?$('#pDone').checked:false,ordre:t.ordre??500,source:t.source||''},'#pErr')&&closeModal();};}
+
+/* ---------- diagnostic ---------- */
+const D={view:'list',id:null,cat:'C',doc:null};
+const ST={ok:'OK',surv:'À surveiller',def:'Défaut',na:'N/A'};
+function lastDiag(){return [...S.diags].filter(d=>d.done).sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0]||null;}
+function diagScore(d,cat){const r=d.results||{};let n=0,s=0,c={ok:0,surv:0,def:0,na:0,todo:0};
+  POINTS.filter(p=>!cat||p.cat===cat).forEach(p=>{const x=r[p.id];if(!x||!x.s){c.todo++;return;}c[x.s]++;if(x.s==='na')return;n++;s+=x.s==='ok'?1:x.s==='surv'?0.5:0;});
+  return{score:n?Math.round(100*s/n):null,...c,total:POINTS.filter(p=>!cat||p.cat===cat).length};}
+let dTimer=null,dChain=Promise.resolve();
+function saveDiagSoon(){clearTimeout(dTimer);dTimer=setTimeout(()=>{const doc={...D.doc};dChain=dChain.then(()=>db&&db.collection('diagnostics').doc(D.id).set(doc)).catch(()=>{$('#dErr')&&($('#dErr').textContent='Enregistrement impossible, vérifie la connexion.');});},600);}
+function scoreColor(v){return v==null?'var(--neu)':v>=85?'var(--ok)':v>=60?'var(--warn)':'var(--bad)';}
+function renderDiag(){const V=$('#diagView');if(!V)return;
+  if(D.view==='list'){const L=[...S.diags].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    V.innerHTML=`<div class="card"><b>Auto-diagnostic guidé</b><p class="muted" style="margin:6px 0 10px">${POINTS.length} points de contrôle : coque, gréement de pont, direction et embase, moteur, électricité, sécurité Division 240 et remorque. Chaque point a sa fiche explicative.</p><button class="pri" id="dNew" style="width:100%">Nouveau diagnostic</button></div>
+    ${L.length?`<h2>Diagnostics</h2><div class="card">${L.map(d=>{const sc=diagScore(d);return `<div class="row" data-dopen="${d._id}" style="cursor:pointer"><div class="t"><b>${fmtD(d.date)}${d.done?'':' (en cours)'}</b><small>${sc.total-sc.todo}/${sc.total} points · ${sc.def} défaut(s) · ${sc.surv} à surveiller</small></div><span class="pill ${sc.score==null?'':sc.score>=85?'ok':sc.score>=60?'warn':'bad'}">${sc.score??'—'} %</span></div>`;}).join('')}</div>`:''}`;return;}
+  const d=D.doc;if(!d){D.view='list';return renderDiag();}
+  if(D.view==='run'){const sc=diagScore(d);const done=sc.total-sc.todo;
+    V.innerHTML=`<div class="bar"><button class="ghost" id="dBack">← Diagnostics</button><span class="sp"></span><span class="muted">${fmtD(d.date)}</span></div>
+    <div class="muted" id="dCount">${done}/${sc.total} points évalués</div><div class="prog"><i style="width:${Math.round(100*done/sc.total)}%"></i></div>
+    <div class="chips">${CATS.map(c=>{const s=diagScore(d,c.id);return `<button data-dcat="${c.id}" class="${D.cat===c.id?'on':''}">${esc(c.nom.split(' – ')[0])} ${s.total-s.todo}/${s.total}</button>`;}).join('')}</div>
+    <h3>${esc(CATS.find(c=>c.id===D.cat).nom)}</h3>
+    ${POINTS.filter(p=>p.cat===D.cat).map(p=>{const r=(d.results||{})[p.id]||{};return `<div class="card" data-pt="${p.id}">
+      <div style="display:flex;gap:8px;align-items:flex-start"><b style="flex:1;font-weight:500">${esc(p.t)}${p.d240?'<span class="badge240">Div. 240</span>':''}</b><button class="ghost sm" data-fiche="${p.id}">Fiche</button></div>
+      <div class="st">${Object.entries(ST).map(([k,v])=>`<button data-st="${k}" class="${r.s===k?'on':''}">${v}</button>`).join('')}</div>
+      <input data-note placeholder="Remarque (facultatif)" value="${esc(r.note||'')}" style="font-size:14px;padding:7px 9px">
+      <div class="thumbs">${(r.photos||[]).map(ph=>`<img src="${esc(ph.url)}" data-big="${esc(ph.url)}" alt="">`).join('')}<label class="pdf" for="ph_${p.id}" style="cursor:pointer">+ Photo</label><input type="file" id="ph_${p.id}" data-ph="${p.id}" accept="image/*" style="display:none"></div></div>`;}).join('')}
+    <div class="err" id="dErr"></div>
+    <div class="bar">${(()=>{const i=CATS.findIndex(c=>c.id===D.cat);return i<CATS.length-1?`<button id="dNext" style="flex:1">Rubrique suivante : ${esc(CATS[i+1].nom.split(' – ')[0])} →</button>`:'';})()}<button class="pri" id="dEnd" style="flex:1">Terminer et voir le bilan</button></div>`;return;}
+  if(D.view==='sum'){const sc=diagScore(d);const r=d.results||{};
+    const list=k=>POINTS.filter(p=>(r[p.id]||{}).s===k);
+    const forts=CATS.map(c=>({c,s:diagScore(d,c.id)})).filter(x=>x.s.score!=null&&x.s.score>=85);
+    V.innerHTML=`<div class="bar"><button class="ghost" id="dBack">← Diagnostics</button><span class="sp"></span><button class="sm" id="dEdit">Modifier</button><button class="sm del" id="dDel">Supprimer</button></div>
+    <div class="card" style="display:flex;gap:16px;align-items:center"><div class="score" style="color:${scoreColor(sc.score)}">${sc.score??'—'}<span style="font-size:18px"> %</span></div><div><b>Bilan du ${fmtD(d.date)}</b><div class="muted">${sc.ok} OK · ${sc.surv} à surveiller · ${sc.def} défaut(s) · ${sc.na} sans objet${sc.todo?` · ${sc.todo} non évalué(s)`:''}</div>${d.heures?`<div class="muted">${d.heures} h moteur</div>`:''}</div></div>
+    <div class="card bars">${CATS.map(c=>{const s=diagScore(d,c.id);return `<div class="b"><span>${esc(c.nom.split(' – ')[0])}</span><span class="tr"><i style="width:${s.score??0}%;background:${scoreColor(s.score)}"></i></span><span style="width:40px;text-align:right">${s.score??'—'}${s.score!=null?' %':''}</span></div>`;}).join('')}</div>
+    ${forts.length?`<h3>Points forts</h3><div class="card">${forts.map(x=>`<div class="row"><div class="t"><b>${esc(x.c.nom)}</b><small>${x.s.ok} point(s) en bon état</small></div><span class="pill ok">${x.s.score} %</span></div>`).join('')}</div>`:''}
+    ${['def','surv'].map(k=>list(k).length?`<h3>${k==='def'?'Défauts à corriger':'Éléments à surveiller'}</h3><div class="card">${list(k).map(p=>`<div class="row"><div class="t"><b>${esc(p.t)}</b><small>${esc(CATS.find(c=>c.id===p.cat).nom)}${r[p.id].note?' · '+esc(r[p.id].note):''}</small></div><button class="ghost sm" data-fiche="${p.id}">Fiche</button></div>`).join('')}</div>`:'').join('')}
+    <div class="bar" style="margin-top:12px">${list('def').length+list('surv').length?'<button id="dPlan" style="flex:1">Ajouter au plan d\'entretien</button>':''}<button class="pri" id="dPdf" style="flex:1">Rapport PDF</button></div><div class="err" id="dErr"></div>`;}}
+async function newDiag(){if(!db)return;const id=db.collection('diagnostics').doc().id;D.id=id;D.doc={boat:S.cur,date:today(),heures:engineHours()||null,results:{},done:false};D.cat='C';D.view='run';
+  try{await db.collection('diagnostics').doc(id).set(D.doc);}catch(e){}renderDiag();window.scrollTo(0,0);}
+$('#diagView').addEventListener('click',async e=>{const t=e.target;
+  if(t.id==='dNew')return newDiag();
+  const o=t.closest('[data-dopen]');if(o){const d=S.diags.find(x=>x._id===o.dataset.dopen);D.id=d._id;D.doc=strip(d);D.view=d.done?'sum':'run';D.cat='C';renderDiag();window.scrollTo(0,0);return;}
+  if(t.id==='dBack'){D.view='list';D.doc=null;renderDiag();return;}
+  if(t.dataset.dcat){D.cat=t.dataset.dcat;renderDiag();window.scrollTo(0,0);return;}
+  if(t.id==='dNext'){const i=CATS.findIndex(c=>c.id===D.cat);D.cat=CATS[i+1].id;renderDiag();window.scrollTo(0,0);return;}
+  if(t.id==='dEnd'){D.doc.done=true;saveDiagSoon();D.view='sum';renderDiag();window.scrollTo(0,0);return;}
+  if(t.id==='dEdit'){D.view='run';renderDiag();return;}
+  if(t.id==='dDel'){confirmBox('Supprimer ce diagnostic ?',async()=>{await db.collection('diagnostics').doc(D.id).delete();D.view='list';D.doc=null;});return;}
+  if(t.id==='dPdf'){return report('etat',D.doc,'#dErr');}
+  if(t.id==='dPlan'){t.disabled=true;const r=D.doc.results||{};let n=0;for(const p of POINTS){const x=r[p.id];if(!x||!['def','surv'].includes(x.s))continue;
+      if(S.taches.some(tt=>tt.source===D.id+':'+p.id))continue;
+      await save('taches',db.collection('taches').doc().id,{oneoff:true,label:(x.s==='def'?'Corriger : ':'Surveiller : ')+p.t+(x.note?' – '+x.note:''),due:addM(today(),x.s==='def'?1:3),cat:'Suite au diagnostic',perio:'ponctuelle',actif:true,done:false,ordre:400,source:D.id+':'+p.id,notes:''});n++;}
+    $('#dErr').style.color='var(--ok)';$('#dErr').textContent=n+' intervention(s) ajoutée(s) dans Entretien > Plan, rubrique « Suite au diagnostic ».';return;}
+  const card=t.closest('[data-pt]');if(card&&t.dataset.st){const id=card.dataset.pt;D.doc.results=D.doc.results||{};const r=D.doc.results[id]||{};r.s=r.s===t.dataset.st?'':t.dataset.st;D.doc.results[id]=r;saveDiagSoon();
+    card.querySelectorAll('.st button').forEach(b=>b.classList.toggle('on',b.dataset.st===r.s));
+    const sc=diagScore(D.doc);const done=sc.total-sc.todo;document.querySelector('#diagView .prog i').style.width=Math.round(100*done/sc.total)+'%';$('#dCount').textContent=`${done}/${sc.total} points évalués`;
+    const ch=document.querySelector(`[data-dcat="${D.cat}"]`);if(ch){const s=diagScore(D.doc,D.cat);ch.textContent=`${CATS.find(c=>c.id===D.cat).nom.split(' – ')[0]} ${s.total-s.todo}/${s.total}`;}}});
+$('#diagView').addEventListener('change',async e=>{const t=e.target;const card=t.closest('[data-pt]');if(!card)return;const id=card.dataset.pt;D.doc.results=D.doc.results||{};const r=D.doc.results[id]=D.doc.results[id]||{};
+  if(t.dataset.note!==undefined){r.note=t.value.trim();saveDiagSoon();}
+  if(t.dataset.ph){const f=t.files[0];t.value='';if(!f||!assets)return;const th=card.querySelector('.thumbs');th.insertAdjacentHTML('afterbegin','<span class="pdf">Envoi…</span>');
+    try{const up=await assets.upload(await compress(f));r.photos=[...(r.photos||[]),{id:up.id,url:up.url||('/_blob/'+up.id)}];saveDiagSoon();}catch(x){$('#dErr').textContent='Photo non envoyée.';}renderDiag();}});
+
+/* ---------- fiches et lexique ---------- */
+function fiche(id){const p=POINTS.find(x=>x.id===id);if(!p)return;
+  openModal(`<div class="fiche"><div class="muted">${esc(CATS.find(c=>c.id===p.cat).nom)}</div><h2>${esc(p.t)}${p.d240?'<span class="badge240">Div. 240</span>':''}</h2>
+  <h3>À quoi ça sert</h3><p>${esc(p.role)}</p><h3>Comment contrôler</h3><ol>${p.ctrl.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>
+  <h3>Signes d'usure</h3><p>${esc(p.usure)}</p><h3>Prévenir les pannes</h3><p>${esc(p.prev)}</p></div>
+  <div class="bar" style="margin-top:12px"><span class="sp"></span><button data-close>Fermer</button></div>`);}
+let FM='fic';
+function renderFiches(){const q=($('#fSearch').value||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');const n=s=>String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  if(FM==='fic'){$('#fList').innerHTML=CATS.map(c=>{const ps=POINTS.filter(p=>p.cat===c.id&&(!q||n(p.t+' '+p.role+' '+p.usure).includes(q)));return ps.length?`<h3>${esc(c.nom)}</h3><div class="card">${ps.map(p=>`<div class="row" data-fiche="${p.id}" style="cursor:pointer"><div class="t"><b>${esc(p.t)}${p.d240?'<span class="badge240">Div. 240</span>':''}</b><small>${esc(p.role.slice(0,90))}${p.role.length>90?'…':''}</small></div><span class="muted">›</span></div>`).join('')}</div>`:'';}).join('')||'<div class="empty">Aucun résultat.</div>';}
+  else if(FM==='code'){const S2=CODE.map(s=>{const it=(s.items||[]).filter(i=>!q||n(s.t+' '+i.n+' '+i.l).includes(q));const tb=(s.table||[]).filter(r=>!q||n(s.t+' '+r.join(' ')).includes(q));return{s,it,tb};}).filter(x=>x.it.length||x.tb.length||(!q));
+    $('#fList').innerHTML=S2.length?S2.map(({s,it,tb})=>`<h2>${esc(s.t)}</h2><p class="cintro">${esc(s.intro)}</p>${it.length?`<div class="cgrid">${it.map(i=>`<div class="cfig">${i.d()}<b>${esc(i.n)}</b><small>${esc(i.l)}</small></div>`).join('')}</div>`:''}${tb.length?`<div class="card"><table class="ctab" style="width:100%;border-collapse:collapse">${tb.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>`:''}${(s.notes||[]).length&&!q?`<div class="card">${s.notes.map(x=>`<div class="row"><div class="t">${esc(x)}</div></div>`).join('')}</div>`:''}`).join('')+'<p class="muted" style="margin:14px 4px">Résumé pédagogique du programme du permis côtier (balisage AISM région A, RIPAM, signaux). Les textes officiels et les ouvrages du SHOM font référence.</p>':'<div class="empty">Aucun résultat.</div>';}
+  else{const L=LEXIQUE.filter(([m,d])=>!q||n(m+' '+d).includes(q));$('#fList').innerHTML=L.length?`<div class="card"><dl class="lex" style="margin:0">${L.map(([m,d])=>`<dt>${esc(m)}</dt><dd>${esc(d)}</dd>`).join('')}</dl></div>`:'<div class="empty">Aucun résultat.</div>';}}
+$('#fSearch').oninput=renderFiches;
+$('#segF').onclick=e=>{const m=e.target.dataset.m;if(!m)return;FM=m;[...$('#segF').children].forEach(x=>x.classList.toggle('on',x.dataset.m===m));$('#fSearch').placeholder=m==='fic'?'Rechercher (anode, turbine, taquet…)':m==='code'?'Rechercher (cardinale, chalutier, brume…)':'Rechercher un mot (bâbord, nable…)';renderFiches();};
+document.addEventListener('click',e=>{const f=e.target.closest('[data-fiche]');if(f){e.stopPropagation();fiche(f.dataset.fiche);}},true);
+$('#addPlan').onclick=()=>planForm(null);
+
+/* ---------- rapports PDF ---------- */
+const pdfT=s=>String(s??'').replace(/[’‘]/g,"'").replace(/[“”«»]/g,'"').replace(/…/g,'...').replace(/œ/g,'oe').replace(/Œ/g,'OE').replace(/€/g,'EUR').replace(/≈/g,'~').replace(/≤/g,'<=').replace(/≥/g,'>=').replace(/[–—]/g,'-').replace(/[  ]/g,' ').replace(/×/g,'x').replace(/→/g,'->').replace(/[^\x00-\xff]/g,'');
+const eurP=n=>pdfT((Number(n)||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}))+' EUR';
+const dP=d=>d?new Date(d+'T12:00').toLocaleDateString('fr-FR'):'-';
+async function blobToDataURL(url){const r=await fetch(url);const b=await r.blob();return await new Promise(ok=>{const fr=new FileReader();fr.onload=()=>ok(fr.result);fr.readAsDataURL(b);});}
+async function report(kind,diag,errSel){const err=$(errSel);err.style.color='';err.textContent='Préparation du PDF…';
+  try{const dl=await claude.use('downloads');if(!dl){err.textContent='Le téléchargement n\'est pas disponible dans cette vue.';return;}
+    if(!window.jspdf){await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');}
+    const d=diag||lastDiag();const b=S.cfg;const doc=new jspdf.jsPDF({unit:'mm',format:'a4'});const W=210,M=14;let y=0;
+    const navy=[22,48,107];const head=(t)=>{if(y>255){doc.addPage();y=18;}doc.setFont('helvetica','bold');doc.setFontSize(12.5);doc.setTextColor(...navy);doc.text(pdfT(t),M,y);y+=2;doc.setDrawColor(...navy);doc.setLineWidth(0.4);doc.line(M,y,W-M,y);y+=5;doc.setTextColor(20);doc.setFont('helvetica','normal');doc.setFontSize(10);};
+    const para=(t,sz=10)=>{doc.setFontSize(sz);const L=doc.splitTextToSize(pdfT(t),W-2*M);if(y+L.length*4.6>285){doc.addPage();y=18;}doc.text(L,M,y);y+=L.length*4.6+2;};
+    const table=(hd,rows,opt={})=>{doc.autoTable({startY:y,head:[hd.map(pdfT)],body:rows.map(r=>r.map(pdfT)),margin:{left:M,right:M},styles:{fontSize:8.6,cellPadding:1.8,overflow:'linebreak'},headStyles:{fillColor:navy,textColor:255},alternateRowStyles:{fillColor:[244,246,249]},...opt});y=doc.lastAutoTable.finalY+7;};
+    doc.setFillColor(...navy);doc.rect(0,0,W,30,'F');doc.setTextColor(255);doc.setFont('helvetica','bold');doc.setFontSize(17);
+    doc.text(pdfT(kind==='etat'?'Rapport d\'état du navire':'Dossier d\'entretien - revente / assurance'),M,13);doc.setFontSize(10.5);doc.setFont('helvetica','normal');
+    doc.text(pdfT(`${b.nom||''}${b.nom?' - ':''}${[b.constructeur,b.modele].filter(Boolean).join(' ')}   |   édité le ${new Date().toLocaleDateString('fr-FR')}`),M,22);y=40;doc.setTextColor(20);
+    head('Identification');
+    table(['Caractéristique','Valeur'],[['Nom',b.nom||'-'],['Constructeur / modèle',[b.constructeur,b.modele].filter(Boolean).join(' ')||'-'],['Année',b.annee||'-'],['Immatriculation',b.immat||'-'],['N° de coque (HIN)',b.hin||'-'],['Dimensions',[b.longueur?b.longueur+' m':'',b.largeur?b.largeur+' m':''].filter(Boolean).join(' x ')||'-'],['Catégorie CE / personnes',[b.categorie,b.personnes?b.personnes+' pers.':''].filter(Boolean).join(' - ')||'-'],['Moteur',[b.moteur,b.numMoteur?'n° '+b.numMoteur:''].filter(Boolean).join(' - ')||'-'],['Heures moteur',engineHours()?engineHours()+' h':'-']],{columnStyles:{0:{cellWidth:60,fontStyle:'bold'}}});
+    if(d){const sc=diagScore(d);head(`Diagnostic du ${dP(d.date)} - note globale ${sc.score??'-'} %`);
+      para(`${sc.total-sc.todo} points évalués sur ${sc.total} : ${sc.ok} en bon état, ${sc.surv} à surveiller, ${sc.def} défaut(s), ${sc.na} sans objet.`);
+      table(['Rubrique','OK','A surveiller','Défaut','N/A','Note'],CATS.map(c=>{const s=diagScore(d,c.id);return [c.nom,s.ok,s.surv,s.def,s.na,s.score==null?'-':s.score+' %'];}));
+      const r=d.results||{};const forts=CATS.filter(c=>{const s=diagScore(d,c.id);return s.score!=null&&s.score>=85;});
+      head('Points forts');para(forts.length?forts.map(c=>'- '+c.nom+' ('+diagScore(d,c.id).score+' %)').join('\n'):'Aucune rubrique au-dessus de 85 %.');
+      const bad=POINTS.filter(p=>['def','surv'].includes((r[p.id]||{}).s));
+      head('Éléments à surveiller et défauts');bad.length?table(['Point de contrôle','Rubrique','État','Remarque'],bad.map(p=>[p.t,CATS.find(c=>c.id===p.cat).nom,ST[r[p.id].s],r[p.id].note||''])):para('Aucun défaut ni élément à surveiller relevé.');
+      const ph=bad.flatMap(p=>(r[p.id].photos||[]).map(x=>({p,x}))).slice(0,6);
+      if(ph.length){head('Photos des éléments relevés');let x=M;for(const it of ph){try{const du=await blobToDataURL(it.x.url);if(x+58>W-M){x=M;y+=50;}if(y+48>285){doc.addPage();y=18;x=M;}doc.addImage(du,'JPEG',x,y,56,42);doc.setFontSize(7.5);doc.text(pdfT(it.p.t).slice(0,40),x,y+45);x+=60;}catch(e){}}y+=52;}}
+    else{head('Diagnostic');para('Aucun diagnostic terminé pour ce bateau. Réalise un auto-diagnostic pour compléter ce rapport.');}
+    head('Équipement de sécurité (zone côtière)');
+    table(['Équipement','Qté','DLC / révision','État'],[...S.secu].sort((a,b)=>a.ordre-b.ordre).map(s=>[s.item+(s.ref?' ('+s.ref+')':''),s.nb||'?',[s.dlc?'DLC '+dP(s.dlc):'',s.revision?'Rév. '+dP(s.revision):''].filter(Boolean).join(' / ')||'-',secuStatus(s).txt]));
+    head('Plan d\'entretien');
+    const tt=S.taches.filter(t=>t.actif!==false&&(t.mois||t.heures||t.oneoff)&&!t.done);
+    table(['Opération','Dernière réalisation','Prochaine échéance','Statut'],tt.map(t=>{const s=tacheStatus(t);return [t.label,t.last?dP(t.last):'-',s.next||'-',s.txt];}),{didParseCell:c=>{if(c.section==='body'&&c.column.index===3){if(c.cell.raw==='En retard')c.cell.styles.textColor=[180,35,24];}}});
+    const L=[...S.inter].sort((a,b)=>(b.date||'').localeCompare(a.date||''));const tot=L.reduce((a,i)=>a+(Number(i.montant)||0),0);
+    head(`Historique des interventions (${L.length}) - total ${eurP(tot)}`);
+    L.length?table(['Date','Intervention','Prestataire','Montant','Justif.'],L.map(i=>[dP(i.date),i.titre,i.presta||'-',i.montant!=null?eurP(i.montant):'-',(i.photos||[]).length?'Facture':'-'])):para('Aucune intervention enregistrée.');
+    if(kind!=='etat'){for(const i of L.filter(i=>(i.lignes||[]).length)){head(`Détail - ${dP(i.date)} - ${i.titre}`);table(['Désignation','Référence','Qté','Montant TTC'],i.lignes.map(l=>[l.libelle,l.ref||'',l.qte||'',l.prix!=null?eurP(l.prix):'']));}
+      head('Attestation du propriétaire');para('Je soussigné(e), propriétaire du navire désigné ci-dessus, certifie que les informations de ce dossier sont exactes et que les factures citées sont disponibles sur demande.\n\nFait à ........................................ le ......../......../............        Signature :');}
+    const n=doc.getNumberOfPages();for(let p=1;p<=n;p++){doc.setPage(p);doc.setFontSize(7.5);doc.setTextColor(110);doc.text(pdfT('Document établi par le propriétaire à partir de son carnet de bord. Il ne remplace pas une expertise maritime officielle.'),M,292);doc.text(`${p}/${n}`,W-M,292,{align:'right'});}
+    const fn=pdfT(`${kind==='etat'?'Rapport_etat':'Dossier_entretien'}_${(b.nom||b.modele||'bateau').replace(/[^\w-]+/g,'_')}_${today()}.pdf`);
+    err.textContent='';await dl.save({filename:fn,data:doc.output('blob')});err.style.color='var(--ok)';err.textContent='PDF prêt.';}
+  catch(e){err.style.color='';err.textContent=e&&e.code==='declined'?'Téléchargement annulé.':'Le PDF n\'a pas pu être créé. Réessaie.';}}
+$('#repEtat').onclick=()=>report('etat',null,'#repErr');$('#repTrans').onclick=()=>report('trans',null,'#repErr');
+
+/* ---------- db ---------- */
+function strip(o){const r={...o};delete r._id;return r;}
+async function save(col,id,data,errSel){
+  if(!db){if(errSel)$(errSel).textContent='Données indisponibles dans cette vue.';return false;}
+  if(col!=='bateaux'&&!data.boat)data={...data,boat:S.cur};
+  try{await db.collection(col).doc(id).set(data);return true;}
+  catch(e){if(errSel)$(errSel).textContent=e&&e.code==='quota_exceeded'?'Stockage plein : supprime d\'anciennes données.':'Enregistrement impossible. Réessaie.';return false;}}
+const MAP={taches:'taches',interventions:'inter',sorties:'sorties',securite:'secu',diagnostics:'diags'};
+let rT=null;const later=()=>{clearTimeout(rT);rT=setTimeout(renderAll,30);};
+(async()=>{
+  renderXfer();if(window.__HOSTED&&'serviceWorker' in navigator){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update().catch(()=>{})).catch(()=>{});let rl=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(rl||!had)return;rl=true;location.reload();});}
+  try{db=await claude.use('db');}catch(e){db=null;}
+  try{assets=await claude.use('assets');}catch(e){assets=null;}
+  try{sampleFn=await claude.use('sample');if(sampleFn){const lim=await sampleFn.limits().catch(()=>null);imgOK=!!(lim&&lim.images);}}catch(e){sampleFn=null;}
+  if(!db){$('#dbBanner').style.display='block';$('#dbBanner').textContent='Les données ne sont pas accessibles dans cette vue. Ouvre la page connecté à ton compte.';return;}
+  const timer=setTimeout(()=>{$('#dbBanner').style.display='block';$('#dbBanner').textContent='Les données mettent du temps à arriver : elles peuvent ne pas être à jour.';},10000);
+  let fresh=0;
+  Object.entries(MAP).forEach(([col,key])=>{db.collection(col).onSnapshot(q=>{S.all[key]=q.docs.map(d=>({...d.data(),_id:d.id}));S.loaded[key]=true;
+    if(!q.metadata.fromCache&&++fresh>=5){clearTimeout(timer);$('#dbBanner').style.display='none';S.loaded.all=true;}later();},
+    e=>{clearTimeout(timer);S.loaded[key]=true;$('#dbBanner').style.display='block';$('#dbBanner').textContent='Une partie des données n\'a pas pu être chargée.';later();});});
+  db.collection('bateaux').onSnapshot(q=>{S.boats=q.docs.map(d=>({...d.data(),_id:d.id})).sort((a,b)=>(a.cree||'').localeCompare(b.cree||''));if(S.boats.length&&!S.boats.some(b=>b._id===S.cur))S.cur=S.boats[0]._id;later();},()=>{});
+})();
+
+/* ---------- événements ---------- */
+document.addEventListener('click',e=>{const b=e.target.closest('[data-tache],[data-inter],[data-sortie],[data-secu],[data-big]');if(!b)return;
+  if(b.dataset.tache)tacheMenu(b.dataset.tache);else if(b.dataset.inter)interForm(b.dataset.inter);else if(b.dataset.sortie)sortieForm(b.dataset.sortie);else if(b.dataset.secu)secuForm(b.dataset.secu);
+  else if(b.dataset.big&&!b.closest('#sheet'))openModal(`<div class="big"><img src="${esc(b.dataset.big)}" alt="Facture"></div><div class="bar"><span class="sp"></span><button data-close>Fermer</button></div>`);});
+$('#segE').onclick=e=>{const m=e.target.dataset.m;if(!m)return;[...$('#segE').children].forEach(x=>x.classList.toggle('on',x.dataset.m===m));$('#ePlan').style.display=m==='plan'?'':'none';$('#eHist').style.display=m==='hist'?'':'none';};
+$('#addInt').onclick=()=>interForm(null);$('#qaSortie').onclick=()=>sortieForm(null);$('#qaFact').onclick=()=>interForm(null);$('#qaDiag').onclick=()=>{location.hash='#diag';};$('#qaSecu').onclick=()=>{location.hash='#securite';};$('#addSortie').onclick=()=>sortieForm(null);$('#addSecu').onclick=()=>secuForm(null);
+
+const boat={active:true,label(){}};
+route();renderAll();
+</script>
+</body>
+</html>
