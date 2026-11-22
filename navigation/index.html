@@ -533,9 +533,12 @@ const SP={
 };
 const SPG={p:'Poissons',c:'Céphalopodes',k:'Crustacés',m:'Coquillages'};
 let SPIMG=LS.get('nav_spimg',{});
-async function spImg(n){const sp=SP[n];if(!sp)return null;if(SPIMG[n])return SPIMG[n];
- for(const w of['fr','en']){try{const r=await fetch(`https://${w}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(sp.l.replace(/ /g,'_'))}`);if(!r.ok)continue;const j=await r.json();const src=(j.thumbnail&&j.thumbnail.source)||(j.originalimage&&j.originalimage.source);if(src){SPIMG[n]={src:src.replace(/\/\d+px-/,'/480px-'),page:(j.content_urls&&j.content_urls.mobile&&j.content_urls.mobile.page)||'',titre:j.title};LS.set('nav_spimg',SPIMG);return SPIMG[n];}}catch(e){}}
- return null;}
+const SPPEND={};
+async function wikiThumb(w,titles){const u=`https://${w}.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*&redirects=1&prop=pageimages%7Cinfo&inprop=url&piprop=thumbnail&pithumbsize=480&titles=${encodeURIComponent(titles.join('|'))}`;
+ const r=await fetch(u);if(!r.ok)throw new Error(r.status);const j=await r.json();const P=((j.query&&j.query.pages)||[]).filter(p=>p.thumbnail&&p.thumbnail.source);
+ return P.length?{src:P[0].thumbnail.source,page:P[0].fullurl||'',titre:P[0].title}:null;}
+function spImg(n){const sp=SP[n];if(!sp)return Promise.resolve(null);if(SPIMG[n])return Promise.resolve(SPIMG[n]);if(SPPEND[n])return SPPEND[n];
+ return SPPEND[n]=(async()=>{for(const w of['fr','en']){try{const im=await wikiThumb(w,[sp.l,n]);if(im){SPIMG[n]=im;LS.set('nav_spimg',SPIMG);return im;}}catch(e){}}delete SPPEND[n];return null;})();}
 function fillImgs(root){return Promise.all([...root.querySelectorAll('[data-spimg]')].map(async el=>{const im=await spImg(el.dataset.spimg);if(im){el.style.backgroundImage=`url("${im.src}")`;el.textContent='';}else el.textContent='📷';}));}
 function spCard(n){const sp=SP[n];return `<div class="spbig" data-spimg="${esc(n)}"></div><div style="margin-top:8px"><b style="font-size:17px">${esc(n)}</b> <i class="muted">${esc(sp.l)}</i></div>
  <div style="margin-top:6px"><b>Reconnaître :</b> ${esc(sp.id)}</div><div style="margin-top:4px"><b>Taille minimale :</b> ${esc(sp.t)}</div>${sp.r?`<div class="warn" style="margin-top:6px">${esc(sp.r)}</div>`:''}
@@ -543,9 +546,9 @@ function spCard(n){const sp=SP[n];return `<div class="spbig" data-spimg="${esc(n
 async function credit(root){for(const el of root.querySelectorAll('[data-spcred]')){const im=await spImg(el.dataset.spcred);if(im&&im.page)el.innerHTML=`Photo : <a href="${im.page}" target="_blank" rel="noopener">Wikipédia – ${esc(im.titre)}</a> (Wikimedia Commons, licence libre)`;}}
 function showSp(n){openModal(spCard(n)+`<div class="bar"><span class="sp"></span><button data-close>Fermer</button></div>`);const m=$('#msheet');fillImgs(m);credit(m);}
 function guideEspeces(){openModal(`<h3>📖 Espèces de la baie de Saint-Brieuc</h3><input id="gF" placeholder="Rechercher…"><div id="gL"></div><p class="muted" style="font-size:12px">Tailles : pêche de loisir Manche–Atlantique (arrêté du 26 octobre 2012 modifié et règlements européens). La réglementation évolue : vérifie auprès de la DDTM ou des Affaires maritimes avant de garder une prise.</p>
- <div class="bar"><button class="sm" id="gDl">Garder les photos pour le hors-ligne</button><span class="sp"></span><button data-close>Fermer</button></div>`);
- const draw=()=>{const f=$('#gF').value.trim().toLowerCase();$('#gL').innerHTML=Object.entries(SPG).map(([g,lab])=>{const L2=Object.keys(SP).filter(n=>SP[n].g===g&&(!f||n.toLowerCase().includes(f)||SP[n].l.toLowerCase().includes(f)));return L2.length?`<h3 style="margin:10px 0 6px">${lab}</h3><div class="spgrid">${L2.map(n=>`<button class="spc" data-sp="${esc(n)}"><div class="spth" data-spimg="${esc(n)}"></div><b>${esc(n)}</b><small>${esc(SP[n].t)}</small></button>`).join('')}</div>`:'';}).join('');fillImgs($('#gL'));};
- $('#gF').oninput=draw;draw();$('#gL').onclick=e=>{const b=e.target.closest('[data-sp]');if(b)showSp(b.dataset.sp);};
+ <div class="bar"><button class="sm" id="gDl">Garder les photos pour le hors-ligne</button><button class="sm" id="gRe">Recharger les photos</button><span class="sp"></span><button data-close>Fermer</button></div>`);
+ const draw=()=>{const f=$('#gF').value.trim().toLowerCase();$('#gL').innerHTML=Object.entries(SPG).map(([g,lab])=>{const L2=Object.keys(SP).filter(n=>SP[n].g===g&&(!f||n.toLowerCase().includes(f)||SP[n].l.toLowerCase().includes(f)));return L2.length?`<h3 style="margin:10px 0 6px">${lab}</h3><div class="spgrid">${L2.map(n=>`<button class="spc" data-sp="${esc(n)}"><div class="spth" data-spimg="${esc(n)}"></div><b>${esc(n)}</b><small>${esc(SP[n].t)}</small></button>`).join('')}</div>`:'';}).join('');fillImgs($('#gL')).then(()=>{if(!$('#gL'))return;if(![...$('#gL').querySelectorAll('[data-spimg]')].some(e=>e.style.backgroundImage))$('#gL').insertAdjacentHTML('afterbegin','<div class="warn">Photos indisponibles : il faut une connexion internet pour les charger la première fois.</div>');});};
+ $('#gF').oninput=draw;draw();$('#gRe').onclick=()=>{SPIMG={};LS.set('nav_spimg',{});draw();};$('#gL').onclick=e=>{const b=e.target.closest('[data-sp]');if(b)showSp(b.dataset.sp);};
  $('#gDl').onclick=async()=>{let k=0;for(const n of Object.keys(SP)){const im=await spImg(n);if(im){try{await fetch(im.src,{mode:'no-cors'});k++;}catch(e){}}}toast(k+' photos gardées pour le hors-ligne.');};}
 /* ---- Carnet de pêche ---- */
 const FISH=[...Object.keys(SP),'Autre'];

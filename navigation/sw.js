@@ -1,6 +1,6 @@
-const V='nav-v14';const SHELL=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png','https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap',
+const V='nav-v15';const SHELL=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png','https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap',
  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css','https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js','https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js'];
-const TILES=/data\.geopf\.fr|services\.data\.shom\.fr|tile\.openstreetmap\.org|tiles\.openseamap\.org|server\.arcgisonline\.com|ows\.emodnet-bathymetry\.eu|upload\.wikimedia\.org|wikipedia\.org\/api/;
+const TILES=/data\.geopf\.fr|services\.data\.shom\.fr|tile\.openstreetmap\.org|tiles\.openseamap\.org|server\.arcgisonline\.com|ows\.emodnet-bathymetry\.eu|upload\.wikimedia\.org/;
 const DATA=/open-meteo\.com|rest\.emodnet-bathymetry\.eu/;
 const MAXT=6000;
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>Promise.all(SHELL.map(u=>c.add(new Request(u,{mode:u.startsWith('http')?'no-cors':'same-origin'})).catch(()=>{})))).then(()=>self.skipWaiting()));});
