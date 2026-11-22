@@ -126,6 +126,9 @@ body.full #sheet{transform:translateY(110%);pointer-events:none}body.full #map{b
  #hud{right:calc(min(380px,44vw) + 66px)}
  body.full #sheet{transform:translateX(110%)}body.full #map{right:0}body.full #fabR{right:10px}body.full #hud{right:66px}
 }
+.spgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}.spc{display:flex;flex-direction:column;align-items:stretch;padding:0 0 6px;border-radius:14px;overflow:hidden;background:var(--card);border:1px solid var(--line);text-align:left}.spc b{padding:5px 7px 0;font-size:13px}.spc small{padding:0 7px;font-size:11px;color:var(--mut,#667)}
+.spth,.spbig,.spmini{background:#dfe9f2 center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:11px;color:#6a7a8c}.spth{height:78px}.spbig{height:200px;border-radius:12px;background-size:contain;background-color:#eef3f8}.spmini{width:40px;height:30px;border-radius:7px;flex:none}
+.flinfo{padding:8px 4px 10px;border-bottom:1px solid var(--line);font-size:13px}.flinfo .spbig{height:150px}
 </style>
 </head>
 <body>
@@ -498,8 +501,54 @@ async function windMap(){if(lyr.wind.getLayers().length){lyr.wind.clearLayers();
 
 /* ===== traces et relecture ===== */
 
+
+/* ---- Guide d'identification des espèces (photos Wikipédia / Wikimedia Commons) ---- */
+const SP={
+'Maquereau':{l:'Scomber scombrus',g:'p',id:'Dos bleu-vert zébré de bandes noires ondulées, ventre argenté sans taches, deux nageoires dorsales bien séparées, petites pinnules jaunâtres avant la queue.',t:'20 cm',r:'10 par pêcheur et par jour. Marquage obligatoire (ablation du bas de la queue).'},
+'Bar':{l:'Dicentrarchus labrax',g:'p',id:'Corps allongé argenté, dos gris-bleu, tache sombre sur le bord de l\'opercule, deux dorsales (la première épineuse). Le jeune peut avoir quelques points noirs.',t:'42 cm',r:'2 par pêcheur et par jour en 2026, déclaration RecFishing obligatoire. Filet fixe interdit. Marquage obligatoire.'},
+'Lieu jaune':{l:'Pollachius pollachius',g:'p',id:'Dos brun-vert à doré, ligne latérale sombre bien courbée au-dessus de la nageoire pectorale, mâchoire inférieure proéminente, pas de barbillon.',t:'30 cm',r:'Interdit du 1er janvier au 30 avril, puis 2 par pêcheur et par jour. Déclaration RecFishing obligatoire. Marquage obligatoire.'},
+'Lieu noir':{l:'Pollachius virens',g:'p',id:'Dos gris foncé à noir, ligne latérale claire et presque droite, mâchoire inférieure légèrement proéminente.',t:'35 cm',r:'Marquage obligatoire.'},
+'Dorade grise':{l:'Spondyliosoma cantharus',g:'p',id:'Corps ovale haut, gris argenté avec fines lignes longitudinales dorées, petite bouche, une seule longue dorsale épineuse.',t:'23 cm',r:''},
+'Dorade royale':{l:'Sparus aurata',g:'p',id:'Bande dorée entre les yeux, tache noire en haut de l\'opercule, corps ovale argenté, mâchoires puissantes.',t:'23 cm',r:'Marquage obligatoire.'},
+'Vieille':{l:'Labrus bergylta',g:'p',id:'Corps trapu, grosses lèvres charnues, couleurs très variables (vert, brun, rouge) marbrées de points clairs. Vit dans les roches et laminaires.',t:'Pas de taille fixée',r:''},
+'Tacaud':{l:'Trisopterus luscus',g:'p',id:'Corps haut cuivré à bandes verticales sombres, petit barbillon sous le menton, tache noire à la base de la pectorale.',t:'Pas de taille fixée',r:''},
+'Chinchard':{l:'Trachurus trachurus',g:'p',id:'Ressemble au maquereau mais ligne latérale garnie de grandes écailles osseuses (scutelles), grand œil, tache noire sur l\'opercule.',t:'15 cm',r:''},
+'Grondin':{l:'Chelidonichthys lucerna',g:'p',id:'Tête osseuse anguleuse, grandes nageoires pectorales colorées (bleu vif chez le grondin perlon), « doigts » libres pour marcher sur le fond.',t:'Pas de taille fixée',r:''},
+'Rouget':{l:'Mullus surmuletus',g:'p',id:'Corps rose-rouge, deux longs barbillons sous le menton, première dorsale rayée.',t:'15 cm',r:''},
+'Mulet':{l:'Chelon labrosus',g:'p',id:'Corps gris argenté à bandes longitudinales sombres, tête aplatie, petite bouche à lèvre épaisse, nage en bancs près de la surface.',t:'20 cm',r:''},
+'Congre':{l:'Conger conger',g:'p',id:'Corps d\'anguille gris-noir sans écailles, dorsale commençant au niveau des pectorales, mâchoire supérieure plus longue.',t:'60 cm',r:''},
+'Sole':{l:'Solea solea',g:'p',id:'Poisson plat ovale, yeux à droite, tache noire au bout de la pectorale, bouche arrondie en crochet.',t:'24 cm',r:'Marquage obligatoire.'},
+'Plie':{l:'Pleuronectes platessa',g:'p',id:'Poisson plat, face supérieure brune avec taches orange vif, yeux à droite, bosses osseuses derrière les yeux.',t:'27 cm',r:''},
+'Turbot':{l:'Scophthalmus maximus',g:'p',id:'Poisson plat presque rond, yeux à gauche, face supérieure sans écailles mais couverte de tubercules osseux.',t:'30 cm',r:''},
+'Barbue':{l:'Scophthalmus rhombus',g:'p',id:'Proche du turbot mais plus ovale, peau lisse à petites écailles sans tubercules, premiers rayons de la dorsale frangés.',t:'30 cm',r:''},
+'Raie':{l:'Raja clavata',g:'p',id:'Raie bouclée : disque losangique brun marbré, grosses épines (boucles) sur le dos et la queue.',t:'Variable selon espèce',r:'Certaines raies sont protégées (raie brunette en Manche ouest, pocheteaux) : relâcher en cas de doute.'},
+'Seiche':{l:'Sepia officinalis',g:'c',id:'Corps ovale aplati bordé d\'une nageoire continue, os interne (os de seiche), 8 bras et 2 tentacules, robe zébrée changeante.',t:'Pas de taille fixée',r:''},
+'Calamar':{l:'Loligo vulgaris',g:'c',id:'Corps allongé en fuseau, nageoires en losange à l\'arrière, plume interne transparente.',t:'Pas de taille fixée',r:''},
+'Tourteau':{l:'Cancer pagurus',g:'k',id:'Carapace ovale brun-rouge aux bords festonnés « en croûte de pâté », pinces massives à pointes noires.',t:'Voir le tableau officiel (diffère au nord et au sud du 48e parallèle)',r:'Femelles grainées à relâcher.'},
+'Araignée':{l:'Maja brachydactyla',g:'k',id:'Carapace en forme de poire couverte de piquants, longues pattes, souvent couverte d\'algues.',t:'12 cm',r:'Femelles grainées à relâcher.'},
+'Homard':{l:'Homarus gammarus',g:'k',id:'Carapace bleu foncé tachetée, deux grosses pinces inégales (une broyeuse, une coupante), antennes rouges.',t:'8,7 cm (carapace)',r:'Marquage obligatoire. Femelles grainées à relâcher.'},
+'Étrille':{l:'Necora puber',g:'k',id:'Petit crabe velu brun-bleu, yeux rouges, dernière paire de pattes aplatie en palette pour nager, très agressive.',t:'6,5 cm',r:''},
+'Crevette':{l:'Palaemon serratus',g:'k',id:'Bouquet : corps translucide rayé de fines lignes, long rostre denté recourbé vers le haut.',t:'5 cm (Bretagne)',r:''},
+'Coquille Saint-Jacques':{l:'Pecten maximus',g:'m',id:'Grande coquille en éventail, valve supérieure plate, inférieure bombée, côtes rayonnantes.',t:'Voir l\'arrêté local (baie de Saint-Brieuc réglementée)',r:'Pêche encadrée par saison et par zone : se renseigner avant.'}
+};
+const SPG={p:'Poissons',c:'Céphalopodes',k:'Crustacés',m:'Coquillages'};
+let SPIMG=LS.get('nav_spimg',{});
+async function spImg(n){const sp=SP[n];if(!sp)return null;if(SPIMG[n])return SPIMG[n];
+ for(const w of['fr','en']){try{const r=await fetch(`https://${w}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(sp.l.replace(/ /g,'_'))}`);if(!r.ok)continue;const j=await r.json();const src=(j.thumbnail&&j.thumbnail.source)||(j.originalimage&&j.originalimage.source);if(src){SPIMG[n]={src:src.replace(/\/\d+px-/,'/480px-'),page:(j.content_urls&&j.content_urls.mobile&&j.content_urls.mobile.page)||'',titre:j.title};LS.set('nav_spimg',SPIMG);return SPIMG[n];}}catch(e){}}
+ return null;}
+function fillImgs(root){return Promise.all([...root.querySelectorAll('[data-spimg]')].map(async el=>{const im=await spImg(el.dataset.spimg);if(im){el.style.backgroundImage=`url("${im.src}")`;el.textContent='';}else el.textContent='📷';}));}
+function spCard(n){const sp=SP[n];return `<div class="spbig" data-spimg="${esc(n)}"></div><div style="margin-top:8px"><b style="font-size:17px">${esc(n)}</b> <i class="muted">${esc(sp.l)}</i></div>
+ <div style="margin-top:6px"><b>Reconnaître :</b> ${esc(sp.id)}</div><div style="margin-top:4px"><b>Taille minimale :</b> ${esc(sp.t)}</div>${sp.r?`<div class="warn" style="margin-top:6px">${esc(sp.r)}</div>`:''}
+ <div class="muted" style="font-size:11px;margin-top:4px" data-spcred="${esc(n)}"></div>`;}
+async function credit(root){for(const el of root.querySelectorAll('[data-spcred]')){const im=await spImg(el.dataset.spcred);if(im&&im.page)el.innerHTML=`Photo : <a href="${im.page}" target="_blank" rel="noopener">Wikipédia – ${esc(im.titre)}</a> (Wikimedia Commons, licence libre)`;}}
+function showSp(n){openModal(spCard(n)+`<div class="bar"><span class="sp"></span><button data-close>Fermer</button></div>`);const m=$('#msheet');fillImgs(m);credit(m);}
+function guideEspeces(){openModal(`<h3>📖 Espèces de la baie de Saint-Brieuc</h3><input id="gF" placeholder="Rechercher…"><div id="gL"></div><p class="muted" style="font-size:12px">Tailles : pêche de loisir Manche–Atlantique (arrêté du 26 octobre 2012 modifié et règlements européens). La réglementation évolue : vérifie auprès de la DDTM ou des Affaires maritimes avant de garder une prise.</p>
+ <div class="bar"><button class="sm" id="gDl">Garder les photos pour le hors-ligne</button><span class="sp"></span><button data-close>Fermer</button></div>`);
+ const draw=()=>{const f=$('#gF').value.trim().toLowerCase();$('#gL').innerHTML=Object.entries(SPG).map(([g,lab])=>{const L2=Object.keys(SP).filter(n=>SP[n].g===g&&(!f||n.toLowerCase().includes(f)||SP[n].l.toLowerCase().includes(f)));return L2.length?`<h3 style="margin:10px 0 6px">${lab}</h3><div class="spgrid">${L2.map(n=>`<button class="spc" data-sp="${esc(n)}"><div class="spth" data-spimg="${esc(n)}"></div><b>${esc(n)}</b><small>${esc(SP[n].t)}</small></button>`).join('')}</div>`:'';}).join('');fillImgs($('#gL'));};
+ $('#gF').oninput=draw;draw();$('#gL').onclick=e=>{const b=e.target.closest('[data-sp]');if(b)showSp(b.dataset.sp);};
+ $('#gDl').onclick=async()=>{let k=0;for(const n of Object.keys(SP)){const im=await spImg(n);if(im){try{await fetch(im.src,{mode:'no-cors'});k++;}catch(e){}}}toast(k+' photos gardées pour le hors-ligne.');};}
 /* ---- Carnet de pêche ---- */
-const FISH=['Maquereau','Bar','Lieu jaune','Dorade grise','Dorade royale','Vieille','Tacaud','Chinchard','Grondin','Rouget','Mulet','Congre','Sole','Plie','Turbot','Barbue','Raie','Seiche','Calamar','Tourteau','Araignée','Homard','Étrille','Crevette','Coquille Saint-Jacques','Autre'];
+const FISH=[...Object.keys(SP),'Autre'];
 const TECH=['Traîne','Mitraillette / plumes','Leurre','Appât en dérive','Pêche au fond','Casier','Palangre','Pêche à pied','Autre'];
 let CATCH=LS.get('nav_peche',[]);lyr.peche=L.layerGroup().addTo(map);let PLACECATCH=false;
 const catTot=c=>Object.values(c.esp||{}).reduce((a,b)=>a+(+b||0),0);
@@ -522,10 +571,10 @@ function catchForm(ll,id){const old=id?CATCH.find(x=>x.id===id):null;const Q=Obj
  <label class="f">Notes (appât, marée, météo…)</label><textarea id="cN">${old?esc(old.notes||''):''}</textarea>
  <label class="f">Photo</label><input type="file" id="cPh" accept="image/*" capture="environment">
  <div class="bar"><span class="sp"></span><button data-close>Annuler</button><button class="pri" id="cS">Enregistrer</button></div>`);
- const draw=()=>{const f=$('#cF').value.trim().toLowerCase();$('#cL').innerHTML=list.filter(n=>n!=='Autre'&&(!f||n.toLowerCase().includes(f))).sort((a,b)=>(Q[b]?1:0)-(Q[a]?1:0)).map(n=>`<div class="fl ${Q[n]?'has':''}"><span class="n">${esc(n)}</span><button data-m="${esc(n)}">−</button><span class="q">${Q[n]||0}</span><button data-p="${esc(n)}">+</button></div>`).join('')||'<div class="muted" style="padding:8px">Aucune espèce. Ajoute-la ci-dessous.</div>';
-  const n=Math.max(1,+$('#cP').value||1);const w=[];if((Q['Maquereau']||0)>10*n)w.push(`Maquereau : ${Q['Maquereau']} pour ${n} pêcheur${n>1?'s':''}, la limite est de 10 par pêcheur et par jour.`);if((Q['Bar']||0)>0)w.push('Bar : vérifie la réglementation en vigueur (période et nombre autorisés, taille minimale).');$('#cW').innerHTML=w.map(x=>`<div class="warn">⚠️ ${x}</div>`).join('');};
- $('#cL').onclick=e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.p||b.dataset.m;Q[k]=Math.max(0,(Q[k]||0)+(b.dataset.p?1:-1));if(!Q[k])delete Q[k];draw();};
- $('#cF').oninput=draw;$('#cP').oninput=draw;
+ const draw=()=>{const f=$('#cF').value.trim().toLowerCase();$('#cL').innerHTML=list.filter(n=>n!=='Autre'&&(!f||n.toLowerCase().includes(f))).sort((a,b)=>(Q[b]?1:0)-(Q[a]?1:0)).map(n=>`<div class="fl ${Q[n]?'has':''}">${SP[n]?`<span class="spmini" data-spimg="${esc(n)}" data-inf="${esc(n)}"></span>`:''}<span class="n" ${SP[n]?`data-inf="${esc(n)}"`:''}>${esc(n)}${SP[n]?' <small class="muted">ⓘ</small>':''}</span><button data-m="${esc(n)}">−</button><span class="q">${Q[n]||0}</span><button data-p="${esc(n)}">+</button></div>`).join('')||'<div class="muted" style="padding:8px">Aucune espèce. Ajoute-la ci-dessous.</div>';fillImgs($('#cL'));
+  const n=Math.max(1,+$('#cP').value||1);const w=[];if((Q['Maquereau']||0)>10*n)w.push(`Maquereau : ${Q['Maquereau']} pour ${n} pêcheur${n>1?'s':''}, la limite est de 10 par pêcheur et par jour.`);if((Q['Bar']||0)>2*n)w.push(`Bar : ${Q['Bar']} pour ${n} pêcheur${n>1?'s':''}, la limite est de 2 par pêcheur et par jour.`);if(Q['Bar'])w.push('Bar : taille minimale 42 cm, déclaration RecFishing obligatoire.');const mo=new Date($('#cD').value||Date.now()).getMonth();if(Q['Lieu jaune']&&mo<4)w.push('Lieu jaune : capture et détention interdites du 1er janvier au 30 avril.');else if((Q['Lieu jaune']||0)>2*n)w.push('Lieu jaune : 2 par pêcheur et par jour maximum.');if(Q['Lieu jaune'])w.push('Lieu jaune : taille minimale 30 cm, déclaration RecFishing obligatoire.');$('#cW').innerHTML=w.map(x=>`<div class="warn">⚠️ ${x}</div>`).join('');};
+ $('#cL').onclick=e=>{const inf=e.target.closest('[data-inf]');if(inf){const row=inf.closest('.fl');const nx=row.nextElementSibling;if(nx&&nx.classList.contains('flinfo')){nx.remove();return;}const d=document.createElement('div');d.className='flinfo';d.innerHTML=spCard(inf.dataset.inf);row.after(d);fillImgs(d);credit(d);return;}const b=e.target.closest('button');if(!b)return;const k=b.dataset.p||b.dataset.m;Q[k]=Math.max(0,(Q[k]||0)+(b.dataset.p?1:-1));if(!Q[k])delete Q[k];draw();};
+ $('#cF').oninput=draw;$('#cP').oninput=draw;$('#cD').onchange=draw;
  $('#cAdd').onclick=()=>{const v=$('#cNew').value.trim();if(!v)return;const k=v[0].toUpperCase()+v.slice(1);if(!list.includes(k))list.splice(list.length-1,0,k);Q[k]=(Q[k]||0)+1;$('#cNew').value='';$('#cF').value='';draw();};
  draw();
  $('#cS').onclick=async()=>{if(!catTot({esp:Q})){toast('Ajoute au moins un poisson.');return;}
@@ -540,9 +589,9 @@ async function showCatch(id){const c=CATCH.find(x=>x.id===id);if(!c)return;let i
  $('#cEd').onclick=()=>catchForm(c.ll,c.id);$('#cGo').onclick=()=>{FOLLOW={pts:[c.ll],i:0};closeModal();hud();setTab('nav');};}
 function carnetPecheHtml(){const yr=new Date().getFullYear();const Y=CATCH.filter(c=>new Date(c.t).getFullYear()===yr);const tot={};Y.forEach(c=>Object.entries(c.esp).forEach(([k,v])=>tot[k]=(tot[k]||0)+v));
  const top=Object.entries(tot).sort((a,b)=>b[1]-a[1]);
- return `<h3>Carnet de pêche</h3><div class="card">${CATCH.length?`<div class="muted" style="margin-bottom:6px">${yr} : ${Y.length} sortie${Y.length>1?'s':''} · ${top.reduce((a,b)=>a+b[1],0)} prises${top.length?' · '+top.slice(0,4).map(([k,v])=>esc(k)+' '+v).join(', '):''}</div>`+CATCH.slice().sort((a,b)=>b.t-a.t).map(c=>`<div class="row" data-ct="${c.id}" style="cursor:pointer"><span style="font-size:20px">🐟</span><div class="t"><b>${new Date(c.t).toLocaleDateString('fr-FR')} · ${catTot(c)} prise${catTot(c)>1?'s':''}</b><small>${Object.entries(c.esp).map(([k,v])=>esc(k)+' ×'+v).join(', ')}${c.tech?' · '+esc(c.tech):''}</small></div></div>`).join(''):'<div class="muted">Aucune pêche notée. Touche le bouton poisson sur la carte pour ajouter ta pêche du jour.</div>'}</div>
+ return `<div class="bar" style="margin-top:4px"><button class="pri" id="ctGuide" style="flex:1">📖 Identifier un poisson ou un crustacé</button></div><h3>Carnet de pêche</h3><div class="card">${CATCH.length?`<div class="muted" style="margin-bottom:6px">${yr} : ${Y.length} sortie${Y.length>1?'s':''} · ${top.reduce((a,b)=>a+b[1],0)} prises${top.length?' · '+top.slice(0,4).map(([k,v])=>esc(k)+' '+v).join(', '):''}</div>`+CATCH.slice().sort((a,b)=>b.t-a.t).map(c=>`<div class="row" data-ct="${c.id}" style="cursor:pointer"><span style="font-size:20px">🐟</span><div class="t"><b>${new Date(c.t).toLocaleDateString('fr-FR')} · ${catTot(c)} prise${catTot(c)>1?'s':''}</b><small>${Object.entries(c.esp).map(([k,v])=>esc(k)+' ×'+v).join(', ')}${c.tech?' · '+esc(c.tech):''}</small></div></div>`).join(''):'<div class="muted">Aucune pêche notée. Touche le bouton poisson sur la carte pour ajouter ta pêche du jour.</div>'}</div>
  ${CATCH.length?'<div class="bar"><button class="sm" id="ctCsv">Exporter (tableur)</button><button class="sm" id="ctAll">Tout voir sur la carte</button></div>':''}`;}
-function bindCarnetPeche(){const p=$('#panel');p.querySelectorAll('[data-ct]').forEach(r=>r.onclick=()=>{const c=CATCH.find(x=>x.id===r.dataset.ct);map.setView(c.ll,Math.max(map.getZoom(),14));showCatch(c.id);});
+function bindCarnetPeche(){const p=$('#panel');$('#ctGuide').onclick=guideEspeces;p.querySelectorAll('[data-ct]').forEach(r=>r.onclick=()=>{const c=CATCH.find(x=>x.id===r.dataset.ct);map.setView(c.ll,Math.max(map.getZoom(),14));showCatch(c.id);});
  if($('#ctAll'))$('#ctAll').onclick=()=>map.fitBounds(CATCH.map(c=>c.ll),{padding:[40,40],maxZoom:15});
  if($('#ctCsv'))$('#ctCsv').onclick=()=>{const rows=[['Date','Heure','Latitude','Longitude','Espèce','Nombre','Pêcheurs','Technique','Poids total (kg)','Notes']];CATCH.slice().sort((a,b)=>a.t-b.t).forEach(c=>Object.entries(c.esp).forEach(([k,v])=>{const d=new Date(c.t);rows.push([d.toLocaleDateString('fr-FR'),d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}),c.ll[0].toFixed(5),c.ll[1].toFixed(5),k,v,c.pers,c.tech||'',c.kg||'',c.notes||'']);}));
   const csv='﻿'+rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(';')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='carnet-de-peche.csv';document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),500);};}
