@@ -1,0 +1,35 @@
+{
+  "name": "MeetAI – Assistant de réunion",
+  "short_name": "MeetAI",
+  "description": "Transcrivez et résumez vos réunions avec l'IA",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "lang": "fr",
+  "background_color": "#0b0d12",
+  "theme_color": "#5b6af0",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "id": "./",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "categories": [
+    "productivity",
+    "business"
+  ]
+}

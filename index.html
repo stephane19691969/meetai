@@ -2,682 +2,1424 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MeetAI</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#5b6af0">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MeetAI">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap');
-:root {
-  --bg:#0b0d12;--surface:#13161f;--surface2:#1a1e2b;--surface3:#202536;
-  --border:#252b3d;--accent:#5b6af0;--accent2:#9b8aff;--text:#e4e8f5;
-  --muted:#7a85a0;--success:#2dd4a0;--warn:#f5a623;--danger:#f06b6b;
-  --r:12px;--r-sm:8px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap');
+:root{--bg:#0b0d12;--s:#13161f;--s2:#1a1e2b;--b:#252b3d;--a:#5b6af0;--a2:#9b8aff;--t:#e4e8f5;--m:#7a85a0;--ok:#2dd4a0;--err:#f06b6b;--r:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--b);border-radius:9px}
 
-/* ── TOAST ── */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:99px;font-size:.85rem;z-index:9999;transition:transform .3s;pointer-events:none}
-#toast.show{transform:translateX(-50%) translateY(0)}
+/* TOAST */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--s2);border:1px solid var(--b);padding:10px 20px;border-radius:99px;font-size:.85rem;z-index:9999;transition:transform .3s;pointer-events:none}
+#toast.on{transform:translateX(-50%) translateY(0)}
 
-/* ── API KEY SCREEN ── */
-#apiScreen{display:none;position:fixed;inset:0;background:var(--bg);z-index:1000;align-items:center;justify-content:center;padding:24px;flex-direction:column;gap:0}
-#apiScreen.show{display:flex}
-.api-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px;width:100%;max-width:480px}
-.api-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
-.api-tagline{color:var(--muted);font-size:.85rem;margin-bottom:28px}
-.api-card h2{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;margin-bottom:8px}
-.api-card p{color:var(--muted);font-size:.85rem;line-height:1.6;margin-bottom:20px}
-.api-input-wrap{position:relative;margin-bottom:14px}
-.api-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:13px 44px 13px 16px;color:var(--text);font-family:'Inter',sans-serif;font-size:.9rem;outline:none;transition:border-color .15s}
-.api-input:focus{border-color:var(--accent)}
-.api-input::placeholder{color:var(--muted)}
-.api-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:4px}
-.api-hint{font-size:.75rem;color:var(--muted);margin-bottom:24px;line-height:1.5}
-.api-hint a{color:var(--accent2);text-decoration:none}
-.api-hint a:hover{text-decoration:underline}
-.btn-api{width:100%;padding:13px;border-radius:var(--r);border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Inter',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:opacity .15s;margin-bottom:12px}
-.btn-api:hover{opacity:.88}
-.btn-api:disabled{opacity:.38;cursor:not-allowed}
-.api-secure{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--muted);justify-content:center}
-.api-steps{background:var(--surface2);border-radius:var(--r);padding:16px;margin-bottom:20px}
-.api-steps p{font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:10px}
-.api-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;font-size:.78rem;color:var(--muted);line-height:1.4}
-.api-step-num{width:18px;height:18px;min-width:18px;border-radius:50%;background:var(--accent);color:#fff;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+/* SETUP SCREEN */
+#setup{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px}
+#setup.hide{display:none}
+.setup-box{background:var(--s);border:1px solid var(--b);border-radius:20px;padding:36px;width:100%;max-width:460px}
+.setup-logo{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px}
+.setup-sub{color:var(--m);font-size:.85rem;margin-bottom:28px}
+.setup-box h2{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+.setup-box p{color:var(--m);font-size:.83rem;line-height:1.6;margin-bottom:18px}
+.steps{background:var(--s2);border-radius:var(--r);padding:16px;margin-bottom:20px;display:flex;flex-direction:column;gap:10px}
+.step{display:flex;gap:10px;align-items:flex-start;font-size:.8rem;color:var(--m);line-height:1.4}
+.sn{width:20px;height:20px;min-width:20px;border-radius:50%;background:var(--a);color:#fff;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.step a{color:var(--a2);text-decoration:none}
+.key-row{display:flex;gap:8px;margin-bottom:10px}
+.key-in{flex:1;background:var(--s2);border:1px solid var(--b);border-radius:var(--r);padding:12px 14px;color:var(--t);font-family:'Inter',sans-serif;font-size:.9rem;outline:none;transition:border-color .15s}
+.key-in:focus{border-color:var(--a)}
+.key-in::placeholder{color:var(--m)}
+.eye-btn{padding:0 14px;background:var(--s2);border:1px solid var(--b);border-radius:var(--r);cursor:pointer;color:var(--m);font-size:1rem}
+.key-hint{font-size:.73rem;color:var(--m);margin-bottom:22px;line-height:1.5}
+.key-hint a{color:var(--a2);text-decoration:none}
+.go-btn{width:100%;padding:13px;border-radius:var(--r);border:none;background:linear-gradient(135deg,var(--a),var(--a2));color:#fff;font-family:'Inter',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:opacity .15s}
+.go-btn:hover{opacity:.88}
+.secure{text-align:center;font-size:.72rem;color:var(--m);margin-top:10px}
 
-/* ── API KEY BANNER (settings) ── */
-.api-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(91,106,240,.08);border:1px solid rgba(91,106,240,.2);border-radius:var(--r-sm);margin-bottom:0;font-size:.8rem}
-.api-banner .ab-dot{width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0}
-.api-banner .ab-dot.off{background:var(--danger)}
-.api-banner .ab-text{flex:1;color:var(--muted)}
-.api-banner .ab-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:'Inter',sans-serif;font-size:.72rem;cursor:pointer;white-space:nowrap}
-.api-banner .ab-btn:hover{border-color:var(--accent)}
-
-/* ── PROCESSING ── */
-#processingOverlay{display:none;position:fixed;inset:0;background:rgba(11,13,18,.88);backdrop-filter:blur(10px);z-index:800;flex-direction:column;align-items:center;justify-content:center;gap:18px}
-#processingOverlay.show{display:flex}
-.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite}
+/* PROCESSING */
+#proc{display:none;position:fixed;inset:0;background:rgba(11,13,18,.9);backdrop-filter:blur(8px);z-index:800;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#proc.on{display:flex}
+.spin{width:42px;height:42px;border:3px solid var(--b);border-top-color:var(--a);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.proc-label{font-size:.95rem;color:var(--text)}.proc-sub{font-size:.8rem;color:var(--muted)}
 
-/* ── MODALS ── */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(11,13,18,.85);backdrop-filter:blur(8px);z-index:500;align-items:center;justify-content:center;padding:20px}
-.modal-overlay.show{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto}
-.modal h3{font-family:'Syne',sans-serif;font-size:1.2rem;margin-bottom:6px}
-.modal p{color:var(--muted);font-size:.85rem;margin-bottom:20px;line-height:1.5}
-.modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
-.mfield{margin-bottom:16px}
-.mfield label{display:block;font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
-.mfield input,.mfield textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:.875rem;outline:none;transition:border-color .15s}
-.mfield input:focus,.mfield textarea:focus{border-color:var(--accent)}
-.mfield textarea{resize:vertical;min-height:120px;line-height:1.6}
-.hint{font-size:.72rem;color:var(--muted);margin-top:5px;line-height:1.5}
+/* MODALS */
+.mo{display:none;position:fixed;inset:0;background:rgba(11,13,18,.85);backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center;padding:20px}
+.mo.on{display:flex}
+.mb{background:var(--s);border:1px solid var(--b);border-radius:18px;padding:26px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
+.mb h3{font-family:'Syne',sans-serif;font-size:1.1rem;margin-bottom:6px}
+.mb>p{color:var(--m);font-size:.83rem;margin-bottom:18px;line-height:1.5}
+.ma{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
+.mf{margin-bottom:14px}
+.mf label{display:block;font-size:.72rem;font-weight:600;color:var(--m);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.mf input,.mf textarea{width:100%;background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:10px 13px;color:var(--t);font-family:'Inter',sans-serif;font-size:.875rem;outline:none;transition:border-color .15s}
+.mf input:focus,.mf textarea:focus{border-color:var(--a)}
+.mf textarea{resize:vertical;min-height:110px;line-height:1.6}
+.hint{font-size:.72rem;color:var(--m);margin-top:4px;line-height:1.5}
 
-/* ── NAV ── */
-#topNav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:rgba(11,13,18,.95);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
-.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.nav-right{display:flex;gap:8px}
-.nav-icon-btn{width:36px;height:36px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.nav-icon-btn:hover{color:var(--text);border-color:var(--accent)}
-#desktopNav{display:flex;gap:4px}
-.dtab{padding:7px 14px;border-radius:var(--r-sm);border:none;background:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:.85rem;cursor:pointer;transition:all .15s}
-.dtab.active{background:var(--surface2);color:var(--text)}
-.dtab:hover:not(.active){color:var(--text)}
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:calc(13px + env(safe-area-inset-top)) 20px 13px;border-bottom:1px solid var(--b);background:rgba(11,13,18,.95);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.dtabs{display:flex;gap:3px}
+.dt{padding:7px 13px;border-radius:8px;border:none;background:none;color:var(--m);font-family:'Inter',sans-serif;font-size:.83rem;cursor:pointer;transition:all .15s}
+.dt.on{background:var(--s2);color:var(--t)}
+.dt:hover:not(.on){color:var(--t)}
+.nav-r{display:flex;gap:6px}
+.ib{width:34px;height:34px;border-radius:8px;border:1px solid var(--b);background:var(--s);color:var(--m);cursor:pointer;font-size:.95rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.ib:hover{color:var(--t);border-color:var(--a)}
 
-/* ── BOTTOM NAV ── */
-#bottomNav{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(13,16,21,.97);backdrop-filter:blur(12px);border-top:1px solid var(--border);padding:10px 0 env(safe-area-inset-bottom);z-index:100}
-.bottom-nav-inner{display:flex;justify-content:space-around}
-.bnav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 14px;border:none;background:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:.65rem;font-weight:500;cursor:pointer;border-radius:var(--r-sm);transition:color .15s}
-.bnav-btn .icon{font-size:1.3rem}
-.bnav-btn.active{color:var(--accent2)}
+/* BOTTOM NAV */
+#bnav{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(13,16,21,.97);border-top:1px solid var(--b);padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:100}
+.bni{display:flex;justify-content:space-around}
+.bn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 14px;border:none;background:none;color:var(--m);font-family:'Inter',sans-serif;font-size:.62rem;cursor:pointer;transition:color .15s}
+.bn .bi{font-size:1.25rem}
+.bn.on{color:var(--a2)}
 
-/* ── LAYOUT ── */
-#appShell{display:flex;height:calc(100vh - 57px)}
-#sidebar{width:260px;min-width:260px;border-right:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;overflow:hidden}
-.sb-head{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.sb-label{font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.09em}
-.btn-sm{padding:6px 12px;border-radius:var(--r-sm);border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.78rem;font-weight:600;transition:opacity .15s}
-.btn-accent{background:var(--accent);color:#fff}.btn-accent:hover{opacity:.85}
-.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.btn-ghost:hover{border-color:var(--accent);color:var(--accent2)}
-.sb-search{padding:10px 12px;border-bottom:1px solid var(--border)}
-.sb-search input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:.82rem;outline:none}
-.sb-search input::placeholder{color:var(--muted)}.sb-search input:focus{border-color:var(--accent)}
-#meetingList{flex:1;overflow-y:auto;padding:8px}
-.meet-item{padding:11px 12px;border-radius:var(--r);cursor:pointer;transition:background .12s;margin-bottom:3px;border:1px solid transparent}
-.meet-item:hover{background:var(--surface2)}.meet-item.active{background:var(--surface2);border-color:var(--border)}
-.meet-title{font-size:.85rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px}
-.meet-meta{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted);flex-wrap:wrap}
-.chip{display:inline-flex;align-items:center;padding:2px 7px;border-radius:99px;font-size:.68rem;font-weight:600}
-.chip-type{background:rgba(91,106,240,.15);color:var(--accent2)}.chip-done{background:rgba(45,212,160,.12);color:var(--success)}
-.sb-empty{padding:40px 16px;text-align:center;color:var(--muted);font-size:.82rem;line-height:1.6}
+/* LAYOUT */
+#shell{display:flex;height:calc(100vh - 56px)}
+#sb{width:256px;min-width:256px;border-right:1px solid var(--b);background:var(--s);display:flex;flex-direction:column;overflow:hidden}
+.sbh{padding:14px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between}
+.sbl{font-size:.7rem;font-weight:600;color:var(--m);text-transform:uppercase;letter-spacing:.09em}
+.sbsr{padding:9px 11px;border-bottom:1px solid var(--b)}
+.sbsr input{width:100%;background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:7px 11px;color:var(--t);font-family:'Inter',sans-serif;font-size:.8rem;outline:none}
+.sbsr input::placeholder{color:var(--m)}.sbsr input:focus{border-color:var(--a)}
+#ml{flex:1;overflow-y:auto;padding:7px}
+.mi{padding:10px 11px;border-radius:10px;cursor:pointer;transition:background .12s;margin-bottom:3px;border:1px solid transparent}
+.mi:hover{background:var(--s2)}.mi.on{background:var(--s2);border-color:var(--b)}
+.mt{font-size:.83rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.mm{display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--m)}
+.ck{display:inline-flex;align-items:center;padding:2px 6px;border-radius:99px;font-size:.66rem;font-weight:600}
+.ckt{background:rgba(91,106,240,.15);color:var(--a2)}.ckd{background:rgba(45,212,160,.12);color:var(--ok)}
+.sbe{padding:36px 14px;text-align:center;color:var(--m);font-size:.8rem;line-height:1.6}
 
-/* ── VIEWS ── */
 #main{flex:1;overflow:hidden;display:flex;flex-direction:column}
-.view{display:none;flex:1;flex-direction:column;overflow:hidden}.view.active{display:flex}
-#view-new{overflow-y:auto}
-.new-inner{max-width:680px;margin:0 auto;padding:32px 24px 100px;display:flex;flex-direction:column;gap:20px}
-.new-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800}
-.new-sub{color:var(--muted);font-size:.875rem;line-height:1.6;margin-top:4px}
-.prompt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.prompt-card{padding:14px 16px;border-radius:var(--r);border:2px solid var(--border);background:var(--surface);cursor:pointer;transition:all .15s;position:relative}
-.prompt-card:hover{border-color:var(--accent)}.prompt-card.selected{border-color:var(--accent);background:rgba(91,106,240,.08)}
-.prompt-card .pc-icon{font-size:1.4rem;margin-bottom:6px}.prompt-card .pc-name{font-size:.85rem;font-weight:600;margin-bottom:3px}.prompt-card .pc-desc{font-size:.72rem;color:var(--muted);line-height:1.4}
-.prompt-card .pc-check{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-size:.65rem;display:none;align-items:center;justify-content:center}
-.prompt-card.selected .pc-check{display:flex}
-.btn-add-prompt{padding:14px;border-radius:var(--r);border:2px dashed var(--border);background:none;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;font-size:.85rem;transition:all .15s;width:100%;text-align:center}
-.btn-add-prompt:hover{border-color:var(--accent);color:var(--accent2)}
-.field-label{font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
-.f-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;color:var(--text);font-family:'Inter',sans-serif;font-size:.9rem;outline:none;transition:border-color .15s}
-.f-input:focus{border-color:var(--accent)}.f-input::placeholder{color:var(--muted)}.f-textarea{resize:vertical;min-height:130px;line-height:1.7}
-.mic-zone{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;display:flex;flex-direction:column;align-items:center;gap:14px}
-.mic-ring{width:72px;height:72px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;transition:all .2s}
-.mic-ring:hover{transform:scale(1.05)}.mic-ring.rec{background:var(--danger);animation:pulseRed 1.4s infinite}
-@keyframes pulseRed{0%{box-shadow:0 0 0 0 rgba(240,107,107,.5)}70%{box-shadow:0 0 0 18px rgba(240,107,107,0)}100%{box-shadow:0 0 0 0 rgba(240,107,107,0)}}
-.mic-ring svg{width:28px;height:28px;fill:#fff}
-.mic-status{font-size:.85rem;color:var(--muted);text-align:center}
-.timer-disp{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:700;color:var(--danger);display:none}.timer-disp.show{display:block}
-.or-sep{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:.78rem}
-.or-sep::before,.or-sep::after{content:'';flex:1;height:1px;background:var(--border)}
-.btn-primary{padding:14px;border-radius:var(--r);border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Inter',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:opacity .15s;width:100%}
-.btn-primary:hover{opacity:.88}.btn-primary:disabled{opacity:.38;cursor:not-allowed}
+.vw{display:none;flex:1;flex-direction:column;overflow:hidden}.vw.on{display:flex}
 
-/* ── DETAIL ── */
-#view-detail{overflow:hidden}
-.detail-wrap{flex:1;overflow-y:auto;padding:28px 32px 80px}
-.detail-hd{margin-bottom:22px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;justify-content:space-between}
-.detail-hd-left{flex:1;min-width:0}
-.detail-ttl{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:8px}
-.detail-meta{color:var(--muted);font-size:.8rem;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-.export-group{display:flex;gap:8px;flex-shrink:0}
-.btn-export{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
-.btn-export:hover{border-color:var(--accent);color:var(--accent2)}
-.detail-welcome{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:var(--muted);text-align:center;padding:40px}
-.dw-icon{font-size:3rem;opacity:.35}
-.detail-welcome h3{font-family:'Syne',sans-serif;font-size:1rem;color:var(--text);font-weight:700}
-.detail-welcome p{font-size:.82rem;max-width:280px;line-height:1.6}
-.inner-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:22px;overflow-x:auto}
-.itab{padding:9px 14px;border:none;background:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:.82rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s}
-.itab.active{color:var(--accent2);border-bottom-color:var(--accent2)}
-.itab-content{display:none}.itab-content.active{display:block}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;line-height:1.75;font-size:.875rem}
-.card-lbl{font-size:.7rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
-.action-row{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
-.action-row:last-child{border:none;padding-bottom:0}
-.chk{width:18px;height:18px;min-width:18px;border-radius:5px;border:2px solid var(--border);cursor:pointer;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:.65rem;transition:all .15s}
-.chk.done{background:var(--success);border-color:var(--success);color:#fff}
-.act-text{font-size:.85rem;line-height:1.5}.act-owner{font-size:.72rem;color:var(--accent2);margin-top:3px}
-.act-text.done{text-decoration:line-through;opacity:.45}
-.transcript-body{font-size:.85rem;line-height:1.9;color:var(--muted);white-space:pre-wrap}
+/* NEW */
+#vn{overflow-y:auto}
+.ni{max-width:660px;margin:0 auto;padding:30px 22px 100px;display:flex;flex-direction:column;gap:18px}
+.nt{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800}
+.ns{color:var(--m);font-size:.85rem;line-height:1.6;margin-top:3px}
+.pg{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.pc{padding:13px 15px;border-radius:var(--r);border:2px solid var(--b);background:var(--s);cursor:pointer;transition:all .15s;position:relative}
+.pc:hover{border-color:var(--a)}.pc.on{border-color:var(--a);background:rgba(91,106,240,.08)}
+.pc .pci{font-size:1.3rem;margin-bottom:5px}.pc .pcn{font-size:.83rem;font-weight:600;margin-bottom:2px}.pc .pcd{font-size:.7rem;color:var(--m);line-height:1.4}
+.pc .pcc{position:absolute;top:9px;right:9px;width:17px;height:17px;border-radius:50%;background:var(--a);color:#fff;font-size:.6rem;display:none;align-items:center;justify-content:center}
+.pc.on .pcc{display:flex}
+.apc{padding:13px;border-radius:var(--r);border:2px dashed var(--b);background:none;color:var(--m);cursor:pointer;font-family:'Inter',sans-serif;font-size:.83rem;transition:all .15s;width:100%;text-align:center}
+.apc:hover{border-color:var(--a);color:var(--a2)}
+.fl{font-size:.76rem;font-weight:600;color:var(--m);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.fi{width:100%;background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:11px 15px;color:var(--t);font-family:'Inter',sans-serif;font-size:.88rem;outline:none;transition:border-color .15s}
+.fi:focus{border-color:var(--a)}.fi::placeholder{color:var(--m)}.fit{resize:vertical;min-height:120px;line-height:1.7}
+.mz{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:22px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.mr{width:68px;height:68px;border-radius:50%;background:var(--a);display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;transition:all .2s}
+.mr:hover{transform:scale(1.05)}.mr.rec{background:var(--err);animation:pr 1.4s infinite}
+@keyframes pr{0%{box-shadow:0 0 0 0 rgba(240,107,107,.5)}70%{box-shadow:0 0 0 16px rgba(240,107,107,0)}100%{box-shadow:0 0 0 0 rgba(240,107,107,0)}}
+.mr svg{width:26px;height:26px;fill:#fff}
+.ms{font-size:.83rem;color:var(--m);text-align:center}
+.td{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:700;color:var(--err);display:none}.td.on{display:block}
+.os{display:flex;align-items:center;gap:10px;color:var(--m);font-size:.76rem}
+.os::before,.os::after{content:'';flex:1;height:1px;background:var(--b)}
+.pb{padding:13px;border-radius:var(--r);border:none;background:linear-gradient(135deg,var(--a),var(--a2));color:#fff;font-family:'Inter',sans-serif;font-size:.93rem;font-weight:600;cursor:pointer;transition:opacity .15s;width:100%}
+.pb:hover{opacity:.88}.pb:disabled{opacity:.35;cursor:not-allowed}
 
-/* ── CHAT ── */
-#view-chat{padding:0}
-.chat-wrap{flex:1;display:flex;flex-direction:column;height:100%}
-.chat-hd{padding:20px 24px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
-.chat-hd h2{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700}
-.chat-hd p{color:var(--muted);font-size:.8rem;margin-top:3px}
-.chat-msgs{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px}
-.msg{display:flex;gap:10px;max-width:85%}.msg.user{align-self:flex-end;flex-direction:row-reverse}
-.av{width:30px;height:30px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700}
-.msg.ai .av{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
-.msg.user .av{background:var(--surface2);color:var(--muted)}
-.bubble{padding:11px 15px;border-radius:14px;font-size:.85rem;line-height:1.65}
-.msg.ai .bubble{background:var(--surface);border:1px solid var(--border)}
-.msg.user .bubble{background:var(--accent);color:#fff}
-.chat-foot{padding:14px 24px 16px;border-top:1px solid var(--border);display:flex;gap:10px;flex-shrink:0}
-.chat-in{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:11px 15px;color:var(--text);font-family:'Inter',sans-serif;font-size:.875rem;outline:none;transition:border-color .15s}
-.chat-in:focus{border-color:var(--accent)}.chat-in::placeholder{color:var(--muted)}
-.btn-send{padding:11px 18px;background:var(--accent);border:none;border-radius:var(--r);color:#fff;cursor:pointer;font-size:1rem;transition:opacity .15s}
-.btn-send:hover{opacity:.85}.btn-send:disabled{opacity:.35;cursor:not-allowed}
-.dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--muted);animation:dot 1.2s infinite;margin:0 2px}
+/* DETAIL */
+#vd{overflow:hidden}
+.dw{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--m);text-align:center;padding:40px}
+.dwi{font-size:2.8rem;opacity:.3}
+.dw h3{font-family:'Syne',sans-serif;font-size:.95rem;color:var(--t);font-weight:700}
+.dw p{font-size:.8rem;max-width:260px;line-height:1.6}
+#dc{display:none;flex:1;overflow:hidden;flex-direction:column}
+.dwr{flex:1;overflow-y:auto;padding:26px 30px 80px}
+.dh{margin-bottom:20px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;justify-content:space-between}
+.dhl{flex:1;min-width:0}
+.dtt{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;margin-bottom:7px}
+.dm{color:var(--m);font-size:.78rem;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.eb{display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:8px;border:1px solid var(--b);background:var(--s2);color:var(--t);font-family:'Inter',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.eb:hover{border-color:var(--a);color:var(--a2)}
+.it{display:flex;gap:2px;border-bottom:1px solid var(--b);margin-bottom:20px;overflow-x:auto}
+.itb{padding:8px 13px;border:none;background:none;color:var(--m);font-family:'Inter',sans-serif;font-size:.8rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s}
+.itb.on{color:var(--a2);border-bottom-color:var(--a2)}
+.ic{display:none}.ic.on{display:block}
+.cd{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:18px;margin-bottom:13px;line-height:1.75;font-size:.865rem}
+.cl{font-size:.68rem;font-weight:700;color:var(--a2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.ar{display:flex;align-items:flex-start;gap:11px;padding:9px 0;border-bottom:1px solid var(--b)}
+.ar:last-child{border:none;padding-bottom:0}
+.ch{width:17px;height:17px;min-width:17px;border-radius:5px;border:2px solid var(--b);cursor:pointer;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:.6rem;transition:all .15s}
+.ch.done{background:var(--ok);border-color:var(--ok);color:#fff}
+.at{font-size:.83rem;line-height:1.5}.ao{font-size:.7rem;color:var(--a2);margin-top:2px}
+.at.done{text-decoration:line-through;opacity:.4}
+.tb{font-size:.83rem;line-height:1.9;color:var(--m);white-space:pre-wrap}
+
+/* CHAT */
+#vc{padding:0}
+.cw{flex:1;display:flex;flex-direction:column;height:100%}
+.ch2{padding:18px 22px 14px;border-bottom:1px solid var(--b);flex-shrink:0}
+.ch2 h2{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700}
+.ch2 p{color:var(--m);font-size:.78rem;margin-top:2px}
+.cm{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:12px}
+.msg{display:flex;gap:9px;max-width:84%}.msg.u{align-self:flex-end;flex-direction:row-reverse}
+.av{width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700}
+.msg.ai .av{background:linear-gradient(135deg,var(--a),var(--a2));color:#fff}
+.msg.u .av{background:var(--s2);color:var(--m)}
+.bb{padding:10px 14px;border-radius:13px;font-size:.83rem;line-height:1.65}
+.msg.ai .bb{background:var(--s);border:1px solid var(--b)}
+.msg.u .bb{background:var(--a);color:#fff}
+.cf{padding:12px 22px 14px;border-top:1px solid var(--b);display:flex;gap:9px;flex-shrink:0}
+.ci{flex:1;background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:10px 14px;color:var(--t);font-family:'Inter',sans-serif;font-size:.83rem;outline:none;transition:border-color .15s}
+.ci:focus{border-color:var(--a)}.ci::placeholder{color:var(--m)}
+.cs{padding:10px 16px;background:var(--a);border:none;border-radius:var(--r);color:#fff;cursor:pointer;font-size:.95rem;transition:opacity .15s}
+.cs:hover{opacity:.85}.cs:disabled{opacity:.35;cursor:not-allowed}
+.dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--m);animation:d 1.2s infinite;margin:0 2px}
 .dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
-@keyframes dot{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+@keyframes d{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
 
-/* ── PROMPTS ── */
-#view-prompts{overflow-y:auto}
-.prompts-inner{max-width:680px;margin:0 auto;padding:32px 24px 80px}
-.prompts-inner h2{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:6px}
-.prompts-inner>p{color:var(--muted);font-size:.85rem;margin-bottom:24px;line-height:1.6}
-.prompt-list{display:flex;flex-direction:column;gap:12px}
-.prompt-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;display:flex;align-items:flex-start;gap:14px}
-.pr-icon{font-size:1.5rem;flex-shrink:0}.pr-body{flex:1;min-width:0}
-.pr-name{font-size:.9rem;font-weight:600;margin-bottom:4px}
-.pr-preview{font-size:.78rem;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.pr-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
-.pr-btn{padding:5px 10px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'Inter',sans-serif;font-size:.72rem;cursor:pointer;transition:all .15s;white-space:nowrap}
-.pr-btn:hover{color:var(--text);border-color:var(--accent)}.pr-btn.del:hover{color:var(--danger);border-color:var(--danger)}
-.pr-builtin{font-size:.68rem;color:var(--muted);margin-top:6px}
+/* PROMPTS */
+#vp{overflow-y:auto}
+.pi{max-width:660px;margin:0 auto;padding:30px 22px 100px}
+.pi h2{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;margin-bottom:5px}
+.pi>p{color:var(--m);font-size:.83rem;margin-bottom:22px;line-height:1.6}
+.pl{display:flex;flex-direction:column;gap:11px}
+.pr{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:15px 17px;display:flex;align-items:flex-start;gap:13px}
+.pri{font-size:1.4rem;flex-shrink:0}.prb{flex:1;min-width:0}
+.prn{font-size:.88rem;font-weight:600;margin-bottom:3px}
+.prp{font-size:.76rem;color:var(--m);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pra{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.prbt{padding:5px 9px;border-radius:7px;border:1px solid var(--b);background:var(--s2);color:var(--m);font-family:'Inter',sans-serif;font-size:.7rem;cursor:pointer;transition:all .15s;white-space:nowrap}
+.prbt:hover{color:var(--t);border-color:var(--a)}.prbt.del:hover{color:var(--err);border-color:var(--err)}
+.prbi{font-size:.66rem;color:var(--m);margin-top:5px}
 
-/* ── EXPORT MODAL ── */
-.export-options{display:flex;flex-direction:column;gap:12px;margin-bottom:4px}
-.export-opt{display:flex;align-items:center;gap:16px;padding:16px;border-radius:var(--r);border:2px solid var(--border);background:var(--surface2);cursor:pointer;transition:all .15s}
-.export-opt:hover{border-color:var(--accent)}
-.eo-icon{font-size:1.8rem}.eo-name{font-size:.9rem;font-weight:600;margin-bottom:3px}.eo-desc{font-size:.75rem;color:var(--muted)}
+/* EXPORT MODAL */
+.eo{display:flex;flex-direction:column;gap:10px;margin-bottom:4px}
+.eoi{display:flex;align-items:center;gap:14px;padding:14px;border-radius:var(--r);border:2px solid var(--b);background:var(--s2);cursor:pointer;transition:all .15s}
+.eoi:hover{border-color:var(--a)}
+.eoin{font-size:.88rem;font-weight:600;margin-bottom:2px}.eoid{font-size:.73rem;color:var(--m)}
 
-/* ── RESPONSIVE ── */
-@media(max-width:720px){
-  #sidebar{display:none}#desktopNav{display:none}#bottomNav{display:block}
-  #appShell{height:calc(100vh - 57px - 65px)}
-  .new-inner,.prompts-inner{padding:20px 16px 100px}
-  .detail-wrap{padding:20px 16px 100px}
-  .chat-hd{padding:16px}.chat-msgs{padding:14px 16px}.chat-foot{padding:12px 16px 16px}
-  .prompt-grid{grid-template-columns:1fr}.msg{max-width:95%}.detail-ttl{font-size:1.1rem}
+/* BTNS */
+.bta{background:var(--a);color:#fff;border:none}.bta:hover{opacity:.85}
+.btg{background:var(--s2);color:var(--t);border:1px solid var(--b)}.btg:hover{border-color:var(--a);color:var(--a2)}
+.bts{padding:6px 11px;border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;font-size:.76rem;font-weight:600;transition:all .15s}
+
+/* AUDIO IMPORT */
+.aud{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:10px}
+.dz{display:flex;flex-direction:column;align-items:center;gap:6px;padding:20px 14px;border:2px dashed var(--b);border-radius:var(--r);cursor:pointer;color:var(--m);font-size:.83rem;text-align:center;transition:all .15s;word-break:break-word}
+.dz:hover,.dz.over{border-color:var(--a);color:var(--a2)}
+.chx{display:flex;align-items:flex-start;gap:8px;font-size:.8rem;color:var(--m);line-height:1.4;cursor:pointer}
+.chx input{margin-top:2px;accent-color:var(--a)}
+select.fi{appearance:auto}
+.ahint{font-size:.72rem;color:var(--m);line-height:1.5}
+.ahint a{color:var(--a2);text-decoration:none}
+.instb{width:auto;padding:0 11px;font-size:.78rem;font-weight:600;gap:5px;white-space:nowrap}
+.inst ol{margin:6px 0 14px 20px;font-size:.83rem;color:var(--m);line-height:1.8}
+.inst h4{font-size:.85rem;margin-top:12px}
+
+/* HORS CONNEXION / FILE D'ATTENTE */
+.netb{background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.35);color:#f5c26b;border-radius:var(--r);padding:10px 14px;font-size:.8rem;line-height:1.5}
+.fr{display:flex;flex-direction:column;gap:6px;padding:11px 0;border-bottom:1px solid var(--b)}
+.fr:last-child{border:none}
+.frt{font-size:.86rem;font-weight:500;word-break:break-word}
+.frm{font-size:.72rem;color:var(--m);line-height:1.5;word-break:break-word}
+.fra{display:flex;gap:6px;flex-wrap:wrap}
+
+/* THÈMES / TRANSCRIPTION / LECTEUR */
+#lectz{position:sticky;top:0;z-index:5;background:var(--bg)}
+.tp{margin-bottom:14px;line-height:1.8;font-size:.83rem;color:var(--m)}
+.loc{display:inline-block;font-weight:700;color:var(--a2);cursor:pointer;margin-right:6px;font-size:.78rem}
+.tl{color:var(--a2);cursor:pointer;font-size:.72rem;text-decoration:none;margin-left:4px;white-space:nowrap}
+.sg:hover{color:var(--t);cursor:pointer}
+.thm{margin-bottom:14px}
+.thm b{display:block;margin-bottom:4px}
+.thm ul{margin-left:18px;color:var(--m)}
+.thm li{margin-bottom:3px}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  html{-webkit-text-size-adjust:100%}
+  #main,.vw{min-width:0;max-width:100vw;width:100%}
+  .ni{width:100%;box-sizing:border-box}
+  .ni,.dwr,.pi{overflow-x:hidden}
+  .fi,select.fi,textarea.fi{font-size:16px}
+  .ni{gap:14px}
+  .ni>*{order:6;min-width:0;max-width:100%}
+  .mz>*{max-width:100%;min-width:0}.mz select{width:100%!important;max-width:100%!important}.mz .ahint{max-width:100%!important}
+  .eb{padding:8px 10px;font-size:.74rem}
+  #dtt{font-size:1.1rem!important;line-height:1.3}
+  .ni>#net{order:0}.o-t{order:1!important}.o-r{order:2!important}.o-q{order:3!important}.o-n{order:4!important}.o-m{order:5!important}.o-o{order:6!important}
+  .nt{font-size:1.25rem}.ns{display:none}
+  .pg{display:flex;grid-template-columns:none;overflow-x:auto;gap:8px;scroll-snap-type:x mandatory;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+  .pc{flex:0 0 138px;scroll-snap-align:start;padding:11px 12px}
+  .pc .pcd{display:none}
+  .mz{padding:20px 16px;gap:10px;background:linear-gradient(160deg,rgba(91,106,240,.14),var(--s))}
+  .mr{width:96px;height:96px}.mr svg{width:36px;height:36px}
+  .mz .td{font-size:1.6rem}
+  .chx{padding:6px 0;font-size:.82rem}
+  .pb{padding:15px;font-size:1rem}
+  .bn{padding:5px 10px;min-width:64px}
+  .bn .bi{font-size:1.4rem}.bn{font-size:.68rem}
+  #shell{height:calc(100dvh - 56px - 64px - env(safe-area-inset-bottom) - env(safe-area-inset-top))}
+  .ni,.pi,.dwr{padding-bottom:110px}
+  details.aud>summary::-webkit-details-marker{display:none}
 }
-@media(min-width:721px){#bottomNav{display:none!important}}
+@media(max-width:700px){
+  #sb{display:none}#bnav{display:block}.dtabs{display:none}
+  #shell{height:calc(100vh - 56px - 62px)}
+  .ni,.pi{padding:18px 14px 100px}.dwr{padding:18px 14px 100px}
+  .ch2{padding:14px}.cm{padding:12px 14px}.cf{padding:10px 14px 14px}
+  .pg{grid-template-columns:1fr}.msg{max-width:94%}
+}
+@media(min-width:701px){#bnav{display:none!important}}
 </style>
 </head>
 <body>
 
 <div id="toast"></div>
 
-<!-- ══ ÉCRAN CLÉ API ══ -->
-<div id="apiScreen">
-  <div class="api-card">
-    <div class="api-logo">MeetAI</div>
-    <div class="api-tagline">Vos réunions, analysées par l'IA</div>
-
-    <h2>🔑 Clé API requise</h2>
-    <p>Pour analyser vos réunions, MeetAI utilise Claude (IA d'Anthropic). Votre clé est sauvegardée uniquement sur votre appareil, jamais transmise à un serveur tiers.</p>
-
-    <div class="api-steps">
-      <p>Comment obtenir votre clé gratuite :</p>
-      <div class="api-step"><div class="api-step-num">1</div><div>Allez sur <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> et créez un compte</div></div>
-      <div class="api-step"><div class="api-step-num">2</div><div>Dans le menu gauche, cliquez <strong>"API Keys"</strong></div></div>
-      <div class="api-step"><div class="api-step-num">3</div><div>Cliquez <strong>"Create Key"</strong> et copiez la clé générée</div></div>
-      <div class="api-step"><div class="api-step-num">4</div><div>Collez-la ci-dessous. Anthropic offre des crédits gratuits au démarrage ✅</div></div>
-    </div>
-
-    <div class="api-input-wrap">
-      <input class="api-input" id="apiKeyInput" type="password" placeholder="sk-ant-api03-..." autocomplete="off">
-      <button class="api-eye" onclick="toggleApiVis()" id="apiEye">👁️</button>
-    </div>
-    <div class="api-hint">Coût estimé : ~0,01 € par réunion analysée. <a href="https://console.anthropic.com" target="_blank">Voir les tarifs →</a></div>
-
-    <button class="btn-api" id="apiSaveBtn" onclick="saveApiKey()">Enregistrer et continuer →</button>
-    <div class="api-secure">🔒 Clé stockée uniquement sur votre appareil (localStorage)</div>
+<!-- ══ SETUP ══ -->
+<div id="setup">
+<div class="setup-box">
+  <div class="setup-logo">MeetAI</div>
+  <div class="setup-sub">Assistant de réunion intelligent</div>
+  <h2>🔑 Configurez votre clé API</h2>
+  <p>MeetAI utilise Claude (Anthropic) pour analyser vos réunions. Votre clé est stockée uniquement sur votre appareil.</p>
+  <div class="steps">
+    <div class="step"><div class="sn">1</div><div>Allez sur <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> et créez un compte gratuit</div></div>
+    <div class="step"><div class="sn">2</div><div>Dans le menu gauche → <strong>API Keys</strong> → <strong>Create Key</strong></div></div>
+    <div class="step"><div class="sn">3</div><div>Copiez la clé (commence par <strong>sk-ant-</strong>) et collez-la ci-dessous</div></div>
   </div>
+  <div class="key-row">
+    <input class="key-in" id="kin" type="password" placeholder="sk-ant-api03-...">
+    <button class="eye-btn" onclick="var i=document.getElementById('kin');i.type=i.type=='password'?'text':'password'">👁️</button>
+  </div>
+  <div class="key-hint">Coût : ~0,01€ par réunion. <a href="https://www.anthropic.com/pricing" target="_blank">Voir les tarifs →</a></div>
+  <button class="go-btn" onclick="enregistrerCle()">Enregistrer et démarrer →</button>
+  <div class="secure">🔒 Clé stockée localement — jamais envoyée ailleurs</div>
+</div>
 </div>
 
-<!-- ══ PROCESSING ══ -->
-<div id="processingOverlay">
-  <div class="spinner"></div>
-  <div class="proc-label" id="procLabel">Analyse en cours…</div>
-  <div class="proc-sub">L'IA traite votre réunion</div>
-</div>
+<!-- ══ PROC ══ -->
+<div id="proc"><div class="spin"></div><div id="pl" style="font-size:.92rem;color:var(--t)">Analyse…</div><div style="font-size:.78rem;color:var(--m)">L'IA traite votre réunion</div></div>
 
 <!-- ══ MODAL PROMPT ══ -->
-<div class="modal-overlay" id="promptModal">
-  <div class="modal">
-    <h3 id="pmTitle">Nouveau modèle</h3>
-    <p>Définissez comment l'IA doit analyser ce type de réunion.</p>
-    <div class="mfield"><label>Icône</label><input id="pm-icon" type="text" placeholder="🎯" maxlength="4" style="max-width:80px"></div>
-    <div class="mfield"><label>Nom</label><input id="pm-name" type="text" placeholder="Ex: Réunion de vente"></div>
-    <div class="mfield"><label>Description courte</label><input id="pm-desc" type="text" placeholder="Ex: Suivi des opportunités"></div>
-    <div class="mfield">
-      <label>Instructions IA</label>
-      <textarea id="pm-prompt" placeholder="Décrivez ce que l'IA doit extraire…"></textarea>
-      <div class="hint">Ces instructions guident l'IA lors de l'analyse.</div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-sm btn-ghost" onclick="closePromptModal()">Annuler</button>
-      <button class="btn-sm btn-accent" onclick="savePrompt()">Enregistrer</button>
-    </div>
-  </div>
+<div class="mo" id="mop">
+<div class="mb">
+  <h3 id="mopt">Nouveau modèle</h3>
+  <p>Définissez comment l'IA analyse ce type de réunion.</p>
+  <div class="mf"><label>Icône</label><input id="pmi" type="text" placeholder="🎯" maxlength="4" style="max-width:72px"></div>
+  <div class="mf"><label>Nom</label><input id="pmn" type="text" placeholder="Ex: Réunion de vente"></div>
+  <div class="mf"><label>Description</label><input id="pmd" type="text" placeholder="Ex: Suivi commercial"></div>
+  <div class="mf"><label>Instructions IA</label><textarea id="pmp" placeholder="Décrivez ce que l'IA doit extraire…"></textarea><div class="hint">Ces instructions guident l'analyse IA.</div></div>
+  <div class="ma"><button class="bts btg" onclick="fermerModal('mop')">Annuler</button><button class="bts bta" onclick="sauvegarderModele()">Enregistrer</button></div>
+</div>
 </div>
 
 <!-- ══ MODAL EXPORT ══ -->
-<div class="modal-overlay" id="exportModal">
-  <div class="modal" style="max-width:420px">
-    <h3>Exporter le compte rendu</h3>
-    <p>Le fichier sera téléchargé directement sur votre appareil.</p>
-    <div class="export-options">
-      <div class="export-opt" onclick="doExport('pdf')"><div class="eo-icon">📄</div><div><div class="eo-name">PDF</div><div class="eo-desc">Idéal pour partager, imprimer ou archiver.</div></div></div>
-      <div class="export-opt" onclick="doExport('word')"><div class="eo-icon">📝</div><div><div class="eo-name">Word (.docx)</div><div class="eo-desc">Modifiable dans Word, Google Docs, LibreOffice.</div></div></div>
-      <div class="export-opt" onclick="doExport('txt')"><div class="eo-icon">🗒️</div><div><div class="eo-name">Texte brut (.txt)</div><div class="eo-desc">Simple et universel.</div></div></div>
-    </div>
-    <div class="modal-actions"><button class="btn-sm btn-ghost" onclick="document.getElementById('exportModal').classList.remove('show')">Fermer</button></div>
+<div class="mo" id="moe">
+<div class="mb" style="max-width:400px">
+  <h3>Exporter le compte rendu</h3>
+  <p>Choisissez le format. Le fichier sera téléchargé sur votre appareil.</p>
+  <div class="eo">
+    <div class="eoi" onclick="exporter('pdf')"><span style="font-size:1.8rem">📄</span><div><div class="eoin">PDF</div><div class="eoid">Idéal pour partager ou archiver.</div></div></div>
+    <div class="eoi" onclick="exporter('word')"><span style="font-size:1.8rem">📝</span><div><div class="eoin">Word (.docx)</div><div class="eoid">Modifiable dans Word ou Google Docs.</div></div></div>
+    <div class="eoi" onclick="exporter('txt')"><span style="font-size:1.8rem">🗒️</span><div><div class="eoin">Texte (.txt)</div><div class="eoid">Simple et universel.</div></div></div>
   </div>
+  <div class="ma"><button class="bts btg" onclick="fermerModal('moe')">Fermer</button></div>
+</div>
 </div>
 
-<!-- ══ MODAL MEET SELECT ══ -->
-<div class="modal-overlay" id="meetSelectModal">
-  <div class="modal" style="max-width:400px">
-    <h3>Choisir une réunion</h3>
-    <p>Sélectionnez la réunion à afficher.</p>
-    <div id="meetSelectList" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto"></div>
-    <div class="modal-actions"><button class="btn-sm btn-ghost" onclick="document.getElementById('meetSelectModal').classList.remove('show')">Fermer</button></div>
-  </div>
+<!-- ══ MODAL LISTE REUNIONS ══ -->
+<div class="mo" id="mol">
+<div class="mb" style="max-width:380px">
+  <h3>Choisir une réunion</h3>
+  <p>Sélectionnez la réunion à afficher.</p>
+  <div id="moll" style="display:flex;flex-direction:column;gap:7px;max-height:300px;overflow-y:auto"></div>
+  <div class="ma"><button class="bts btg" onclick="fermerModal('mol')">Fermer</button></div>
+</div>
 </div>
 
-<!-- ══ TOP NAV ══ -->
-<nav id="topNav">
+<!-- ══ MODAL INSTALLATION ══ -->
+<div class="mo" id="moi">
+<div class="mb inst" style="max-width:440px">
+  <h3>📲 Installer MeetAI</h3>
+  <p>L'application aura sa propre icône et s'ouvrira en plein écran, comme une vraie appli.</p>
+  <h4>💻 Ordinateur (Chrome ou Edge)</h4>
+  <ol><li>Cliquez sur l'icône d'installation à droite de la barre d'adresse (écran avec une flèche ⊕)</li><li>Ou menu ⋮ → <em>Enregistrer et partager</em> → <em>Installer MeetAI</em></li></ol>
+  <h4>🤖 Téléphone Android (Chrome)</h4>
+  <ol><li>Menu ⋮ en haut à droite</li><li><em>Installer l'application</em> (ou <em>Ajouter à l'écran d'accueil</em>)</li></ol>
+  <h4>🍎 iPhone / iPad (Safari uniquement)</h4>
+  <ol><li>Touchez le bouton Partager <strong>⬆️</strong> en bas</li><li><em>Sur l'écran d'accueil</em> → <em>Ajouter</em></li></ol>
+  <div class="ma"><button class="bts btg" onclick="fermerModal('moi')">Fermer</button></div>
+</div>
+</div>
+
+<!-- ══ NAV ══ -->
+<nav>
   <div class="logo">MeetAI</div>
-  <div id="desktopNav">
-    <button class="dtab active" onclick="goView('new',this)">➕ Nouvelle</button>
-    <button class="dtab" onclick="goView('detail',this)">📄 Résumés</button>
-    <button class="dtab" onclick="goView('chat',this)">💬 Interroger</button>
-    <button class="dtab" onclick="goView('prompts',this)">⚙️ Modèles</button>
+  <div class="dtabs">
+    <button class="dt on" onclick="aller('n',this)">➕ Nouvelle</button>
+    <button class="dt" onclick="aller('d',this)">📄 Résumés</button>
+    <button class="dt" onclick="aller('c',this)">💬 Chat</button>
+    <button class="dt" onclick="aller('p',this)">⚙️ Modèles</button>
   </div>
-  <div class="nav-right">
-    <button class="nav-icon-btn" title="Changer la clé API" onclick="showApiScreen()" id="apiStatusBtn">🔑</button>
-    <button class="nav-icon-btn" onclick="goViewMobile('prompts')">⚙️</button>
+  <div class="nav-r">
+    <button class="ib instb" id="instbtn" title="Installer l'application" onclick="installerApp()">📲 Installer</button>
+    <button class="ib" title="Changer la clé API" onclick="ouvrirSetup()">🔑</button>
   </div>
 </nav>
 
-<!-- ══ APP SHELL ══ -->
-<div id="appShell">
-  <div id="sidebar">
-    <div class="sb-head">
-      <span class="sb-label">Réunions</span>
-      <button class="btn-sm btn-accent" onclick="goView('new',document.querySelector('.dtab'))">+ Nouveau</button>
+<!-- ══ SHELL ══ -->
+<div id="shell">
+<div id="sb">
+  <div class="sbh"><span class="sbl">Réunions</span><button class="bts bta" onclick="aller('n',document.querySelector('.dt'))">+ Nouveau</button></div>
+  <div class="sbsr"><input type="text" placeholder="🔍 Rechercher…" oninput="filtrer(this.value)"></div>
+  <div id="ml"></div>
+</div>
+<div id="main">
+
+  <!-- NOUVELLE RÉUNION -->
+  <div class="vw on" id="vn">
+  <div class="ni">
+    <div id="net" class="netb" style="display:none">📴 Hors connexion — vous pouvez quand même enregistrer : l'audio est sauvegardé sur cet appareil et sera transcrit puis résumé dès le retour d'internet.</div>
+    <div class="o-t"><div class="nt">Nouvelle réunion</div><div class="ns">Choisissez un modèle, enregistrez ou collez votre transcription.</div></div>
+    <div class="o-m"><div class="fl">Type de réunion</div><div class="pg" id="pg"></div><button class="apc" style="margin-top:9px" onclick="ouvrirModalModele()">+ Créer un modèle personnalisé</button></div>
+    <details class="aud o-o">
+      <summary style="cursor:pointer;font-weight:600;font-size:.85rem;list-style:none">⚙️ Options : intervenants, confidentialité, démarrage auto</summary>
+      <label class="chx"><input type="checkbox" id="optspk" checked onchange="localStorage.setItem('ma_optspk',this.checked?'1':'0')"><span>👥 Identifier les intervenants <em>(estimation par l'IA d'après le texte, pas d'après les voix : elle peut se tromper. Vous pouvez renommer les intervenants ensuite.)</em></span></label>
+      <label class="chx"><input type="checkbox" id="optauto" checked onchange="localStorage.setItem('ma_autorec',this.checked?'1':'0')"><span>🎙️ Démarrer l'enregistrement dès l'ouverture de l'application (le micro s'allume : un bandeau rouge et le chrono l'indiquent ; appuyez sur le micro pour arrêter).</span></label>
+      <label class="chx"><input type="checkbox" id="optconf" onchange="localStorage.setItem('ma_confid',this.checked?'1':'0')"><span>🔒 Mode confidentialité : supprimer l'audio dès la transcription et ne garder que le texte (désactive l'écoute des passages).</span></label>
+    </details>
+    <div class="o-n"><div class="fl">Nom de la réunion</div><input class="fi" id="mn" type="text" placeholder="Ex: Standup équipe – lundi"></div>
+    <div class="o-r"><div class="fl">Enregistrement micro</div>
+      <div class="mz">
+        <button class="mr" id="mrb" onclick="basculerMicro()"><svg viewBox="0 0 24 24"><path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm-1 18.94V22h2v-2.06A8 8 0 0 0 20 12h-2a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.94z"/></svg></button>
+        <div class="ms" id="ms">Appuyez pour démarrer</div>
+        <div class="td" id="td">00:00</div>
+        <select class="fi" id="modemic" style="max-width:360px;font-size:.8rem;padding:8px 12px" onchange="majModeMic()">
+          <option value="audio">💾 Audio sauvegardé – fonctionne sans internet (recommandé)</option>
+          <option value="direct">⚡ Texte en direct – internet requis pendant la réunion</option>
+        </select>
+        <div class="ahint" id="modeh" style="text-align:center;max-width:360px"></div>
+      </div>
     </div>
-    <div class="sb-search"><input type="text" placeholder="🔍 Rechercher…" oninput="filterMeetings(this.value)"></div>
-    <div id="meetingList"></div>
+    <div id="fazone" class="o-q" style="display:none">
+      <div class="fl">📥 Enregistrements sur cet appareil (<span id="fan">0</span>)</div>
+      <div class="aud">
+        <label class="chx"><input type="checkbox" id="faauto" checked onchange="localStorage.setItem('ma_autofile',this.checked?'1':'0')"><span>Traiter automatiquement dès que la connexion revient</span></label>
+        <div id="fa"></div>
+        <button class="bts btg" onclick="traiterFile(true)">🔄 Traiter maintenant</button>
+        <div class="ahint">Le traitement a lieu quand l'application est ouverte (ou rouverte) avec internet. Rien n'est perdu tant que vous ne supprimez pas l'enregistrement.</div>
+      </div>
+    </div>
+    <div class="os">ou importez un fichier audio</div>
+    <div class="aud">
+      <div class="fl" style="margin-bottom:0">Fichier audio</div>
+      <label class="dz" id="dz" for="af"><span style="font-size:1.6rem">🎧</span><span id="afn">Touchez pour choisir un fichier (MP3, M4A, WAV, MP4…)</span></label>
+      <input type="file" id="af" accept="audio/*,video/mp4,.m4a,.mp3,.wav,.ogg,.webm,.aac,.flac,.mp4" style="display:none" onchange="fichierChoisi(this)">
+      <div class="fl" style="margin:6px 0 0">Moteur de transcription</div>
+      <select class="fi" id="moteur" onchange="changerMoteur()">
+        <option value="whisper">Whisper (OpenAI) – rapide et précis, clé OpenAI requise</option>
+        <option value="local">Dans le navigateur – sans clé, plus lent (idéal sur ordinateur)</option>
+      </select>
+      <div id="wk">
+        <input class="fi" id="oak" type="password" placeholder="Clé OpenAI (sk-...)" autocomplete="off">
+        <div class="ahint" style="margin-top:6px">Clé à créer sur <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a>. Elle reste sur votre appareil. Coût : environ 0,006 $ par minute d'audio.</div>
+      </div>
+      <div class="ahint" id="lk" style="display:none">Le modèle de transcription (~80 Mo) se télécharge une seule fois, puis reste en cache. Comptez plusieurs minutes pour une réunion longue. Gardez la page ouverte.</div>
+      <label class="chx"><input type="checkbox" id="auto" checked><span>Générer le compte rendu automatiquement après la transcription</span></label>
+      <button class="pb" id="tbtn" onclick="transcrireFichier()">🎧 Transcrire et générer le compte rendu</button>
+    </div>
+    <div class="os">ou collez une transcription</div>
+    <div><div class="fl">Transcription</div><textarea class="fi fit" id="ti" placeholder="Collez ici la transcription…"></textarea></div>
+    <button class="pb" id="ab" onclick="analyser()">✨ Analyser avec l'IA</button>
+  </div>
   </div>
 
-  <div id="main">
-    <!-- NOUVELLE RÉUNION -->
-    <div class="view active" id="view-new">
-      <div class="new-inner">
-        <div>
-          <div class="new-title">Nouvelle réunion</div>
-          <div class="new-sub">Choisissez un modèle, enregistrez ou collez votre transcription.</div>
-        </div>
-        <div id="apiKeyBanner"></div>
-        <div>
-          <div class="field-label">Type de réunion</div>
-          <div class="prompt-grid" id="promptGrid"></div>
-          <button class="btn-add-prompt" style="margin-top:10px" onclick="openPromptModal()">+ Créer un modèle personnalisé</button>
-        </div>
-        <div>
-          <div class="field-label">Nom de la réunion</div>
-          <input class="f-input" id="meetName" type="text" placeholder="Ex: Standup équipe produit – lundi">
-        </div>
-        <div>
-          <div class="field-label">Enregistrement micro</div>
-          <div class="mic-zone">
-            <button class="mic-ring" id="micBtn" onclick="toggleRec()">
-              <svg viewBox="0 0 24 24"><path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm-1 18.94V22h2v-2.06A8 8 0 0 0 20 12h-2a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.94z"/></svg>
-            </button>
-            <div class="mic-status" id="micStatus">Appuyez pour démarrer</div>
-            <div class="timer-disp" id="timerDisp">00:00</div>
-          </div>
-        </div>
-        <div class="or-sep">ou collez une transcription</div>
-        <div>
-          <div class="field-label">Transcription</div>
-          <textarea class="f-input f-textarea" id="transcriptInput" placeholder="Collez ici la transcription de votre réunion…"></textarea>
-        </div>
-        <button class="btn-primary" id="analyzeBtn" onclick="analyze()">✨ Analyser avec l'IA</button>
-      </div>
+  <!-- RÉSUMÉS -->
+  <div class="vw" id="vd">
+    <div class="dw" id="dw">
+      <div class="dwi">📋</div>
+      <h3>Sélectionnez une réunion</h3>
+      <p>Choisissez une réunion dans la liste pour voir son résumé.</p>
+      <button class="bts btg" style="margin-top:8px" onclick="ouvrirListeReunions()">Choisir →</button>
     </div>
-
-    <!-- RÉSUMÉS -->
-    <div class="view" id="view-detail">
-      <div class="detail-welcome" id="dwelcome">
-        <div class="dw-icon">📋</div>
-        <h3>Sélectionnez une réunion</h3>
-        <p>Choisissez une réunion dans la liste pour voir son résumé et ses actions.</p>
-        <button class="btn-sm btn-ghost" style="margin-top:8px" onclick="openMeetSelect()">Choisir une réunion →</button>
+    <div id="dc">
+    <div class="dwr">
+      <div class="dh">
+        <div class="dhl"><div class="dtt" id="dtt"></div><div class="dm" id="dm"></div></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="eb" onclick="ouvrirModal('moe')">⬇️ Exporter</button><button class="eb" id="btnaud" onclick="supprimerAudio()" style="display:none">🔇 Supprimer l'audio</button><button class="eb" onclick="supprimerReunion()">🗑 Supprimer</button></div>
       </div>
-      <div id="detailContent" style="display:none;flex:1;overflow:hidden;flex-direction:column">
-        <div class="detail-wrap">
-          <div class="detail-hd">
-            <div class="detail-hd-left">
-              <div class="detail-ttl" id="dTitle"></div>
-              <div class="detail-meta" id="dMeta"></div>
-            </div>
-            <div class="export-group">
-              <button class="btn-export" onclick="openExportModal()">⬇️ Exporter</button>
-            </div>
-          </div>
-          <div class="inner-tabs">
-            <button class="itab active" onclick="switchItab('summary',this)">📝 Résumé</button>
-            <button class="itab" onclick="switchItab('actions',this)">✅ Actions</button>
-            <button class="itab" onclick="switchItab('transcript',this)">📃 Transcription</button>
-          </div>
-          <div class="itab-content active" id="itab-summary"></div>
-          <div class="itab-content" id="itab-actions"></div>
-          <div class="itab-content" id="itab-transcript"></div>
-        </div>
+      <div id="lectz"></div>
+      <div class="it">
+        <button class="itb on" onclick="onglet('s',this)">📝 Résumé</button>
+        <button class="itb" onclick="onglet('a',this)">✅ Actions</button>
+        <button class="itb" onclick="onglet('k',this)">🗺️ Carte mentale</button>
+        <button class="itb" onclick="onglet('t',this)">📃 Transcription</button>
       </div>
+      <div class="ic on" id="is"></div>
+      <div class="ic" id="ia"></div>
+      <div class="ic" id="ik"></div>
+      <div class="ic" id="it2"></div>
     </div>
-
-    <!-- CHAT -->
-    <div class="view" id="view-chat">
-      <div class="chat-wrap">
-        <div class="chat-hd">
-          <h2>Interrogez vos réunions</h2>
-          <p>Posez n'importe quelle question sur vos réunions passées.</p>
-        </div>
-        <div class="chat-msgs" id="chatMsgs">
-          <div class="msg ai"><div class="av">AI</div><div class="bubble">Bonjour ! Je connais toutes vos réunions. Demandez-moi : <em>"Quelles décisions ont été prises ?"</em>, <em>"Qui doit rappeler le client ?"</em>…</div></div>
-        </div>
-        <div class="chat-foot">
-          <input class="chat-in" id="chatIn" placeholder="Posez votre question…" onkeydown="if(event.key==='Enter')sendChat()">
-          <button class="btn-send" id="sendBtn" onclick="sendChat()">➤</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- MODÈLES -->
-    <div class="view" id="view-prompts">
-      <div class="prompts-inner">
-        <h2>Modèles de réunion</h2>
-        <p>Chaque modèle donne des instructions spécifiques à l'IA pour adapter l'analyse.</p>
-        <div class="prompt-list" id="promptList"></div>
-        <button class="btn-primary" style="margin-top:20px" onclick="openPromptModal()">+ Créer un modèle</button>
-      </div>
     </div>
   </div>
+
+  <!-- CHAT -->
+  <div class="vw" id="vc">
+  <div class="cw">
+    <div class="ch2"><h2>Interrogez vos réunions</h2><p>Posez n'importe quelle question sur vos réunions passées.</p></div>
+    <div class="cm" id="cm">
+      <div class="msg ai"><div class="av">AI</div><div class="bb">Bonjour ! Posez-moi des questions sur vos réunions : <em>"Quelles décisions ont été prises ?"</em>, <em>"Qui doit faire quoi ?"</em>…</div></div>
+    </div>
+    <div class="cf">
+      <input class="ci" id="ci" placeholder="Posez votre question…" onkeydown="if(event.key==='Enter')envoyerChat()">
+      <button class="cs" id="csb" onclick="envoyerChat()">➤</button>
+    </div>
+  </div>
+  </div>
+
+  <!-- MODÈLES -->
+  <div class="vw" id="vp">
+  <div class="pi">
+    <h2>Modèles de réunion</h2>
+    <p>Chaque modèle guide l'IA pour adapter l'analyse à votre type de réunion.</p>
+    <div class="pl" id="plst"></div>
+    <button class="pb" style="margin-top:18px" onclick="ouvrirModalModele()">+ Créer un modèle</button>
+  </div>
+  </div>
+
+</div>
 </div>
 
 <!-- BOTTOM NAV -->
-<div id="bottomNav">
-  <div class="bottom-nav-inner">
-    <button class="bnav-btn active" onclick="goViewMobile('new',this)"><span class="icon">➕</span>Nouveau</button>
-    <button class="bnav-btn" onclick="goViewMobile('detail',this)"><span class="icon">📄</span>Résumés</button>
-    <button class="bnav-btn" onclick="goViewMobile('chat',this)"><span class="icon">💬</span>Chat IA</button>
-    <button class="bnav-btn" onclick="goViewMobile('prompts',this)"><span class="icon">⚙️</span>Modèles</button>
-  </div>
+<div id="bnav">
+<div class="bni">
+  <button class="bn on" onclick="allerMobile('n',this)"><span class="bi">➕</span>Nouveau</button>
+  <button class="bn" onclick="allerMobile('d',this)"><span class="bi">📄</span>Résumés</button>
+  <button class="bn" onclick="allerMobile('c',this)"><span class="bi">💬</span>Chat</button>
+  <button class="bn" onclick="allerMobile('p',this)"><span class="bi">⚙️</span>Modèles</button>
+</div>
 </div>
 
 <script>
-/* ══════════════ STATE ══════════════ */
-const BUILT_IN_PROMPTS=[
-  {id:'standup',builtin:true,icon:'⚡',name:'Standup',desc:'Daily / point rapide d\'équipe',prompt:`Analyse ce standup. Extrais en JSON :\n- summary : résumé (2-3 phrases)\n- decisions : liste HTML des blocages (<ul><li>…</li></ul>)\n- actions : [{text, owner, done:false}]`},
-  {id:'commercial',builtin:true,icon:'💼',name:'Commerciale',desc:'Appel client, vente, négociation',prompt:`Analyse cette réunion commerciale. Extrais en JSON :\n- summary : résumé (ton, intérêt client)\n- decisions : liste HTML des objections et engagements (<ul><li>…</li></ul>)\n- actions : [{text, owner, done:false}]`},
-  {id:'interview',builtin:true,icon:'🎙️',name:'Interview',desc:'Entretien candidat ou journalistique',prompt:`Analyse cette interview. Extrais en JSON :\n- summary : profil ou thèmes (3-4 phrases)\n- decisions : liste HTML des points clés (<ul><li>…</li></ul>)\n- actions : [{text, owner, done:false}]`},
-  {id:'brainstorm',builtin:true,icon:'🧠',name:'Brainstorming',desc:'Idéation, créativité',prompt:`Analyse ce brainstorming. Extrais en JSON :\n- summary : synthèse des idées (3-4 phrases)\n- decisions : liste HTML des idées retenues (<ul><li>…</li></ul>)\n- actions : [{text, owner, done:false}]`}
+// ══ DONNÉES ══
+var MODELES_INTEGRES=[
+  {id:'standup',integre:true,icone:'⚡',nom:'Standup',desc:'Daily / point rapide',prompt:'Analyse ce standup. JSON : summary (2-3 phrases), decisions (liste HTML <ul><li>), actions [{text,owner,done:false}]'},
+  {id:'commercial',integre:true,icone:'💼',nom:'Commerciale',desc:'Appel client, vente',prompt:'Analyse cette réunion commerciale. JSON : summary (ton et contexte), decisions (objections et engagements HTML), actions [{text,owner,done:false}]'},
+  {id:'interview',integre:true,icone:'🎙️',nom:'Interview',desc:'Entretien, journalisme',prompt:'Analyse cette interview. JSON : summary (profil et thèmes), decisions (points clés HTML), actions [{text,owner,done:false}]'},
+  {id:'brainstorm',integre:true,icone:'🧠',nom:'Brainstorming',desc:'Idéation, créativité',prompt:'Analyse ce brainstorming. JSON : summary (synthèse des idées), decisions (idées retenues HTML), actions [{text,owner,done:false}]'}
 ];
-let customPrompts=JSON.parse(localStorage.getItem('meetai_prompts')||'[]');
-let meetings=JSON.parse(localStorage.getItem('meetai_meetings')||'[]');
-let currentMeetingId=null,selectedPromptId='standup',editingPromptId=null;
-let isRec=false,timerSec=0,timerInt=null,recognition=null;
+var modelesCustom=JSON.parse(localStorage.getItem('ma_modeles')||'[]');
+var reunions=JSON.parse(localStorage.getItem('ma_reunions')||'[]');
+var reunionActuelle=null,modeleChoisi='standup',modeleEdition=null;
+var enregistrement=false,secondes=0,chrono=null,reco=null;
 
-function allPrompts(){return[...BUILT_IN_PROMPTS,...customPrompts]}
-function save(){localStorage.setItem('meetai_meetings',JSON.stringify(meetings));localStorage.setItem('meetai_prompts',JSON.stringify(customPrompts))}
-function getKey(){return localStorage.getItem('meetai_api_key')||''}
+function tousModeles(){return MODELES_INTEGRES.concat(modelesCustom)}
+function sauvegarder(){try{localStorage.setItem('ma_reunions',JSON.stringify(reunions));localStorage.setItem('ma_modeles',JSON.stringify(modelesCustom))}catch(e){afficherToast('⚠️ Stockage du navigateur plein : exportez puis supprimez d\'anciennes réunions.')}}
+function obtenirCle(){return localStorage.getItem('ma_cle')||''}
 
-/* ══════════════ API KEY ══════════════ */
-function showApiScreen(){
-  document.getElementById('apiKeyInput').value=getKey()?'sk-ant-••••••••••••':'' ;
-  document.getElementById('apiScreen').classList.add('show');
+// ══ SETUP / CLÉ ══
+function ouvrirSetup(){document.getElementById('setup').classList.remove('hide');document.getElementById('kin').value=''}
+function enregistrerCle(){
+  var v=document.getElementById('kin').value.trim();
+  if(!v||!v.startsWith('sk-ant-')){afficherToast('⚠️ La clé doit commencer par sk-ant-');return}
+  localStorage.setItem('ma_cle',v);
+  document.getElementById('setup').classList.add('hide');
+  afficherToast('✅ Clé enregistrée !');
 }
-function saveApiKey(){
-  const val=document.getElementById('apiKeyInput').value.trim();
-  if(!val||(!val.startsWith('sk-ant-')&&!val.includes('••'))){toast('⚠️ Clé invalide. Elle doit commencer par sk-ant-');return}
-  if(!val.includes('••'))localStorage.setItem('meetai_api_key',val);
-  document.getElementById('apiScreen').classList.remove('show');
-  updateApiBanner();
-  toast('✅ Clé API enregistrée !');
+
+// ══ TOAST ══
+function afficherToast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(function(){t.classList.remove('on')},3000)}
+
+// ══ NAVIGATION ══
+function aller(v,btn){
+  document.querySelectorAll('.dt').forEach(function(t){t.classList.remove('on')});
+  if(btn)btn.classList.add('on');
+  document.querySelectorAll('.vw').forEach(function(x){x.classList.remove('on')});
+  var ids={n:'vn',d:'vd',c:'vc',p:'vp'};
+  document.getElementById(ids[v]).classList.add('on');
+  if(v==='d')afficherDetail();
+  if(v==='p')afficherModeles();
+  if(v==='n')afficherGrilleModeles();
 }
-function toggleApiVis(){
-  const inp=document.getElementById('apiKeyInput');
-  inp.type=inp.type==='password'?'text':'password';
+function allerMobile(v,btn){
+  document.querySelectorAll('.bn').forEach(function(b){b.classList.remove('on')});
+  if(btn)btn.classList.add('on');
+  document.querySelectorAll('.vw').forEach(function(x){x.classList.remove('on')});
+  var ids={n:'vn',d:'vd',c:'vc',p:'vp'};
+  document.getElementById(ids[v]).classList.add('on');
+  if(v==='d')afficherDetail();
+  if(v==='p')afficherModeles();
+  if(v==='n')afficherGrilleModeles();
 }
-function updateApiBanner(){
-  const key=getKey();
-  const banner=document.getElementById('apiKeyBanner');
-  const btn=document.getElementById('apiStatusBtn');
-  if(key){
-    banner.innerHTML=`<div class="api-banner"><div class="ab-dot"></div><div class="ab-text">Clé API configurée — Prêt à analyser</div><button class="ab-btn" onclick="showApiScreen()">Modifier</button></div>`;
-    btn.textContent='✅';
+
+// ══ MODALS ══
+function ouvrirModal(id){document.getElementById(id).classList.add('on')}
+function fermerModal(id){document.getElementById(id).classList.remove('on')}
+
+// ══ SIDEBAR ══
+function afficherSidebar(filtre){
+  filtre=filtre||'';
+  var el=document.getElementById('ml');
+  var liste=reunions.slice().reverse();
+  if(filtre)liste=liste.filter(function(r){return r.nom.toLowerCase().indexOf(filtre.toLowerCase())>-1});
+  if(!liste.length){el.innerHTML='<div class="sbe">'+(filtre?'Aucun résultat.':'Aucune réunion.<br>Créez-en une !')+'</div>';return}
+  el.innerHTML=liste.map(function(r){
+    return '<div class="mi'+(r.id===reunionActuelle?' on':'')+'" onclick="choisirReunion(\''+r.id+'\')">'
+      +'<div class="mt">'+(r.iconeType||'')+' '+r.nom+'</div>'
+      +'<div class="mm"><span>'+new Date(r.date).toLocaleDateString('fr-FR')+'</span>'
+      +'<span class="ck ckt">'+(r.nomType||'Standard')+'</span>'
+      +'<span class="ck ckd">✓</span></div></div>';
+  }).join('');
+}
+function filtrer(v){afficherSidebar(v)}
+
+// ══ GRILLE MODÈLES ══
+function afficherGrilleModeles(){
+  document.getElementById('pg').innerHTML=tousModeles().map(function(p){
+    return '<div class="pc'+(p.id===modeleChoisi?' on':'')+'" onclick="choisirModele(\''+p.id+'\')">'
+      +'<div class="pcc">✓</div><div class="pci">'+p.icone+'</div>'
+      +'<div class="pcn">'+p.nom+'</div><div class="pcd">'+p.desc+'</div></div>';
+  }).join('');
+}
+function choisirModele(id){modeleChoisi=id;afficherGrilleModeles()}
+
+// ══ MICRO ══
+async function basculerMicro(){
+  var sel=document.getElementById('modemic');
+  if(!enregistrement){
+    if(sel.value==='direct'&&!navigator.onLine){sel.value='audio';majModeMic();afficherToast('📴 Pas d\'internet : enregistrement audio activé')}
+    if(sel.value==='audio'){var ok=await demarrerAudio();if(!ok)return}
+    demarrerMicro();
   }else{
-    banner.innerHTML=`<div class="api-banner"><div class="ab-dot off"></div><div class="ab-text">Aucune clé API — L'analyse IA est désactivée</div><button class="ab-btn" onclick="showApiScreen()">Configurer</button></div>`;
-    btn.textContent='🔑';
+    arreterMicro();
+    if(rec){
+      document.getElementById('ms').textContent='Sauvegarde de l\'audio…';
+      await arreterAudio();
+      document.getElementById('ms').textContent='💾 Audio sauvegardé sur cet appareil.';
+      document.getElementById('mn').value='';
+      secondes=0;
+      await afficherFile();
+      traiterFile(false);
+    }
   }
 }
-
-/* ══════════════ NAV ══════════════ */
-function goView(name,btn){
-  document.querySelectorAll('.dtab').forEach(t=>t.classList.remove('active'));
-  if(btn)btn.classList.add('active');
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('view-'+name).classList.add('active');
-  if(name==='detail')renderDetail();
-  if(name==='prompts')renderPromptManager();
-  if(name==='new')renderPromptGrid();
+function demarrerMicro(){
+  enregistrement=true;
+  document.getElementById('mrb').classList.add('rec');
+  document.getElementById('ms').textContent='Enregistrement… parlez !';
+  document.getElementById('td').classList.add('on');
+  secondes=0;
+  chrono=setInterval(function(){
+    secondes++;
+    var m=String(Math.floor(secondes/60)).padStart(2,'0');
+    var s=String(secondes%60).padStart(2,'0');
+    document.getElementById('td').textContent=m+':'+s;
+  },1000);
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(SR&&document.getElementById('modemic').value==='direct'){
+    reco=new SR();reco.continuous=true;reco.interimResults=true;reco.lang='fr-FR';
+    var fin='';
+    reco.onresult=function(e){
+      var interim='';
+      for(var i=e.resultIndex;i<e.results.length;i++){
+        if(e.results[i].isFinal)fin+=e.results[i][0].transcript+' ';
+        else interim+=e.results[i][0].transcript;
+      }
+      document.getElementById('ti').value=fin+interim;
+    };
+    reco.onerror=function(){};
+    reco.start();
+  }
 }
-function goViewMobile(name,btn){
-  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
-  if(btn)btn.classList.add('active');
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('view-'+name).classList.add('active');
-  if(name==='detail')renderDetail();
-  if(name==='prompts')renderPromptManager();
-  if(name==='new')renderPromptGrid();
-}
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000)}
-
-/* ══════════════ SIDEBAR ══════════════ */
-function renderSidebar(filter=''){
-  const el=document.getElementById('meetingList');
-  let list=[...meetings].reverse();
-  if(filter)list=list.filter(m=>m.name.toLowerCase().includes(filter.toLowerCase()));
-  if(!list.length){el.innerHTML=`<div class="sb-empty">${filter?'Aucun résultat.':'Aucune réunion.<br>Créez-en une !'}</div>`;return}
-  el.innerHTML=list.map(m=>`<div class="meet-item ${m.id===currentMeetingId?'active':''}" onclick="selectMeeting('${m.id}')"><div class="meet-title">${m.typeIcon||''} ${m.name}</div><div class="meet-meta"><span>${new Date(m.date).toLocaleDateString('fr-FR')}</span><span class="chip chip-type">${m.typeName||'Standard'}</span><span class="chip chip-done">✓</span></div></div>`).join('');
-}
-function filterMeetings(v){renderSidebar(v)}
-
-/* ══════════════ PROMPT GRID ══════════════ */
-function renderPromptGrid(){
-  document.getElementById('promptGrid').innerHTML=allPrompts().map(p=>`<div class="prompt-card ${p.id===selectedPromptId?'selected':''}" onclick="selectPrompt('${p.id}')"><div class="pc-check">✓</div><div class="pc-icon">${p.icon}</div><div class="pc-name">${p.name}</div><div class="pc-desc">${p.desc}</div></div>`).join('');
-}
-function selectPrompt(id){selectedPromptId=id;renderPromptGrid()}
-
-/* ══════════════ RECORDING ══════════════ */
-function toggleRec(){if(!isRec)startRec();else stopRec()}
-function startRec(){
-  isRec=true;
-  document.getElementById('micBtn').classList.add('rec');
-  document.getElementById('micStatus').textContent='Enregistrement… parlez !';
-  document.getElementById('timerDisp').classList.add('show');
-  timerSec=0;
-  timerInt=setInterval(()=>{timerSec++;const m=String(Math.floor(timerSec/60)).padStart(2,'0'),s=String(timerSec%60).padStart(2,'0');document.getElementById('timerDisp').textContent=`${m}:${s}`},1000);
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(SR){recognition=new SR();recognition.continuous=true;recognition.interimResults=true;recognition.lang='fr-FR';let fin='';recognition.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)fin+=e.results[i][0].transcript+' ';else interim+=e.results[i][0].transcript}document.getElementById('transcriptInput').value=fin+interim};recognition.onerror=()=>{};recognition.start()}
-}
-function stopRec(){
-  isRec=false;if(recognition){recognition.stop();recognition=null}clearInterval(timerInt);
-  document.getElementById('micBtn').classList.remove('rec');
-  document.getElementById('micStatus').textContent='Terminé. Vérifiez la transcription.';
+function arreterMicro(){
+  enregistrement=false;
+  if(reco){reco.stop();reco=null}
+  clearInterval(chrono);
+  document.getElementById('mrb').classList.remove('rec');
+  document.getElementById('ms').textContent='Terminé. Vérifiez la transcription.';
 }
 
-/* ══════════════ ANALYZE ══════════════ */
-async function analyze(){
-  const key=getKey();
-  if(!key){toast('⚠️ Configurez d\'abord votre clé API (bouton 🔑 en haut)');showApiScreen();return}
-  const name=document.getElementById('meetName').value.trim()||'Réunion du '+new Date().toLocaleDateString('fr-FR');
-  const transcript=document.getElementById('transcriptInput').value.trim();
-  if(!transcript){toast('⚠️ Ajoutez une transcription d\'abord.');return}
-  const p=allPrompts().find(x=>x.id===selectedPromptId)||allPrompts()[0];
-  document.getElementById('processingOverlay').classList.add('show');
-  document.getElementById('procLabel').textContent=`Analyse ${p.icon} ${p.name}…`;
-  document.getElementById('analyzeBtn').disabled=true;
-  const sys=`Tu es un assistant expert en analyse de réunions.\n${p.prompt}\n\nIMPORTANT : réponds UNIQUEMENT avec un objet JSON valide, sans markdown ni backticks.\nStructure : {"summary":"string","decisions":"string HTML","actions":[{"text":"string","owner":"string ou null","done":false}]}`;
+// ══ ANALYSE (thèmes, intervenants, horodatage) ══
+function confidentialite(){return localStorage.getItem('ma_confid')==='1'}
+function fmtT(s){s=Math.max(0,Math.round(s||0));var h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')}
+function segmenterTexte(t){
+  var phr=String(t||'').replace(/\s+/g,' ').match(/[^.!?…]+[.!?…]*\s*/g)||[String(t||'')];
+  var out=[],cur='';
+  phr.forEach(function(p){if(cur&&(cur+p).length>260){out.push({t:null,x:cur.trim()});cur=p}else cur+=p});
+  if(cur.trim())out.push({t:null,x:cur.trim()});
+  return out;
+}
+async function appelClaude(systeme,contenu,maxTok){
+  var cle=obtenirCle();
+  var rep=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':cle,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxTok,system:systeme,messages:[{role:'user',content:contenu}]})
+  });
+  if(!rep.ok){var e={};try{e=await rep.json()}catch(x){}throw new Error(e.error&&e.error.message?e.error.message:'Erreur API '+rep.status)}
+  var data=await rep.json();
+  return(data.content||[]).map(function(b){return b.text||''}).join('');
+}
+async function analyseComplete(segs,modele){
+  var corps=segs.map(function(sg,i){return'['+i+']'+(sg.t!=null?' ('+fmtT(sg.t)+')':'')+' '+sg.x}).join('\n');
+  var systeme='Tu es un assistant expert en analyse de réunions.\n'+modele.prompt+'\n\nLa transcription est découpée en segments numérotés [n].\nRéponds UNIQUEMENT avec du JSON valide, sans markdown ni backticks.\nStructure exacte :\n{"summary":"...","decisions":"HTML <ul><li> ou vide","actions":[{"text":"...","owner":"... ou null","done":false}],"themes":[{"titre":"...","points":[{"texte":"...","seg":0}]}]}\nRègles pour "themes" : 3 à 7 thèmes dans l\'ordre de la réunion, 2 à 5 points courts (une phrase) par thème ; "seg" = numéro entier du segment [n] où le point est abordé.';
+  var brut=await appelClaude(systeme,'Transcription :\n\n'+corps,5000);
+  var a;
+  try{var m=brut.match(/\{[\s\S]*\}/);a=JSON.parse((m?m[0]:brut).replace(/```json|```/g,'').trim())}
+  catch(e){a={summary:brut,decisions:'',actions:[],themes:[]}}
+  a.themes=Array.isArray(a.themes)?a.themes:[];
+  a.actions=Array.isArray(a.actions)?a.actions:[];
+  return a;
+}
+async function identifierIntervenants(segs){
+  var corps=segs.map(function(sg,i){return'['+i+'] '+sg.x}).join('\n');
+  var systeme='Tu reçois la transcription d\'une réunion découpée en segments numérotés [n]. Aucune information vocale n\'est disponible : déduis les changements d\'interlocuteur du contexte (questions et réponses, prises de parole, personnes interpellées par leur prénom). Regroupe les segments consécutifs d\'un même intervenant en "tours". Utilise "Intervenant 1", "Intervenant 2"… ; n\'utilise un prénom que s\'il est clairement établi par le texte. Si tu ne peux pas distinguer les voix, utilise un seul intervenant. Réponds UNIQUEMENT avec du JSON : {"tours":[{"de":0,"a":4,"qui":"Intervenant 1"}]}';
+  var brut=await appelClaude(systeme,corps,6000);
+  var tours=[],re=/\{\s*"de"\s*:\s*(\d+)\s*,\s*"a"\s*:\s*(\d+)\s*,\s*"qui"\s*:\s*"([^"]*)"\s*\}/g,m;
+  while((m=re.exec(brut))){var de=+m[1],a=+m[2];if(a>=de&&a<segs.length)tours.push({de:de,a:a,qui:m[3]})}
+  return tours.length?tours:null;
+}
+async function creerReunion(o){
+  var segs=(o.segments&&o.segments.length)?o.segments:segmenterTexte(o.texte);
+  statutAudio('Analyse '+o.modele.icone+' '+o.modele.nom+'…');
+  var analyse=await analyseComplete(segs,o.modele);
+  analyse.themes.forEach(function(th){
+    th.points=Array.isArray(th.points)?th.points:[];
+    th.points.forEach(function(p,i){
+      if(typeof p==='string'){p={texte:p};th.points[i]=p}
+      var n=parseInt(p.seg,10);
+      p.t=(!isNaN(n)&&segs[n]&&segs[n].t!=null)?segs[n].t:null;
+    });
+  });
+  var tours=null;
+  if(document.getElementById('optspk').checked&&segs.length>=4){
+    statutAudio('Identification des intervenants…');
+    try{tours=await identifierIntervenants(segs)}catch(e){console.warn('Intervenants',e)}
+  }
+  var id=Date.now().toString();
+  var garde=!!o.audio&&!confidentialite();
+  if(garde){try{await audPut(id,o.audio,o.audio.type||'audio/webm')}catch(e){garde=false;afficherToast('⚠️ Audio non conservé (stockage insuffisant).')}}
+  var r={id:id,nom:o.nom,date:o.date,transcription:'',segments:segs,tours:tours,audio:garde,
+    typeId:o.modele.id,nomType:o.modele.nom,iconeType:o.modele.icone,
+    duree:o.duree>0?Math.floor(o.duree/60)+'m'+(o.duree%60)+'s':null,analyse:analyse};
+  reunions.push(r);sauvegarder();afficherSidebar();
+  return r;
+}
+var contexteAudio=null;
+async function analyser(){
+  var cle=obtenirCle();
+  if(!cle){afficherToast('⚠️ Configurez votre clé API d\'abord (bouton 🔑)');ouvrirSetup();return}
+  var nom=document.getElementById('mn').value.trim()||'Réunion du '+new Date().toLocaleDateString('fr-FR');
+  var transcription=document.getElementById('ti').value.trim();
+  if(!transcription){afficherToast('⚠️ Ajoutez une transcription d\'abord.');return}
+  var modele=tousModeles().find(function(x){return x.id===modeleChoisi})||tousModeles()[0];
+  document.getElementById('proc').classList.add('on');
+  document.getElementById('ab').disabled=true;
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:[{role:'user',content:`Transcription :\n\n${transcript}`}]})});
-    if(!res.ok){const err=await res.json();throw new Error(err.error?.message||'Erreur API')}
-    const data=await res.json();
-    const raw=(data.content||[]).map(b=>b.text||'').join('');
-    let analysis;try{analysis=JSON.parse(raw.replace(/```json|```/g,'').trim())}catch{analysis={summary:raw,decisions:'',actions:[]}}
-    const meeting={id:Date.now().toString(),name,date:new Date().toISOString(),transcript,typeId:p.id,typeName:p.name,typeIcon:p.icon,duration:timerSec>0?`${Math.floor(timerSec/60)}m${timerSec%60}s`:null,analysis};
-    meetings.push(meeting);save();currentMeetingId=meeting.id;renderSidebar();
-    document.getElementById('transcriptInput').value='';document.getElementById('meetName').value='';
-    document.getElementById('timerDisp').classList.remove('show');document.getElementById('micStatus').textContent='Appuyez pour démarrer';timerSec=0;
-    toast('✅ Réunion analysée !');selectMeeting(meeting.id);
-    goView('detail',document.querySelectorAll('.dtab')[1]);
-    const bn=document.querySelectorAll('.bnav-btn');if(bn.length>1){document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));bn[1].classList.add('active')}
-  }catch(err){toast('❌ '+err.message);console.error(err)}
-  finally{document.getElementById('processingOverlay').classList.remove('show');document.getElementById('analyzeBtn').disabled=false}
+    var segs=null,audio=null;
+    if(contexteAudio&&contexteAudio.texte===transcription){segs=contexteAudio.segments;audio=contexteAudio.audio}
+    var reunion=await creerReunion({nom:nom,texte:transcription,segments:segs,audio:audio,modele:modele,date:new Date().toISOString(),duree:secondes});
+    contexteAudio=null;reunionActuelle=reunion.id;
+    document.getElementById('ti').value='';document.getElementById('mn').value='';
+    document.getElementById('td').classList.remove('on');document.getElementById('ms').textContent='Appuyez pour démarrer';secondes=0;
+    afficherToast('✅ Réunion analysée !');
+    choisirReunion(reunion.id);
+    aller('d',document.querySelectorAll('.dt')[1]);
+    var bns=document.querySelectorAll('.bn');if(bns.length>1){document.querySelectorAll('.bn').forEach(function(b){b.classList.remove('on')});bns[1].classList.add('on')}
+  }catch(err){afficherToast('❌ '+err.message);console.error(err)}
+  finally{document.getElementById('proc').classList.remove('on');document.getElementById('ab').disabled=false}
 }
 
-/* ══════════════ DETAIL ══════════════ */
-function selectMeeting(id){currentMeetingId=id;renderSidebar();renderDetail()}
-function renderDetail(){
-  const dw=document.getElementById('dwelcome'),dc=document.getElementById('detailContent');
-  if(!currentMeetingId){dw.style.display='flex';dc.style.display='none';return}
-  const m=meetings.find(x=>x.id===currentMeetingId);
-  if(!m){dw.style.display='flex';dc.style.display='none';return}
+// ══ DÉTAIL ══
+function choisirReunion(id){reunionActuelle=id;afficherSidebar();afficherDetail()}
+var lectUrl=null;
+function quiMap(r){var q={};(r.tours||[]).forEach(function(t){for(var i=t.de;i<=t.a;i++)q[i]=t.qui});return q}
+function themesTexte(r){return((r.analyse&&r.analyse.themes)||[]).map(function(t){return t.titre+'\n'+(t.points||[]).map(function(p){var tx=typeof p==='string'?p:p.texte;return'• '+tx+(p&&p.t!=null?' ('+fmtT(p.t)+')':'')}).join('\n')}).join('\n\n')}
+function texteTranscription(r){
+  var seg=r.segments;
+  if(!seg||!seg.length)return r.transcription||'';
+  var qui=quiMap(r),out=[],cur=null,buf='';
+  seg.forEach(function(sg,i){
+    var q=qui[i]||'';
+    if(!buf||q!==cur||(!r.tours&&i%6===0)){if(buf)out.push(buf);buf=(q?q+' : ':'')+(sg.t!=null?'['+fmtT(sg.t)+'] ':'')+sg.x;cur=q}
+    else buf+=' '+sg.x;
+  });
+  if(buf)out.push(buf);
+  return out.join('\n\n');
+}
+function transcriptHtml(r){
+  var seg=r.segments;
+  if(!seg||!seg.length)return'<div class="tb">'+esc(r.transcription||'')+'</div>';
+  var qui=quiMap(r),out=[],cur=null,ouvert=false;
+  seg.forEach(function(sg,i){
+    var q=qui[i]||'';
+    if(!ouvert||q!==cur||(!r.tours&&i%6===0)){
+      if(ouvert)out.push('</div>');
+      var tete='';
+      if(q)tete+='<span class="loc" title="Renommer" data-q="'+esc(q)+'" onclick="renommerIntervenant(this.dataset.q)">'+esc(q)+'</span>';
+      if(sg.t!=null)tete+='<a class="tl" onclick="sauterA('+sg.t+')">▶ '+fmtT(sg.t)+'</a> ';
+      out.push('<div class="tp">'+tete);ouvert=true;cur=q;
+    }
+    out.push('<span class="sg"'+(sg.t!=null?' onclick="sauterA('+sg.t+')"':'')+'>'+esc(sg.x)+' </span>');
+  });
+  if(ouvert)out.push('</div>');
+  return out.join('');
+}
+function renommerIntervenant(ancien){
+  var r=reunions.find(function(x){return x.id===reunionActuelle});if(!r)return;
+  var nouv=prompt('Nom de cet intervenant :',ancien);
+  if(!nouv||!nouv.trim()||nouv.trim()===ancien)return;
+  nouv=nouv.trim();
+  (r.tours||[]).forEach(function(t){if(t.qui===ancien)t.qui=nouv});
+  ((r.analyse&&r.analyse.actions)||[]).forEach(function(a){if(a.owner===ancien)a.owner=nouv});
+  sauvegarder();afficherDetail();
+}
+function sauterA(sec){
+  var a=document.getElementById('lect');
+  if(!a){afficherToast('🔇 Pas d\'audio conservé pour cette réunion (mode confidentialité, ou texte collé).');return}
+  try{a.currentTime=sec;a.play()}catch(e){}
+}
+function preparerLecteur(){
+  var a=document.getElementById('lect');if(!a)return;
+  a.addEventListener('loadedmetadata',function(){
+    if(a.duration===Infinity){a.currentTime=1e101;a.addEventListener('timeupdate',function f(){a.removeEventListener('timeupdate',f);a.currentTime=0})}
+  });
+}
+async function supprimerAudio(){
+  var r=reunions.find(function(x){return x.id===reunionActuelle});if(!r)return;
+  if(!confirm('Supprimer l\'audio de cette réunion ? Le texte et le compte rendu sont conservés.'))return;
+  try{await audSupprimer(r.id)}catch(e){}
+  r.audio=false;sauvegarder();afficherDetail();afficherToast('🔇 Audio supprimé.');
+}
+async function supprimerReunion(){
+  var r=reunions.find(function(x){return x.id===reunionActuelle});if(!r)return;
+  if(!confirm('Supprimer définitivement cette réunion (compte rendu, transcription et audio) ?'))return;
+  try{await audSupprimer(r.id)}catch(e){}
+  reunions=reunions.filter(function(x){return x.id!==r.id});
+  reunionActuelle=null;sauvegarder();afficherSidebar();afficherDetail();afficherToast('🗑 Réunion supprimée.');
+}
+
+// ── Carte mentale (SVG) ──
+var PALCM=['#5b6af0','#2dd4a0','#f5a623','#f06b6b','#9b8aff','#38bdf8','#f472b6','#a3e635'];
+var carteSvgCourante='';
+function envelopper(t,n,max){
+  var mots=String(t||'').replace(/\s+/g,' ').trim().split(' '),lignes=[],cur='';
+  mots.forEach(function(m){if(cur&&(cur+' '+m).length>n){lignes.push(cur);cur=m}else cur=cur?cur+' '+m:m});
+  if(cur)lignes.push(cur);
+  if(max&&lignes.length>max){lignes=lignes.slice(0,max);lignes[max-1]=lignes[max-1].replace(/\s*\S*$/,'')+'…'}
+  return lignes;
+}
+function carteMentaleSVG(nom,themes){
+  themes=(themes||[]).filter(function(t){return t&&t.titre});
+  if(!themes.length)return'';
+  var LH=16,PY=10,GAP=8,GB=26,X0=10,W0=170,X1=250,W1=200,X2=520,W2=330,W=X2+W2+10;
+  var blocs=themes.map(function(t){
+    var lt=envelopper(t.titre,24,3),th=lt.length*LH+PY*2;
+    var pts=(t.points||[]).slice(0,5).map(function(p){var l=envelopper(typeof p==='string'?p:p.texte,46,3);return{l:l,h:l.length*LH+PY*2}});
+    var hp=pts.length?pts.reduce(function(a,p){return a+p.h},0)+GAP*(pts.length-1):0;
+    return{lt:lt,th:th,pts:pts,hp:hp,h:Math.max(th,hp)};
+  });
+  var total=blocs.reduce(function(a,b){return a+b.h},0)+GB*(blocs.length-1);
+  var H=total+40,cy=H/2,y=20;
+  var lr=envelopper(nom,20,4),rh=lr.length*LH+PY*2+8;
+  function noeud(x,yy,w,h,lines,fill,stroke,col,gras){
+    var o='<rect x="'+x+'" y="'+yy+'" width="'+w+'" height="'+h+'" rx="12" fill="'+fill+'" stroke="'+stroke+'" stroke-width="1.5"/>';
+    var ty=yy+(h-lines.length*LH)/2+LH-4;
+    lines.forEach(function(l,i){o+='<text x="'+(x+w/2)+'" y="'+(ty+i*LH)+'" text-anchor="middle" font-size="12.5" font-weight="'+(gras?700:400)+'" fill="'+col+'">'+esc(l)+'</text>'});
+    return o;
+  }
+  function lien(x1,y1,x2,y2,c){var xm=(x1+x2)/2;return'<path d="M'+x1+' '+y1+' C'+xm+' '+y1+' '+xm+' '+y2+' '+x2+' '+y2+'" fill="none" stroke="'+c+'" stroke-width="2" opacity=".7"/>'}
+  var liens='',noeuds='';
+  blocs.forEach(function(b,i){
+    var c=PALCM[i%PALCM.length],tcy=y+b.h/2;
+    liens+=lien(X0+W0,cy,X1,tcy,c);
+    noeuds+=noeud(X1,tcy-b.th/2,W1,b.th,b.lt,c,c,'#ffffff',true);
+    var py=y+(b.h-b.hp)/2;
+    b.pts.forEach(function(p){
+      liens+=lien(X1+W1,tcy,X2,py+p.h/2,c);
+      noeuds+=noeud(X2,py,W2,p.h,p.l,'#171b27',c,'#e4e8f5',false);
+      py+=p.h+GAP;
+    });
+    y+=b.h+GB;
+  });
+  var racine=noeud(X0,cy-rh/2,W0,rh,lr,'#1f2540','#9b8aff','#ffffff',true);
+  return'<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" font-family="Inter,Arial,sans-serif"><rect width="'+W+'" height="'+H+'" rx="14" fill="#0f1219"/>'+liens+racine+noeuds+'</svg>';
+}
+function telechargerCarte(fmt){
+  if(!carteSvgCourante)return;
+  var r=reunions.find(function(x){return x.id===reunionActuelle});
+  var nom='MeetAI_Carte_'+nomSur(r?r.nom:'reunion');
+  if(fmt==='svg'){telechargerBlob(new Blob([carteSvgCourante],{type:'image/svg+xml'}),nom+'.svg');return}
+  var m=carteSvgCourante.match(/viewBox="0 0 (\d+) (\d+)"/);var w=+m[1],h=+m[2];
+  var img=new Image();
+  img.onload=function(){var c=document.createElement('canvas');c.width=w*2;c.height=h*2;var g=c.getContext('2d');g.scale(2,2);g.drawImage(img,0,0,w,h);c.toBlob(function(b){telechargerBlob(b,nom+'.png')},'image/png')};
+  img.onerror=function(){afficherToast('❌ Conversion en PNG impossible, utilisez le SVG.')};
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(carteSvgCourante);
+}
+
+async function afficherDetail(){
+  var dw=document.getElementById('dw'),dc=document.getElementById('dc');
+  if(!reunionActuelle){dw.style.display='flex';dc.style.display='none';return}
+  var r=reunions.find(function(x){return x.id===reunionActuelle});
+  if(!r){dw.style.display='flex';dc.style.display='none';return}
   dw.style.display='none';dc.style.display='flex';
-  document.getElementById('dTitle').textContent=`${m.typeIcon||''} ${m.name}`;
-  document.getElementById('dMeta').innerHTML=`<span>📅 ${new Date(m.date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</span>${m.duration?`<span>⏱ ${m.duration}</span>`:''}<span class="chip chip-type">${m.typeName||'Standard'}</span><span class="chip chip-done">✓ Analysé</span>`;
-  document.getElementById('itab-summary').innerHTML=`<div class="card"><div class="card-lbl">Résumé</div>${m.analysis.summary||'<em style="color:var(--muted)">—</em>'}</div>${m.analysis.decisions?`<div class="card"><div class="card-lbl">Décisions & points clés</div>${m.analysis.decisions}</div>`:''}`;
-  const acts=m.analysis.actions||[];
-  document.getElementById('itab-actions').innerHTML=acts.length?`<div class="card"><div class="card-lbl">Actions (${acts.length})</div>${acts.map((a,i)=>`<div class="action-row"><div class="chk ${a.done?'done':''}" onclick="toggleAct('${m.id}',${i})">${a.done?'✓':''}</div><div><div class="act-text ${a.done?'done':''}">${a.text}</div>${a.owner?`<div class="act-owner">👤 ${a.owner}</div>`:''}</div></div>`).join('')}</div>`:`<div class="card"><div class="card-lbl">Actions</div><em style="color:var(--muted)">Aucune action identifiée.</em></div>`;
-  document.getElementById('itab-transcript').innerHTML=`<div class="card"><div class="card-lbl">Transcription</div><div class="transcript-body">${m.transcript}</div></div>`;
+  var A=r.analyse||{};
+  document.getElementById('dtt').textContent=(r.iconeType||'')+' '+r.nom;
+  document.getElementById('dm').innerHTML='<span>📅 '+new Date(r.date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'</span>'+(r.duree?'<span>⏱ '+r.duree+'</span>':'')+'<span class="ck ckt">'+(r.nomType||'Standard')+'</span><span class="ck ckd">✓ Analysé</span>';
+  document.getElementById('btnaud').style.display=r.audio?'':'none';
+
+  var th=A.themes||[];
+  var thHtml=th.length?'<div class="cd"><div class="cl">Thèmes abordés</div>'+th.map(function(t){
+    return'<div class="thm"><b>'+esc(t.titre)+'</b><ul>'+(t.points||[]).map(function(p){
+      var tx=typeof p==='string'?p:p.texte;
+      var tm=(p&&p.t!=null)?' <a class="tl" onclick="sauterA('+p.t+')">▶ '+fmtT(p.t)+'</a>':'';
+      return'<li>'+esc(tx)+tm+'</li>';
+    }).join('')+'</ul></div>';
+  }).join('')+'</div>':'';
+  document.getElementById('is').innerHTML='<div class="cd"><div class="cl">Résumé</div>'+(A.summary||'<em style="color:var(--m)">—</em>')+'</div>'+thHtml+(A.decisions?'<div class="cd"><div class="cl">Décisions & points clés</div>'+A.decisions+'</div>':'');
+
+  var acts=A.actions||[];
+  document.getElementById('ia').innerHTML=acts.length?'<div class="cd"><div class="cl">Actions ('+acts.length+')</div>'+acts.map(function(a,i){return'<div class="ar"><div class="ch'+(a.done?' done':'')+'" onclick="basculerAction(\''+r.id+'\','+i+')">'+(a.done?'✓':'')+'</div><div><div class="at'+(a.done?' done':'')+'">'+a.text+'</div>'+(a.owner?'<div class="ao">👤 '+a.owner+'</div>':'')+'</div></div>'}).join('')+'</div>':'<div class="cd"><div class="cl">Actions</div><em style="color:var(--m)">Aucune action identifiée.</em></div>';
+
+  carteSvgCourante=carteMentaleSVG(r.nom,th);
+  document.getElementById('ik').innerHTML=carteSvgCourante
+    ?'<div class="cd"><div class="cl">Carte mentale</div><div class="ahint" style="margin-bottom:8px">↔ Faites glisser pour voir toute la carte</div><div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'+carteSvgCourante.replace('<svg ','<svg style="width:100%;min-width:600px;height:auto" ')+'</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="bts btg" onclick="telechargerCarte(\'png\')">⬇ Image PNG</button><button class="bts btg" onclick="telechargerCarte(\'svg\')">⬇ SVG</button></div></div>'
+    :'<div class="cd"><div class="cl">Carte mentale</div><em style="color:var(--m)">Aucun thème disponible pour cette réunion (réunion créée avant cette fonction).</em></div>';
+
+  document.getElementById('it2').innerHTML='<div class="cd"><div class="cl">Transcription complète'+(r.tours?' · intervenants estimés par l\'IA (touchez un nom pour le renommer)':'')+'</div>'+transcriptHtml(r)+'</div>';
+
+  // Lecteur audio (si l'audio est conservé)
+  var lz=document.getElementById('lectz');
+  if(lectUrl){URL.revokeObjectURL(lectUrl);lectUrl=null}
+  lz.innerHTML='';
+  if(r.audio){
+    try{
+      var a=await audGet(r.id);
+      if(a&&a.blob&&reunionActuelle===r.id){
+        lectUrl=URL.createObjectURL(a.blob);
+        lz.innerHTML='<audio id="lect" controls preload="metadata" src="'+lectUrl+'" style="width:100%;margin-bottom:14px"></audio>';
+        preparerLecteur();
+      }
+    }catch(e){}
+  }
 }
-function toggleAct(mid,idx){const m=meetings.find(x=>x.id===mid);if(m&&m.analysis.actions[idx]){m.analysis.actions[idx].done=!m.analysis.actions[idx].done;save();renderDetail()}}
-function switchItab(name,btn){document.querySelectorAll('.itab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.itab-content').forEach(c=>c.classList.remove('active'));document.getElementById('itab-'+name).classList.add('active')}
-function openMeetSelect(){
-  const list=document.getElementById('meetSelectList');
-  list.innerHTML=meetings.length?[...meetings].reverse().map(m=>`<div class="meet-item" onclick="selectMeeting('${m.id}');document.getElementById('meetSelectModal').classList.remove('show')"><div class="meet-title">${m.typeIcon||''} ${m.name}</div><div class="meet-meta"><span>${new Date(m.date).toLocaleDateString('fr-FR')}</span><span class="chip chip-type">${m.typeName||'Standard'}</span></div></div>`).join(''):'<div style="color:var(--muted);font-size:.85rem;text-align:center;padding:20px">Aucune réunion.</div>';
-  document.getElementById('meetSelectModal').classList.add('show');
+function basculerAction(rid,idx){var r=reunions.find(function(x){return x.id===rid});if(r&&r.analyse.actions[idx]){r.analyse.actions[idx].done=!r.analyse.actions[idx].done;sauvegarder();afficherDetail()}}
+function onglet(n,btn){document.querySelectorAll('.itb').forEach(function(b){b.classList.remove('on')});btn.classList.add('on');document.querySelectorAll('.ic').forEach(function(c){c.classList.remove('on')});var ids={s:'is',a:'ia',k:'ik',t:'it2'};document.getElementById(ids[n]).classList.add('on')}
+function ouvrirListeReunions(){
+  var lst=document.getElementById('moll');
+  lst.innerHTML=reunions.length?reunions.slice().reverse().map(function(r){return '<div class="mi" onclick="choisirReunion(\''+r.id+'\');fermerModal(\'mol\')"><div class="mt">'+(r.iconeType||'')+' '+r.nom+'</div><div class="mm"><span>'+new Date(r.date).toLocaleDateString('fr-FR')+'</span><span class="ck ckt">'+(r.nomType||'Standard')+'</span></div></div>'}).join(''):'<div style="color:var(--m);text-align:center;padding:20px;font-size:.83rem">Aucune réunion.</div>';
+  ouvrirModal('mol');
 }
 
-/* ══════════════ CHAT ══════════════ */
-async function sendChat(){
-  const key=getKey();if(!key){toast('⚠️ Configurez votre clé API d\'abord');showApiScreen();return}
-  const inp=document.getElementById('chatIn'),q=inp.value.trim();if(!q)return;
+// ══ CHAT ══
+async function envoyerChat(){
+  var cle=obtenirCle();
+  if(!cle){afficherToast('⚠️ Configurez votre clé API d\'abord');ouvrirSetup();return}
+  var inp=document.getElementById('ci'),q=inp.value.trim();if(!q)return;
   inp.value='';
-  const msgs=document.getElementById('chatMsgs');
-  msgs.innerHTML+=`<div class="msg user"><div class="av">Moi</div><div class="bubble">${q}</div></div><div class="msg ai" id="thinking"><div class="av">AI</div><div class="bubble"><div class="dots"><span></span><span></span><span></span></div></div></div>`;
-  msgs.scrollTop=msgs.scrollHeight;document.getElementById('sendBtn').disabled=true;
-  const ctx=meetings.map(m=>`=== ${m.typeIcon||''} ${m.name} (${new Date(m.date).toLocaleDateString('fr-FR')}) ===\nRésumé: ${m.analysis.summary||''}\nPoints clés: ${(m.analysis.decisions||'').replace(/<[^>]+>/g,'')}\nActions: ${(m.analysis.actions||[]).map(a=>`- ${a.text}${a.owner?' ('+a.owner+')'+''}${a.done?' [FAIT]':''}`).join('\n')}`).join('\n\n---\n\n');
+  var msgs=document.getElementById('cm');
+  msgs.innerHTML+='<div class="msg u"><div class="av">Moi</div><div class="bb">'+q+'</div></div><div class="msg ai" id="thinking"><div class="av">AI</div><div class="bb"><div class="dots"><span></span><span></span><span></span></div></div></div>';
+  msgs.scrollTop=msgs.scrollHeight;document.getElementById('csb').disabled=true;
+  var ctx=reunions.map(function(r){return '=== '+(r.iconeType||'')+' '+r.nom+' ('+new Date(r.date).toLocaleDateString('fr-FR')+') ===\nRésumé: '+(r.analyse.summary||'')+'\nPoints clés: '+((r.analyse.decisions||'').replace(/<[^>]+>/g,''))+'\nActions: '+((r.analyse.actions||[]).map(function(a){return '- '+a.text+(a.owner?' ('+a.owner+')':'')+(a.done?' [FAIT]':'')}).join('\n'))}).join('\n\n---\n\n');
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:`Tu es un assistant expert qui répond en français sur des réunions passées.`,messages:[{role:'user',content:`Données réunions :\n\n${ctx||'Aucune réunion.'}\n\nQuestion : ${q}`}]})});
-    const data=await res.json();
-    document.getElementById('thinking').querySelector('.bubble').textContent=(data.content||[]).map(b=>b.text||'').join('');
-  }catch{document.getElementById('thinking').querySelector('.bubble').textContent='❌ Erreur de connexion.'}
-  finally{document.getElementById('sendBtn').disabled=false;msgs.scrollTop=msgs.scrollHeight}
+    var rep=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':cle,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:'Tu es un assistant expert qui répond en français sur des réunions passées.',messages:[{role:'user',content:'Données réunions :\n\n'+(ctx||'Aucune réunion.')+'\n\nQuestion : '+q}]})
+    });
+    var data=await rep.json();
+    document.getElementById('thinking').querySelector('.bb').textContent=(data.content||[]).map(function(b){return b.text||''}).join('');
+  }catch(e){document.getElementById('thinking').querySelector('.bb').textContent='❌ Erreur de connexion.'}
+  finally{document.getElementById('csb').disabled=false;msgs.scrollTop=msgs.scrollHeight}
 }
 
-/* ══════════════ EXPORT ══════════════ */
-function openExportModal(){if(!currentMeetingId){toast('⚠️ Sélectionnez une réunion.');return}document.getElementById('exportModal').classList.add('show')}
-function doExport(format){document.getElementById('exportModal').classList.remove('show');const m=meetings.find(x=>x.id===currentMeetingId);if(!m)return;if(format==='pdf')exportPDF(m);else if(format==='word')exportWord(m);else exportTxt(m)}
-function cleanHtml(h){return(h||'').replace(/<li>/g,'• ').replace(/<\/li>/g,'\n').replace(/<[^>]+>/g,'').trim()}
-function safeName(n){return n.replace(/[^a-z0-9\-_]/gi,'_').substring(0,40)}
-
-function exportPDF(m){
-  const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210,margin=20,maxW=W-margin*2;let y=margin;
-  doc.setFillColor(91,106,240);doc.rect(0,0,210,14,'F');doc.setFontSize(11);doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.text('MeetAI – Compte rendu de réunion',margin,9.5);
-  y=26;doc.setFontSize(18);doc.setTextColor(30,32,50);doc.setFont('helvetica','bold');const tl=doc.splitTextToSize(`${m.typeIcon||''} ${m.name}`,maxW);doc.text(tl,margin,y);y+=tl.length*9+2;
-  doc.setFontSize(9);doc.setTextColor(120,130,160);doc.setFont('helvetica','normal');doc.text(`${new Date(m.date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}${m.duration?' · '+m.duration:''} · ${m.typeName||'Standard'}`,margin,y);y+=10;
-  doc.setDrawColor(220,224,240);doc.line(margin,y,W-margin,y);y+=8;
-  function addS(label,content){if(!content||!content.trim())return;if(y>260){doc.addPage();y=margin}doc.setFontSize(8);doc.setTextColor(91,106,240);doc.setFont('helvetica','bold');doc.text(label.toUpperCase(),margin,y);y+=6;doc.setFontSize(10);doc.setTextColor(40,44,60);doc.setFont('helvetica','normal');doc.splitTextToSize(content,maxW).forEach(l=>{if(y>270){doc.addPage();y=margin}doc.text(l,margin,y);y+=5.5});y+=4}
-  addS('Résumé',m.analysis.summary||'');addS('Décisions & points clés',cleanHtml(m.analysis.decisions));
-  const acts=m.analysis.actions||[];if(acts.length){if(y>250){doc.addPage();y=margin}doc.setFontSize(8);doc.setTextColor(91,106,240);doc.setFont('helvetica','bold');doc.text(`ACTIONS (${acts.length})`,margin,y);y+=7;acts.forEach(a=>{if(y>270){doc.addPage();y=margin}doc.setFontSize(9.5);doc.setTextColor(a.done?140:40,a.done?150:44,a.done?170:60);doc.setFont('helvetica','normal');doc.splitTextToSize(`${a.done?'[✓]':'[ ]'} ${a.text}${a.owner?' — '+a.owner:''}`,maxW-4).forEach(l=>{if(y>270){doc.addPage();y=margin}doc.text(l,margin+2,y);y+=5.2});y+=1});y+=4}
-  if(m.transcript){if(y>240){doc.addPage();y=margin}doc.setDrawColor(220,224,240);doc.line(margin,y,W-margin,y);y+=8;addS('Transcription',m.transcript)}
-  const pc=doc.internal.getNumberOfPages();for(let i=1;i<=pc;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(160,168,190);doc.setFont('helvetica','normal');doc.text(`MeetAI · Page ${i}/${pc}`,W/2,295,{align:'center'})}
-  doc.save(`MeetAI_${safeName(m.name)}.pdf`);toast('📄 PDF téléchargé !')
+// ══ EXPORT ══
+function ouvrirModal_export(){if(!reunionActuelle){afficherToast('⚠️ Sélectionnez une réunion.');return}ouvrirModal('moe')}
+function exporter(fmt){
+  fermerModal('moe');
+  var r=reunions.find(function(x){return x.id===reunionActuelle});if(!r)return;
+  if(fmt==='pdf')exporterPDF(r);else if(fmt==='word')exporterWord(r);else exporterTxt(r);
 }
-async function exportWord(m){
+function nettoyerHtml(h){return(h||'').replace(/<li>/g,'• ').replace(/<\/li>/g,'\n').replace(/<[^>]+>/g,'').trim()}
+function nomSur(n){return n.replace(/[^a-z0-9\-_]/gi,'_').substring(0,40)}
+function exporterPDF(r){
+  var jp=window.jspdf;if(!jp||!jp.jsPDF){afficherToast('❌ Librairie PDF non chargée');return}
+  var doc=new jp.jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  var W=210,mg=20,mxW=W-mg*2,y=mg;
+  doc.setFillColor(91,106,240);doc.rect(0,0,210,14,'F');
+  doc.setFontSize(11);doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');
+  doc.text('MeetAI – Compte rendu de réunion',mg,9.5);
+  y=26;doc.setFontSize(17);doc.setTextColor(30,32,50);doc.setFont('helvetica','bold');
+  var tl=doc.splitTextToSize((r.iconeType||'')+' '+r.nom,mxW);doc.text(tl,mg,y);y+=tl.length*8+2;
+  doc.setFontSize(9);doc.setTextColor(120,130,160);doc.setFont('helvetica','normal');
+  doc.text(new Date(r.date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+(r.duree?' · '+r.duree:'')+' · '+(r.nomType||'Standard'),mg,y);y+=10;
+  doc.setDrawColor(220,224,240);doc.line(mg,y,W-mg,y);y+=8;
+  function sec(lbl,txt){
+    if(!txt||!txt.trim())return;
+    if(y>258){doc.addPage();y=mg}
+    doc.setFontSize(8);doc.setTextColor(91,106,240);doc.setFont('helvetica','bold');doc.text(lbl.toUpperCase(),mg,y);y+=6;
+    doc.setFontSize(10);doc.setTextColor(40,44,60);doc.setFont('helvetica','normal');
+    doc.splitTextToSize(txt,mxW).forEach(function(l){if(y>270){doc.addPage();y=mg}doc.text(l,mg,y);y+=5.5});y+=4;
+  }
+  sec('Résumé',r.analyse.summary||'');sec('Thèmes abordés',themesTexte(r));sec('Décisions & points clés',nettoyerHtml(r.analyse.decisions));
+  var acts=r.analyse.actions||[];
+  if(acts.length){
+    if(y>250){doc.addPage();y=mg}
+    doc.setFontSize(8);doc.setTextColor(91,106,240);doc.setFont('helvetica','bold');doc.text('ACTIONS ('+acts.length+')',mg,y);y+=7;
+    acts.forEach(function(a){
+      if(y>270){doc.addPage();y=mg}
+      doc.setFontSize(9.5);doc.setTextColor(a.done?140:40,a.done?150:44,a.done?170:60);doc.setFont('helvetica','normal');
+      doc.splitTextToSize((a.done?'[✓]':'[ ]')+' '+a.text+(a.owner?' — '+a.owner:''),mxW-4).forEach(function(l){if(y>270){doc.addPage();y=mg}doc.text(l,mg+2,y);y+=5.2});y+=1;
+    });y+=4;
+  }
+  if(r.transcription){if(y>238){doc.addPage();y=mg}doc.setDrawColor(220,224,240);doc.line(mg,y,W-mg,y);y+=8;sec('Transcription',texteTranscription(r))}
+  var pc=doc.internal.getNumberOfPages();
+  for(var i=1;i<=pc;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(160,168,190);doc.setFont('helvetica','normal');doc.text('MeetAI · Page '+i+'/'+pc,W/2,295,{align:'center'})}
+  doc.save('MeetAI_'+nomSur(r.nom)+'.pdf');afficherToast('📄 PDF téléchargé !')
+}
+async function exporterWord(r){
   try{
-    const{Document,Packer,Paragraph,TextRun,HeadingLevel,AlignmentType,BorderStyle}=docx;const acts=m.analysis.actions||[];
-    const children=[new Paragraph({text:'Compte rendu – MeetAI',heading:HeadingLevel.TITLE,alignment:AlignmentType.CENTER}),new Paragraph({children:[new TextRun({text:`${m.typeIcon||''} ${m.name}`,bold:true,size:36,color:'3B4BBF'})],spacing:{after:120}}),new Paragraph({children:[new TextRun({text:`${new Date(m.date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}${m.duration?' · '+m.duration:''} · ${m.typeName||'Standard'}`,color:'7A85A0',size:18})],spacing:{after:240}})];
-    function addH(l){children.push(new Paragraph({children:[new TextRun({text:l,bold:true,size:22,color:'5B6AF0'})],spacing:{before:320,after:120},border:{bottom:{style:BorderStyle.SINGLE,size:1,color:'C5CAE9'}}}))}
-    function addP(t){if(!t)return;t.split('\n').forEach(l=>{if(l.trim())children.push(new Paragraph({children:[new TextRun({text:l.trim(),size:20})],spacing:{after:80}}))})}
-    addH('Résumé');addP(m.analysis.summary||'');if(m.analysis.decisions){addH('Décisions & points clés');addP(cleanHtml(m.analysis.decisions))}
-    if(acts.length){addH(`Actions (${acts.length})`);acts.forEach(a=>{children.push(new Paragraph({children:[new TextRun({text:`${a.done?'☑':'☐'} ${a.text}${a.owner?' — '+a.owner:''}`,size:20,strike:a.done,color:a.done?'9099B0':'202538'})],spacing:{after:80},indent:{left:360}}))})}
-    addH('Transcription');addP(m.transcript||'');
-    const doc2=new Document({creator:'MeetAI',title:m.name,sections:[{children}]});
-    const blob=await Packer.toBlob(doc2);const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`MeetAI_${safeName(m.name)}.docx`;a.click();URL.revokeObjectURL(url);toast('📝 Word téléchargé !')
-  }catch(err){console.error(err);toast('❌ Erreur export Word.')}
+    var D=docx;var acts=r.analyse.actions||[];
+    var enfants=[
+      new D.Paragraph({text:'Compte rendu – MeetAI',heading:D.HeadingLevel.TITLE,alignment:D.AlignmentType.CENTER}),
+      new D.Paragraph({children:[new D.TextRun({text:(r.iconeType||'')+' '+r.nom,bold:true,size:36,color:'3B4BBF'})],spacing:{after:120}}),
+      new D.Paragraph({children:[new D.TextRun({text:new Date(r.date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+(r.duree?' · '+r.duree:'')+' · '+(r.nomType||'Standard'),color:'7A85A0',size:18})],spacing:{after:240}})
+    ];
+    function titre(l){enfants.push(new D.Paragraph({children:[new D.TextRun({text:l,bold:true,size:22,color:'5B6AF0'})],spacing:{before:320,after:120},border:{bottom:{style:D.BorderStyle.SINGLE,size:1,color:'C5CAE9'}}}))}
+    function para(t){if(!t)return;t.split('\n').forEach(function(l){if(l.trim())enfants.push(new D.Paragraph({children:[new D.TextRun({text:l.trim(),size:20})],spacing:{after:80}}))})}
+    titre('Résumé');para(r.analyse.summary||'');
+    var tt=themesTexte(r);if(tt){titre('Thèmes abordés');para(tt)}if(r.analyse.decisions){titre('Décisions & points clés');para(nettoyerHtml(r.analyse.decisions))}
+    if(acts.length){titre('Actions ('+acts.length+')');acts.forEach(function(a){enfants.push(new D.Paragraph({children:[new D.TextRun({text:(a.done?'☑':'☐')+' '+a.text+(a.owner?' — '+a.owner:''),size:20,strike:a.done,color:a.done?'9099B0':'202538'})],spacing:{after:80},indent:{left:360}}))})}
+    titre('Transcription');para(texteTranscription(r));
+    var doc2=new D.Document({creator:'MeetAI',title:r.nom,sections:[{children:enfants}]});
+    var blob=await D.Packer.toBlob(doc2);
+    var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='MeetAI_'+nomSur(r.nom)+'.docx';a.click();URL.revokeObjectURL(url);
+    afficherToast('📝 Word téléchargé !');
+  }catch(err){console.error(err);afficherToast('❌ Erreur export Word.')}
 }
-function exportTxt(m){
-  const acts=m.analysis.actions||[];
-  const lines=[`COMPTE RENDU – MeetAI`,'='.repeat(50),'',`Réunion : ${m.name}`,`Date : ${new Date(m.date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}`,`Type : ${m.typeName||'Standard'}`,m.duration?`Durée : ${m.duration}`:'','','─'.repeat(50),'','RÉSUMÉ','',m.analysis.summary||'—','','─'.repeat(50),'','DÉCISIONS & POINTS CLÉS','',cleanHtml(m.analysis.decisions)||'—','','─'.repeat(50),'',`ACTIONS (${acts.length})`,'', ...acts.map(a=>`${a.done?'[✓]':'[ ]'} ${a.text}${a.owner?' — '+a.owner:''}`),'','─'.repeat(50),'','TRANSCRIPTION','',m.transcript||'—'];
-  const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`MeetAI_${safeName(m.name)}.txt`;a.click();URL.revokeObjectURL(url);toast('🗒️ Texte téléchargé !')
+function exporterTxt(r){
+  var acts=r.analyse.actions||[];
+  var lignes=['COMPTE RENDU – MeetAI','='.repeat(48),'','Réunion : '+r.nom,'Date : '+new Date(r.date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),'Type : '+(r.nomType||'Standard'),(r.duree?'Durée : '+r.duree:''),'','─'.repeat(48),'','RÉSUMÉ','',r.analyse.summary||'—','','─'.repeat(48),'','THÈMES ABORDÉS','',themesTexte(r)||'—','','─'.repeat(48),'','DÉCISIONS','',nettoyerHtml(r.analyse.decisions)||'—','','─'.repeat(48),'','ACTIONS ('+acts.length+')',''].concat(acts.map(function(a){return (a.done?'[✓]':'[ ]')+' '+a.text+(a.owner?' — '+a.owner:'')})).concat(['','─'.repeat(48),'','TRANSCRIPTION','',texteTranscription(r)||'—']);
+  var blob=new Blob([lignes.join('\n')],{type:'text/plain;charset=utf-8'});
+  var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='MeetAI_'+nomSur(r.nom)+'.txt';a.click();URL.revokeObjectURL(url);
+  afficherToast('🗒️ Texte téléchargé !');
 }
 
-/* ══════════════ PROMPTS MANAGER ══════════════ */
-function renderPromptManager(){document.getElementById('promptList').innerHTML=allPrompts().map(p=>`<div class="prompt-row"><div class="pr-icon">${p.icon}</div><div class="pr-body"><div class="pr-name">${p.name}</div><div class="pr-preview">${p.prompt}</div>${p.builtin?'<div class="pr-builtin">🔒 Modèle intégré</div>':''}</div><div class="pr-actions">${!p.builtin?`<button class="pr-btn" onclick="openPromptModal('${p.id}')">✏️ Éditer</button><button class="pr-btn del" onclick="deletePrompt('${p.id}')">🗑️</button>`:''}</div></div>`).join('')}
-function openPromptModal(editId=null){
-  editingPromptId=editId;
-  if(editId){const p=customPrompts.find(x=>x.id===editId);if(p){document.getElementById('pm-icon').value=p.icon;document.getElementById('pm-name').value=p.name;document.getElementById('pm-desc').value=p.desc;document.getElementById('pm-prompt').value=p.prompt;document.getElementById('pmTitle').textContent='Modifier'}}
-  else{['pm-icon','pm-name','pm-desc','pm-prompt'].forEach(id=>document.getElementById(id).value='');document.getElementById('pmTitle').textContent='Nouveau modèle'}
-  document.getElementById('promptModal').classList.add('show');
+// ══ MODÈLES ══
+function afficherModeles(){
+  document.getElementById('plst').innerHTML=tousModeles().map(function(p){
+    return '<div class="pr"><div class="pri">'+p.icone+'</div><div class="prb"><div class="prn">'+p.nom+'</div><div class="prp">'+p.prompt+'</div>'+(p.integre?'<div class="prbi">🔒 Modèle intégré</div>':'')+'</div><div class="pra">'+(!p.integre?'<button class="prbt" onclick="modifierModele(\''+p.id+'\')">✏️ Éditer</button><button class="prbt del" onclick="supprimerModele(\''+p.id+'\')">🗑️</button>':'')+'</div></div>';
+  }).join('');
 }
-function closePromptModal(){document.getElementById('promptModal').classList.remove('show');editingPromptId=null}
-function savePrompt(){
-  const icon=document.getElementById('pm-icon').value.trim()||'📝',name=document.getElementById('pm-name').value.trim(),desc=document.getElementById('pm-desc').value.trim(),prompt=document.getElementById('pm-prompt').value.trim();
-  if(!name||!prompt){toast('⚠️ Nom et instructions requis.');return}
-  if(editingPromptId){const idx=customPrompts.findIndex(x=>x.id===editingPromptId);if(idx>-1)customPrompts[idx]={...customPrompts[idx],icon,name,desc,prompt}}
-  else customPrompts.push({id:'custom_'+Date.now(),builtin:false,icon,name,desc,prompt});
-  save();closePromptModal();renderPromptGrid();renderPromptManager();toast('✅ Modèle enregistré !');
+function ouvrirModalModele(editId){
+  modeleEdition=editId||null;
+  if(editId){var p=modelesCustom.find(function(x){return x.id===editId});if(p){document.getElementById('pmi').value=p.icone;document.getElementById('pmn').value=p.nom;document.getElementById('pmd').value=p.desc;document.getElementById('pmp').value=p.prompt;document.getElementById('mopt').textContent='Modifier'}}
+  else{['pmi','pmn','pmd','pmp'].forEach(function(id){document.getElementById(id).value=''});document.getElementById('mopt').textContent='Nouveau modèle'}
+  ouvrirModal('mop');
 }
-function deletePrompt(id){if(!confirm('Supprimer ?'))return;customPrompts=customPrompts.filter(x=>x.id!==id);if(selectedPromptId===id)selectedPromptId='standup';save();renderPromptGrid();renderPromptManager();toast('🗑️ Modèle supprimé.')}
+function modifierModele(id){ouvrirModalModele(id)}
+function sauvegarderModele(){
+  var icone=document.getElementById('pmi').value.trim()||'📝';
+  var nom=document.getElementById('pmn').value.trim();
+  var desc=document.getElementById('pmd').value.trim();
+  var prompt=document.getElementById('pmp').value.trim();
+  if(!nom||!prompt){afficherToast('⚠️ Nom et instructions requis.');return}
+  if(modeleEdition){var idx=modelesCustom.findIndex(function(x){return x.id===modeleEdition});if(idx>-1)modelesCustom[idx]=Object.assign({},modelesCustom[idx],{icone:icone,nom:nom,desc:desc,prompt:prompt})}
+  else modelesCustom.push({id:'c_'+Date.now(),integre:false,icone:icone,nom:nom,desc:desc,prompt:prompt});
+  sauvegarder();fermerModal('mop');afficherGrilleModeles();afficherModeles();afficherToast('✅ Modèle enregistré !');
+}
+function supprimerModele(id){
+  if(!confirm('Supprimer ce modèle ?'))return;
+  modelesCustom=modelesCustom.filter(function(x){return x.id!==id});
+  if(modeleChoisi===id)modeleChoisi='standup';
+  sauvegarder();afficherGrilleModeles();afficherModeles();afficherToast('🗑️ Supprimé.');
+}
 
-/* ══════════════ INIT ══════════════ */
-updateApiBanner();
-renderPromptGrid();
-renderSidebar();
-// Afficher l'écran clé API si pas de clé
-if(!getKey()) showApiScreen();
+// ══ STOCKAGE LOCAL (IndexedDB) ══
+var _db=null,rec=null,wakeLock=null,traitementEnCours=false;
+function ouvrirDB(){
+  return new Promise(function(res,rej){
+    if(_db)return res(_db);
+    if(!window.indexedDB)return rej(new Error('IndexedDB indisponible'));
+    var rq=indexedDB.open('meetai',2);
+    rq.onupgradeneeded=function(){var d=rq.result;if(!d.objectStoreNames.contains('enr'))d.createObjectStore('enr',{keyPath:'id'});if(!d.objectStoreNames.contains('morc')){var m=d.createObjectStore('morc',{keyPath:'cle',autoIncrement:true});m.createIndex('rid','rid')}if(!d.objectStoreNames.contains('aud'))d.createObjectStore('aud',{keyPath:'id'})};
+    rq.onsuccess=function(){_db=rq.result;res(_db)};
+    rq.onerror=function(){rej(rq.error)};
+  });
+}
+function idb(store,mode,fn){
+  return ouvrirDB().then(function(d){return new Promise(function(res,rej){
+    var tx=d.transaction(store,mode),r=fn(tx.objectStore(store));
+    tx.oncomplete=function(){res(r&&r.result!==undefined?r.result:undefined)};
+    tx.onerror=function(){rej(tx.error)};
+    tx.onabort=function(){rej(tx.error)};
+  })});
+}
+function enrPut(o){return idb('enr','readwrite',function(st){return st.put(o)})}
+function enrTous(){return idb('enr','readonly',function(st){return st.getAll()})}
+function enrSupprimer(id){return idb('enr','readwrite',function(st){return st.delete(id)})}
+function audPut(id,blob,mime){return idb('aud','readwrite',function(st){return st.put({id:id,blob:blob,mime:mime})})}
+function audGet(id){return idb('aud','readonly',function(st){return st.get(id)})}
+function audSupprimer(id){return idb('aud','readwrite',function(st){return st.delete(id)})}
+function morcAjouter(rid,n,blob){return idb('morc','readwrite',function(st){return st.add({rid:rid,n:n,blob:blob})}).catch(function(){})}
+function morcTous(rid){return idb('morc','readonly',function(st){return st.index('rid').getAll(IDBKeyRange.only(rid))})}
+function morcSupprimer(rid){
+  return ouvrirDB().then(function(d){return new Promise(function(res,rej){
+    var tx=d.transaction('morc','readwrite'),rq=tx.objectStore('morc').index('rid').openCursor(IDBKeyRange.only(rid));
+    rq.onsuccess=function(){var c=rq.result;if(c){c.delete();c.continue()}};
+    tx.oncomplete=function(){res()};tx.onerror=function(){rej(tx.error)};
+  })});
+}
+function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function extMime(m){m=m||'';if(/webm/.test(m))return'webm';if(/ogg/.test(m))return'ogg';if(/mp4|m4a|aac/.test(m))return'm4a';if(/mpeg|mp3/.test(m))return'mp3';if(/wav/.test(m))return'wav';return'webm'}
+function telechargerBlob(blob,nom){var u=URL.createObjectURL(blob);var a=document.createElement('a');a.href=u;a.download=nom;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000)}
+
+// ══ ENREGISTREMENT AUDIO (fonctionne sans internet) ══
+function majModeMic(){
+  var m=document.getElementById('modemic').value;
+  try{localStorage.setItem('ma_modemic',m)}catch(e){}
+  document.getElementById('modeh').textContent=m==='audio'
+    ?'L\'audio est sauvegardé sur l\'appareil puis transcrit et résumé automatiquement dès qu\'internet est disponible. Sur téléphone, gardez l\'écran allumé et l\'application ouverte pendant l\'enregistrement.'
+    :'La transcription s\'affiche en direct, mais elle exige internet pendant toute la réunion : en cas de coupure, le texte est perdu.';
+}
+async function demanderWakeLock(){try{if('wakeLock' in navigator)wakeLock=await navigator.wakeLock.request('screen')}catch(e){}}
+function libererWakeLock(){try{if(wakeLock){wakeLock.release();wakeLock=null}}catch(e){}}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&rec)demanderWakeLock()});
+
+async function demarrerAudio(){
+  if(!navigator.mediaDevices||!window.MediaRecorder){afficherToast('❌ Enregistrement audio non pris en charge par ce navigateur.');return false}
+  var flux;
+  try{flux=await navigator.mediaDevices.getUserMedia({audio:true})}
+  catch(e){afficherToast('❌ Micro refusé ou indisponible. Autorisez-le dans le navigateur.');return false}
+  var mime='';
+  ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'].some(function(t){if(MediaRecorder.isTypeSupported(t)){mime=t;return true}return false});
+  var mr;
+  try{mr=new MediaRecorder(flux,mime?{mimeType:mime,audioBitsPerSecond:32000}:{audioBitsPerSecond:32000})}
+  catch(e){try{mr=new MediaRecorder(flux)}catch(e2){flux.getTracks().forEach(function(t){t.stop()});afficherToast('❌ Enregistrement audio impossible sur cet appareil.');return false}}
+  var id='r'+Date.now();
+  rec={id:id,mr:mr,flux:flux,chunks:[],n:0,debut:Date.now(),mime:mr.mimeType||mime||'audio/webm'};
+  try{
+    if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
+    await enrPut({id:id,statut:'enregistrement',date:new Date(rec.debut).toISOString(),mime:rec.mime,nom:'',modeleId:modeleChoisi});
+  }catch(e){console.warn('Stockage local indisponible',e)}
+  mr.ondataavailable=function(e){if(e.data&&e.data.size){rec.chunks.push(e.data);morcAjouter(id,rec.n++,e.data)}};
+  mr.start(5000);
+  demanderWakeLock();
+  return true;
+}
+function arreterAudio(){
+  return new Promise(function(res){
+    var r=rec;if(!r){res();return}
+    r.mr.onstop=async function(){
+      r.flux.getTracks().forEach(function(t){t.stop()});
+      libererWakeLock();
+      var blob=new Blob(r.chunks,{type:r.mime});
+      var d=new Date(r.debut);
+      var nom=document.getElementById('mn').value.trim()||('Réunion du '+d.toLocaleDateString('fr-FR')+' à '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));
+      if(blob.size<1000){
+        try{await enrSupprimer(r.id);await morcSupprimer(r.id)}catch(e){}
+        afficherToast('⚠️ Enregistrement vide, rien à sauvegarder.');rec=null;res();return;
+      }
+      var item={id:r.id,statut:'attente',date:d.toISOString(),mime:r.mime,nom:nom,modeleId:modeleChoisi,duree:secondes,blob:blob,erreur:''};
+      try{
+        await enrPut(item);await morcSupprimer(r.id);
+        afficherToast(navigator.onLine?'💾 Audio sauvegardé — traitement en cours…':'💾 Audio sauvegardé — envoi dès le retour d\'internet');
+      }catch(e){
+        console.error(e);
+        telechargerBlob(blob,'MeetAI_'+nomSur(nom)+'.'+extMime(r.mime));
+        afficherToast('⚠️ Sauvegarde locale impossible : l\'audio a été téléchargé. Importez-le plus tard.');
+      }
+      rec=null;res();
+    };
+    try{r.mr.stop()}catch(e){res()}
+  });
+}
+// Récupère un enregistrement interrompu (onglet fermé, batterie, plantage…)
+async function recupererOrphelins(){
+  try{
+    var liste=await enrTous();
+    for(var i=0;i<liste.length;i++){
+      var x=liste[i];
+      if(x.statut!=='enregistrement')continue;
+      var m=await morcTous(x.id);
+      if(!m.length){await enrSupprimer(x.id);continue}
+      x.blob=new Blob(m.map(function(c){return c.blob}),{type:x.mime});
+      x.statut='attente';x.duree=m.length*5;x.erreur='';
+      x.nom=x.nom||('Enregistrement récupéré du '+new Date(x.date).toLocaleString('fr-FR'));
+      await enrPut(x);await morcSupprimer(x.id);
+      afficherToast('♻️ Un enregistrement interrompu a été récupéré.');
+    }
+  }catch(e){}
+}
+
+// ══ FILE D'ATTENTE ══
+function majReseau(){
+  var off=!navigator.onLine;
+  var b=document.getElementById('net');if(b)b.style.display=off?'block':'none';
+  afficherFile();
+}
+async function afficherFile(){
+  var zone=document.getElementById('fazone'),el=document.getElementById('fa');
+  var liste=[];try{liste=await enrTous()}catch(e){}
+  liste=liste.filter(function(x){return x.statut!=='enregistrement'}).sort(function(a,b){return a.date<b.date?-1:1});
+  if(!liste.length){zone.style.display='none';return}
+  zone.style.display='block';
+  document.getElementById('fan').textContent=liste.length;
+  el.innerHTML=liste.map(function(x){
+    var etat;
+    if(x.statut==='en_cours')etat='<span class="fistat-run">⏳ Traitement…</span>';
+    else if(x.statut==='erreur')etat='⚠️ '+esc(x.erreur||'Erreur');
+    else etat=navigator.onLine?'⏸ En attente de traitement':'📴 En attente de connexion';
+    var mo=x.blob?(x.blob.size/1048576).toFixed(1)+' Mo':'';
+    var dur=x.duree>0?' · '+Math.floor(x.duree/60)+' min '+(x.duree%60)+' s':'';
+    var btns=x.statut==='en_cours'?'':
+      '<button class="prbt" onclick="ecouter(\''+x.id+'\')">▶ Écouter</button>'
+      +'<button class="prbt" onclick="telechargerEnr(\''+x.id+'\')">⬇ Audio</button>'
+      +'<button class="prbt" onclick="traiterUn(\''+x.id+'\')">🔄 Traiter</button>'
+      +'<button class="prbt del" onclick="supprimerEnr(\''+x.id+'\')">🗑</button>';
+    return '<div class="fr"><div class="frt">🎙️ '+esc(x.nom)+'</div>'
+      +'<div class="frm">'+new Date(x.date).toLocaleString('fr-FR')+dur+' · '+mo+'<br>'+etat+'</div>'
+      +'<div id="au_'+x.id+'"></div><div class="fra">'+btns+'</div></div>';
+  }).join('');
+}
+async function trouverEnr(id){var l=await enrTous();return l.find(function(x){return x.id===id})}
+async function ecouter(id){
+  var x=await trouverEnr(id);if(!x||!x.blob)return;
+  var c=document.getElementById('au_'+id);if(!c)return;
+  c.innerHTML='<audio controls src="'+URL.createObjectURL(x.blob)+'" style="width:100%;margin-top:4px"></audio>';
+}
+async function telechargerEnr(id){var x=await trouverEnr(id);if(x&&x.blob)telechargerBlob(x.blob,'MeetAI_'+nomSur(x.nom)+'.'+extMime(x.mime))}
+async function supprimerEnr(id){
+  if(!confirm('Supprimer cet enregistrement audio ? Cette action est définitive.'))return;
+  try{await enrSupprimer(id)}catch(e){}
+  afficherFile();
+}
+async function traiterUn(id){
+  if(!navigator.onLine){afficherToast('📴 Pas de connexion pour le moment.');return}
+  if(!obtenirCle()){afficherToast('⚠️ Configurez votre clé Claude (bouton 🔑)');ouvrirSetup();return}
+  var x=await trouverEnr(id);if(!x)return;
+  if(traitementEnCours){afficherToast('⏳ Un traitement est déjà en cours.');return}
+  traitementEnCours=true;
+  try{await traiterEnr(x)}finally{traitementEnCours=false;afficherFile()}
+}
+async function traiterFile(manuel){
+  if(traitementEnCours)return;
+  if(!manuel&&!document.getElementById('faauto').checked)return;
+  if(!navigator.onLine){if(manuel)afficherToast('📴 Pas de connexion pour le moment.');return}
+  var liste;try{liste=await enrTous()}catch(e){return}
+  liste=liste.filter(function(x){return x.statut==='attente'||(manuel&&x.statut==='erreur')}).sort(function(a,b){return a.date<b.date?-1:1});
+  if(!liste.length){if(manuel)afficherToast('Aucun enregistrement à traiter.');return}
+  if(!obtenirCle()){if(manuel){afficherToast('⚠️ Configurez votre clé Claude (bouton 🔑)');ouvrirSetup()}return}
+  traitementEnCours=true;
+  try{for(var i=0;i<liste.length;i++){await traiterEnr(liste[i]);if(!navigator.onLine)break}}
+  finally{traitementEnCours=false;afficherFile()}
+}
+async function traiterEnr(x){
+  x.statut='en_cours';x.erreur='';
+  try{await enrPut(x)}catch(e){}
+  afficherFile();
+  try{
+    if(!x.texte){
+      var moteur=localStorage.getItem('ma_moteur')||'whisper';
+      var fichier=new File([x.blob],'enregistrement.'+extMime(x.mime),{type:x.mime});
+      var res=moteur==='whisper'?await transcrireWhisper(fichier):await transcrireLocal(fichier);
+      if(!res.texte)throw new Error('Aucun texte détecté dans cet audio.');
+      x.texte=res.texte;x.segments=res.segments;
+      if(confidentialite()){x.blob=null;x.audioSupprime=true}
+      try{await enrPut(x)}catch(e){}
+    }
+    var modele=tousModeles().find(function(m){return m.id===x.modeleId})||tousModeles()[0];
+    await creerReunion({nom:x.nom,texte:x.texte,segments:x.segments,audio:x.blob||null,modele:modele,date:x.date,duree:x.duree});
+    await enrSupprimer(x.id);
+    afficherToast('✅ Compte rendu prêt : '+x.nom);
+  }catch(err){
+    var msg=(err&&err.message)||'Erreur';
+    var reseau=!navigator.onLine||/Failed to fetch|NetworkError|Load failed|network/i.test(msg);
+    x.statut=reseau?'attente':'erreur';x.erreur=reseau?'':msg;
+    try{await enrPut(x)}catch(e){}
+    if(!reseau)afficherToast('❌ '+msg);
+  }
+}
+(function(){
+  var m=localStorage.getItem('ma_modemic');
+  if(m)document.getElementById('modemic').value=m;
+  majModeMic();
+  document.getElementById('faauto').checked=localStorage.getItem('ma_autofile')!=='0';
+  majReseau();
+  window.addEventListener('online',function(){majReseau();setTimeout(function(){traiterFile(false)},1500)});
+  window.addEventListener('offline',majReseau);
+  setInterval(function(){if(navigator.onLine)traiterFile(false)},60000);
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&navigator.onLine)traiterFile(false)});
+  recupererOrphelins().then(function(){afficherFile();setTimeout(function(){traiterFile(false)},1500)});
+})();
+
+// ══ INSTALLATION (PWA) ══
+var invitInstall=null;
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();invitInstall=e;var b=document.getElementById('instbtn');if(b)b.style.boxShadow='0 0 0 3px #5b6af0'});
+window.addEventListener('appinstalled',function(){invitInstall=null;masquerInstall();afficherToast('✅ MeetAI installée !')});
+function estInstallee(){return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true}
+function masquerInstall(){var b=document.getElementById('instbtn');if(b&&estInstallee())b.style.display='none'}
+async function installerApp(){
+  if(invitInstall){invitInstall.prompt();try{await invitInstall.userChoice}catch(e){}invitInstall=null;return}
+  ouvrirModal('moi');
+}
+
+// ══ IMPORT AUDIO ══
+var fichierAudio=null;
+function fichierChoisi(inp){
+  fichierAudio=inp.files&&inp.files[0]?inp.files[0]:null;
+  document.getElementById('afn').textContent=fichierAudio?('📎 '+fichierAudio.name+' ('+(fichierAudio.size/1048576).toFixed(1)+' Mo)'):'Touchez pour choisir un fichier (MP3, M4A, WAV, MP4…)';
+  var champ=document.getElementById('mn');
+  if(fichierAudio&&!champ.value.trim())champ.value=fichierAudio.name.replace(/\.[^.]+$/,'');
+}
+(function(){
+  var dz=document.getElementById('dz');
+  ['dragenter','dragover'].forEach(function(ev){dz.addEventListener(ev,function(e){e.preventDefault();dz.classList.add('over')})});
+  ['dragleave','drop'].forEach(function(ev){dz.addEventListener(ev,function(e){e.preventDefault();dz.classList.remove('over')})});
+  dz.addEventListener('drop',function(e){
+    var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+    if(f){var inp=document.getElementById('af');try{var dt=new DataTransfer();dt.items.add(f);inp.files=dt.files}catch(x){}fichierChoisi({files:[f]})}
+  });
+})();
+function changerMoteur(){
+  var m=document.getElementById('moteur').value;
+  document.getElementById('wk').style.display=m==='whisper'?'block':'none';
+  document.getElementById('lk').style.display=m==='local'?'block':'none';
+  try{localStorage.setItem('ma_moteur',m)}catch(e){}
+}
+function statutAudio(t){document.getElementById('pl').textContent=t;var e=document.querySelector('.fistat-run');if(e)e.textContent='⏳ '+t}
+
+async function decoder16k(file){
+  var buf=await file.arrayBuffer();
+  var AC=window.AudioContext||window.webkitAudioContext;
+  var ctx=new AC();
+  var audio;
+  try{audio=await new Promise(function(res,rej){ctx.decodeAudioData(buf,res,rej)})}
+  catch(e){throw new Error('Format audio non lisible par le navigateur. Essayez MP3, M4A ou WAV.')}
+  try{ctx.close()}catch(e){}
+  var off=new OfflineAudioContext(1,Math.max(1,Math.ceil(audio.duration*16000)),16000);
+  var src=off.createBufferSource();src.buffer=audio;src.connect(off.destination);src.start();
+  var rendu=await off.startRendering();
+  return rendu.getChannelData(0);
+}
+function versWav(f32,rate){
+  var n=f32.length,b=new ArrayBuffer(44+n*2),v=new DataView(b);
+  function s(o,t){for(var i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i))}
+  s(0,'RIFF');v.setUint32(4,36+n*2,true);s(8,'WAVE');s(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,rate,true);v.setUint32(28,rate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);s(36,'data');v.setUint32(40,n*2,true);
+  for(var i=0;i<n;i++){var x=Math.max(-1,Math.min(1,f32[i]));v.setInt16(44+i*2,x<0?x*0x8000:x*0x7FFF,true)}
+  return b;
+}
+async function decouperEnWav(file,sec){
+  var pcm=await decoder16k(file);var taille=sec*16000;var out=[];
+  for(var i=0,k=1;i<pcm.length;i+=taille,k++){out.push(new File([versWav(pcm.subarray(i,i+taille),16000)],'partie'+k+'.wav',{type:'audio/wav'}))}
+  return out;
+}
+
+async function transcrireWhisper(file){
+  var cle=localStorage.getItem('ma_cle_openai')||'';
+  var champ=document.getElementById('oak').value.trim();
+  if(champ){
+    if(!champ.startsWith('sk-'))throw new Error('La clé OpenAI doit commencer par sk-');
+    cle=champ;localStorage.setItem('ma_cle_openai',cle);
+  }
+  if(!cle)throw new Error('Clé OpenAI manquante');
+  var morceaux,pas=600;
+  if(file.size<=24*1048576){morceaux=[file]}
+  else{statutAudio('Préparation du fichier volumineux…');morceaux=await decouperEnWav(file,pas)}
+  var textes=[],segs=[];
+  for(var i=0;i<morceaux.length;i++){
+    statutAudio('Transcription Whisper '+(i+1)+'/'+morceaux.length+'…');
+    var fd=new FormData();
+    fd.append('file',morceaux[i],morceaux[i].name||('partie'+(i+1)+'.wav'));
+    fd.append('model','whisper-1');fd.append('language','fr');fd.append('response_format','verbose_json');
+    var rep=await fetch('https://api.openai.com/v1/audio/transcriptions',{method:'POST',headers:{'Authorization':'Bearer '+cle},body:fd});
+    if(!rep.ok){var tx=await rep.text();var msg=tx;try{msg=JSON.parse(tx).error.message}catch(e){}throw new Error('Whisper : '+msg)}
+    var j=await rep.json();
+    (j.segments||[]).forEach(function(sg){var x=(sg.text||'').trim();if(x)segs.push({t:Math.round(i*pas+(sg.start||0)),x:x})});
+    textes.push((j.text||'').trim());
+  }
+  return{texte:textes.join('\n\n').trim(),segments:segs};
+}
+
+var asrLocal=null;
+async function transcrireLocal(file){
+  statutAudio('Décodage de l\'audio…');
+  var pcm=await decoder16k(file);
+  if(!asrLocal){
+    statutAudio('Téléchargement du modèle de transcription…');
+    var mod=await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
+    mod.env.allowLocalModels=false;
+    asrLocal=await mod.pipeline('automatic-speech-recognition','Xenova/whisper-base',{progress_callback:function(p){if(p&&p.status==='progress'){statutAudio('Téléchargement du modèle… '+Math.round(p.progress||0)+'%')}}});
+  }
+  statutAudio('Transcription en cours (plusieurs minutes possibles)…');
+  var r=await asrLocal(pcm,{language:'french',task:'transcribe',chunk_length_s:30,stride_length_s:5,return_timestamps:true});
+  var segs=(r.chunks||[]).map(function(c){return{t:Math.round((c.timestamp&&c.timestamp[0])||0),x:(c.text||'').trim()}}).filter(function(sg){return sg.x});
+  return{texte:(r.text||'').trim(),segments:segs};
+}
+
+async function transcrireFichier(){
+  if(!fichierAudio){afficherToast('⚠️ Choisissez d\'abord un fichier audio.');return}
+  var moteur=document.getElementById('moteur').value;
+  var auto=document.getElementById('auto').checked;
+  if(moteur==='whisper'&&!(localStorage.getItem('ma_cle_openai')||document.getElementById('oak').value.trim())){afficherToast('⚠️ Entrez votre clé OpenAI, ou choisissez « Dans le navigateur ».');return}
+  if(auto&&!obtenirCle()){afficherToast('⚠️ Configurez d\'abord votre clé Claude (bouton 🔑)');ouvrirSetup();return}
+  document.getElementById('proc').classList.add('on');
+  document.getElementById('tbtn').disabled=true;
+  var res=null,erreur=false;
+  try{res=moteur==='whisper'?await transcrireWhisper(fichierAudio):await transcrireLocal(fichierAudio)}
+  catch(err){erreur=true;console.error(err);afficherToast('❌ '+(err.message||'Erreur de transcription'))}
+  finally{document.getElementById('proc').classList.remove('on');document.getElementById('tbtn').disabled=false}
+  if(erreur)return;
+  if(!res||!res.texte){afficherToast('⚠️ Aucun texte détecté dans cet audio.');return}
+  document.getElementById('ti').value=res.texte;
+  contexteAudio={texte:res.texte,segments:res.segments,audio:fichierAudio};
+  afficherToast('✅ Transcription terminée');
+  if(auto)analyser();
+}
+(function(){
+  document.getElementById('optspk').checked=localStorage.getItem('ma_optspk')!=='0';
+  document.getElementById('optconf').checked=localStorage.getItem('ma_confid')==='1';
+  document.getElementById('optauto').checked=localStorage.getItem('ma_autorec')!=='0';
+})();
+
+// ══ INIT ══
+(function(){
+  var m=localStorage.getItem('ma_moteur');
+  if(m){document.getElementById('moteur').value=m}
+  changerMoteur();
+  masquerInstall();
+})();
+afficherGrilleModeles();
+afficherSidebar();
+if(!obtenirCle()){document.getElementById('setup').classList.remove('hide')}
+else{document.getElementById('setup').classList.add('hide')}
+// Démarrage automatique de l'enregistrement à l'ouverture
+(function(){
+  if(localStorage.getItem('ma_autorec')==='0'||!obtenirCle())return;
+  setTimeout(async function(){
+    if(enregistrement||document.getElementById('setup').classList.contains('hide')===false)return;
+    try{
+      if(navigator.permissions&&navigator.permissions.query){
+        var st=await navigator.permissions.query({name:'microphone'});
+        if(st.state==='denied'){afficherToast('🎙️ Micro bloqué : autorisez-le via le cadenas de la barre d\'adresse.');return}
+      }
+    }catch(e){}
+    document.getElementById('modemic').value='audio';
+    try{majModeMic()}catch(e){}
+    await basculerMicro();
+  },1200);
+})();
 </script>
 </body>
 </html>
