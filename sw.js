@@ -1,4 +1,4 @@
-var CACHE = 'meetai-v8';
+var CACHE = 'meetai-v7';
 var FICHIERS = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 var CDN = [
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
@@ -29,8 +29,8 @@ self.addEventListener('fetch', function (e) {
   var req = e.request;
   if (req.method !== 'GET') return;
   var url = new URL(req.url);
-  // Les autres applications du dépôt (carnet, navigation, echo) ont leur propre service worker.
-  if (url.origin === self.location.origin && /\/(carnet|navigation|echo)\//.test(url.pathname)) return;
+  // Les autres applications du dépôt (carnet, navigation) ont leur propre service worker.
+  if (url.origin === self.location.origin && /\/(carnet|navigation)\//.test(url.pathname)) return;
 
   // Fichiers de l'application : réseau d'abord (dernière version), cache si hors connexion.
   if (url.origin === self.location.origin) {
