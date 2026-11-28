@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="Écho">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Écho – Ma musique</title>
 <style>
 /* VOICE: lecteur de poche nocturne, calme, sans pub
@@ -524,7 +524,7 @@ const greet=()=>{const h=new Date().getHours();return h<5?'Bonne nuit':h<12?'Bon
 function importBtns(){return `<div class="btns"><button class="pbtn" data-act="imp">${IC.plus}Importer des titres</button><button class="gbtn" data-act="impdir">Importer un dossier</button></div>`}
 
 V.home=()=>{
- if(!tracks.length)return `<div class="hero"><div class="logo">${IC.note}</div><h1>Bienvenue sur Écho</h1><p>Ta musique à toi, sans pub et sans abonnement. Importe tes fichiers audio une fois : ils restent sur ton téléphone, même hors connexion. Plus tu écoutes, plus les suggestions te ressemblent.</p>${importBtns()}<div class="btns" style="justify-content:center"><button class="gbtn" data-tab="discover">${IC.disc}Découvrir de la musique libre</button></div></div><div class="tip"><b>Astuce :</b> ouvre ce lien dans Safari ou Chrome puis choisis « Ajouter à l'écran d'accueil » pour avoir Écho comme une vraie appli.</div>`;
+ if(!tracks.length)return `<div class="hero"><div class="logo">${IC.note}</div><h1>Bienvenue sur Écho</h1><p>Ta musique à toi, sans pub et sans abonnement. Importe tes fichiers audio une fois : ils restent sur ton téléphone, même hors connexion. Plus tu écoutes, plus les suggestions te ressemblent.</p>${importBtns()}<div class="btns" style="justify-content:center"><button class="gbtn" data-tab="discover">${IC.disc}Découvrir de la musique libre</button></div></div><div class="tip"><b>Mets Écho sur ton écran d'accueil</b> pour l'ouvrir comme une vraie appli.<div class="btns" style="padding:10px 0 0"><a class="pbtn" href="installer.html" style="text-decoration:none">Installer l'icône</a></div></div>`;
  const P=profile(),hist=tracks.some(t=>t.plays>0),b=bucket(),now=Date.now();
  let h=hdr(greet(),`<button class="ibtn" data-act="settings" aria-label="Réglages">${IC.gear}</button>`);
  h+=section('Pour toi',hist?'Choisi selon tes écoutes':'Écoute quelques titres, Écho apprend tes goûts',topBy(tracks,t=>score(t,P),25));
@@ -762,6 +762,7 @@ async function settings(){
  const s=kv.settings;
  sheet(`<div class="shh"><div class="ri"><div class="rt">Réglages</div><div class="rs">${tracks.length} titres · ${est}</div></div></div>
  <button class="tgl${s.autoplay?' on':''}" data-act="tglauto"><span>Lecture auto des suggestions<br><small style="color:var(--mu)">Continue avec des titres proches quand la file est finie</small></span><i></i></button>`,[
+  {html:`<a class="si" href="installer.html"><span>📲</span>Installer l\u2019icône sur l\u2019écran d\u2019accueil</a>`},
   {ic:'＋',label:'Importer des titres',fn:()=>$('#fin').click()},
   {ic:'📁',label:'Importer un dossier (Android, ordinateur)',fn:()=>$('#din').click()},
   {ic:'🔑',label:s.jamendo?'Modifier la clé Jamendo':'Ajouter une clé Jamendo',fn:async()=>{const r=await form('Clé Jamendo',[{k:'k',label:'Client ID (gratuit sur devportal.jamendo.com)',value:s.jamendo}]);if(r){s.jamendo=r.k;saveKV();render()}}},
